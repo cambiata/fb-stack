@@ -27,4 +27,56 @@ Will start local test server on http://localhost:5000
 firebase init functions
 
 Select "Javascript"
-Select insall dependencies "Y"
+Select intsall dependencies "Y"
+
+The directory /functions is created, containing index.js wich is the firebase server nodejs script
+
+If google storage-api will be used:
+npm install --save @google-cloud/storage
+
+If trouble with node-pre-gyp:
+npm install node-pre-gyp -g
+
+## Test Firebase functions
+
+functions/index.js
+```
+const functions = require('firebase-functions');
+exports.helloWorld = functions.https.onRequest((request, response) => {
+response.send("Hello from Firebase!");
+});
+```
+
+firebase.json
+```
+{
+ "hosting": {
+   "public": "public",
+   "ignore": [
+     "firebase.json",
+     "**/.*",
+     "**/node_modules/**"
+   ],
+   "rewrites": [     
+     {"source": "/helloWorld", "function": "helloWorld"},
+     {"source": "**", "destination": "/index.html"}     
+   ]
+ }
+}
+```
+### Test locally
+
+firebase serve --only functions,hosting
+
+http://localhost:5000/helloWorld
+should display
+Hello from Firebase!
+
+### Test remotely
+
+firebase deploy
+
+https://fb-stack.firebaseapp.com/helloWorld
+should display
+Hello from Firebase!
+
