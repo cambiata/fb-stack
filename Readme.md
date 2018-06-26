@@ -156,18 +156,18 @@ server.hxml
 -cp ../firebase-admin-hx/src
 -lib hxnodejs
 -lib js-kit
--main Index
+-main Server
 -js functions/index.js
 ```
 
-src/Index.js
+src/Server.js
 ```
 import js.npm.Express;
 import js.Node.exports;
 import firebase.Admin;
 import functions.Functions;
 
-class Index {
+class Server {
     static public function main() {
         Admin.initializeApp(Functions.config().firebase);
         
@@ -186,4 +186,4 @@ Running `haxe serve.hxml` will output a Haxe-generated functions/index.js
 
 Test locally and remotely as described above.
 
-
+## Setup Haxe client

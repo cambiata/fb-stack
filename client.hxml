@@ -1,0 +1,11 @@
+-D analyzer-optimize
+-dce full
+
+-cp src
+-cp ../firebase-admin-hx/src
+
+-lib mithril
+
+-main Client
+
+-js public/client.js 

@@ -7,6 +7,6 @@
 -lib hxnodejs
 -lib js-kit
 
--main Index
+-main Server
 -js functions/index.js
 #-js test.js

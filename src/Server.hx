@@ -3,7 +3,7 @@ import js.Node.exports;
 import firebase.Admin;
 import functions.Functions;
 
-class Index {
+class Server {
     static public function main() {
         Admin.initializeApp(Functions.config().firebase);
         
