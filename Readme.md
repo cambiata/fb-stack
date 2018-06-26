@@ -80,3 +80,49 @@ https://fb-stack.firebaseapp.com/helloWorld
 should display
 Hello from Firebase!
 
+## Setup express server
+
+cd functions
+npm i express --save
+
+## Test express server
+
+functions/index.js
+```
+const functions = require('firebase-functions');
+
+exports.helloWorld = functions.https.onRequest((request, response) => {
+ response.send("Hello from Firebase!");
+});
+
+// express server exported as server function "app"
+
+const express = require('express');
+const app = express();
+
+app.get('/timestamp', (request, response) => {
+    response.send(`Express timestamp: ${Date.now()}`);
+ });
+ 
+exports.app = functions.https.onRequest(app);
+```
+
+firebase.json
+```
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [      
+      {"source": "/helloWorld", "function": "helloWorld"},
+      {"source": "/timestamp", "function": "app"},
+      {"source": "**", "destination": "/index.html"}      
+    ]
+  }
+}
+```
+
