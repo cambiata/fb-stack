@@ -1,3 +1,6 @@
+import mithril.M;
+import mithril.M.m;
+
 
 class Client {
     static public function main() {
@@ -13,13 +16,29 @@ class Client {
 
         var app = firebase.Firebase.initializeApp(config);
 
-        app.database().ref('test').on("value", (snap, str)->{
+        app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
             trace('database value changed:' + snap.val());
         });
 
-
         trace(app);
 
+        var element = js.Browser.document.getElementById;
+       
+        M.mount(element('main'), new Main());
+
+    }
+}
+
+// class State {
+//     public var text:String = 'Hello from state!';
+// }
+
+class Main implements Mithril {
+    public function new() {}
+    public function view() {
+        return [
+            m('div', 'Hejsan hoppsan'),
+        ];
     }
 }
 

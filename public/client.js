@@ -10,13 +10,26 @@ function $extend(from, fields) {
 var Client = function() { };
 Client.__name__ = true;
 Client.main = function() {
-	console.log("src/Client.hx:4:","hello");
+	console.log("src/Client.hx:7:","hello");
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:17:","database value changed:" + Std.string(snap.val()));
+		console.log("src/Client.hx:20:","database value changed:" + Std.string(snap.val()));
 		return;
 	});
-	console.log("src/Client.hx:21:",app);
+	console.log("src/Client.hx:23:",app);
+	m.mount(window.document.getElementById("main"),new Main());
+};
+var mithril_Mithril = function() { };
+mithril_Mithril.__name__ = true;
+var Main = function() {
+};
+Main.__name__ = true;
+Main.__interfaces__ = [mithril_Mithril];
+Main.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Hejsan hoppsan")];
+	}
 };
 Math.__name__ = true;
 var Std = function() { };
@@ -136,5 +149,36 @@ Array.__name__ = true;
 Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function() {
 	return String(this.val);
 }});
+try {
+var __varName = window.m;
+(function(m) {
+			if (m.m) return;
+			m.m = function() {
+				try { 
+					for(var i=0; i < arguments.length; ++i) if(arguments[i] instanceof List) {
+						var list = arguments[i].h; arguments[i] = [];
+						while(list != null) { arguments[i].push(l[0]); list = l[1]; }
+					}
+				} catch(e) {}
+				return m.apply(this, arguments);
+			}
+		})(__varName);
+} catch(_) {}
+try {
+GLOBAL.m = require("mithril");
+var __varName1 = GLOBAL.m;
+(function(m) {
+			if (m.m) return;
+			m.m = function() {
+				try { 
+					for(var i=0; i < arguments.length; ++i) if(arguments[i] instanceof List) {
+						var list = arguments[i].h; arguments[i] = [];
+						while(list != null) { arguments[i].push(l[0]); list = l[1]; }
+					}
+				} catch(e) {}
+				return m.apply(this, arguments);
+			}
+		})(__varName1);
+} catch(_) {}
 Client.main();
 })();
