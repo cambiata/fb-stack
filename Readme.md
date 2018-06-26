@@ -148,7 +148,7 @@ This replaces the above node js server with a Haxe compiled version:
 Clone firebase-admin-hs into same dir as current project:
 git clone https://github.com/cambiata/firebase-admin-hx.git ../firebase-admin-hx
 
-build.hxml
+server.hxml
 ```
 -D analyzer-optimize
 -dce full
@@ -181,6 +181,8 @@ class Index {
     }
 }
 ```
+
+Running `haxe serve.hxml` will output a Haxe-generated functions/index.js
 
 Test locally and remotely as described above.
 
