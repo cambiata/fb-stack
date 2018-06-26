@@ -84,6 +84,7 @@ Hello from Firebase!
 
 cd functions
 npm i express --save
+cd ..
 
 ## Test express server
 
@@ -125,4 +126,62 @@ firebase.json
   }
 }
 ```
+### Test express server locally
+
+firebase serve --only functions,hosting
+
+http://localhost:5000/timestamp
+should display
+Express timestamp: 15300068...
+
+### Test express server remotely
+
+firebase deploy
+
+https://fb-stack.firebaseapp.com/timestamp
+should display
+Express timestamp: 15300069...
+
+## Setup Haxe server
+This replaces the above node js server with a Haxe compiled version:
+
+Clone firebase-admin-hs into same dir as current project:
+git clone https://github.com/cambiata/firebase-admin-hx.git ../firebase-admin-hx
+
+build.hxml
+```
+-D analyzer-optimize
+-dce full
+-cp src
+-cp ../firebase-admin-hx/src
+-lib hxnodejs
+-lib js-kit
+-main Index
+-js functions/index.js
+```
+
+src/Index.js
+```
+import js.npm.Express;
+import js.Node.exports;
+import firebase.Admin;
+import functions.Functions;
+
+class Index {
+    static public function main() {
+        Admin.initializeApp(Functions.config().firebase);
+        
+        exports.helloWorld = Functions.https.onRequest((request, response) -> response.send("Hello from Haxe!"));
+        
+        var app = new Express();
+        app.get('/timestamp', function(req, res) {           
+            res.send('Haxe and Express serving! ' + Date.now().getTime());
+        });
+        exports.app = Functions.https.onRequest(app);  
+    }
+}
+```
+
+Test locally and remotely as described above.
+
 

@@ -40,9 +40,6 @@ Index.main = function() {
 		res.send(tmp);
 	});
 	module.exports.app = functions.https.onRequest(app);
-	module.exports.helloWorld = functions.https.onRequest(function(request,response) {
-		return response.send("Hello from Haxe!");
-	});
 };
 var admin = require("firebase-admin");
 var functions = require("firebase-functions");

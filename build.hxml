@@ -1,0 +1,12 @@
+-D analyzer-optimize
+-dce full
+
+-cp src
+-cp ../firebase-admin-hx/src
+
+-lib hxnodejs
+-lib js-kit
+
+-main Index
+-js functions/index.js
+#-js test.js
