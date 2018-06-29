@@ -1,0 +1,3 @@
+-cp src
+-cp ../firebase-admin-hx/src
+-cp ../firebase-client-hx/src
