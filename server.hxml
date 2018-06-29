@@ -4,6 +4,7 @@
 -cp src
 -cp ../firebase-admin-hx/src
 
+
 -lib hxnodejs
 -lib js-kit
 

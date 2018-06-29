@@ -16,8 +16,16 @@ Client.main = function() {
 		console.log("src/Client.hx:20:","database value changed:" + Std.string(snap.val()));
 		return;
 	});
-	console.log("src/Client.hx:23:",app);
-	m.mount(window.document.getElementById("main"),new Main());
+	app.auth().onAuthStateChanged(function(user) {
+		console.log("src/Client.hx:24:",user);
+		if(user != null) {
+			console.log("src/Client.hx:26:",user.email);
+		} else {
+			console.log("src/Client.hx:29:","user == null");
+		}
+		return;
+	});
+	m.mount(window.document.querySelector("main"),new Main());
 };
 var mithril_Mithril = function() { };
 mithril_Mithril.__name__ = true;
@@ -28,7 +36,11 @@ Main.__interfaces__ = [mithril_Mithril];
 Main.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div","Hejsan hoppsan")];
+		return [m.m("div","Hejsan hoppsan i lingonskogen"),m.m("button",{ onclick : function(e) {
+			return firebase.auth().signInWithEmailAndPassword("jonasnys@gmail.com","123456");
+		}},"Login"),m.m("button",{ onclick : function(e1) {
+			return firebase.auth().signOut();
+		}},"Logout")];
 	}
 };
 Math.__name__ = true;
