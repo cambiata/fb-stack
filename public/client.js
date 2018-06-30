@@ -42,19 +42,35 @@ Main.prototype = {
 			return firebase.auth().signOut();
 		}},"Logout"),m.m("button",{ onclick : function(e2) {
 			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 59, className : "Main", methodName : "view"});
-			return _gthis.authenticatedRequest("get","/auth",null);
+			_gthis.authenticatedRequest("get","/auth",null);
+			return;
 		}},"Request")];
 	}
 	,authenticatedRequest: function(method,url,body) {
 		if(firebase.auth().currentUser == null) {
 			throw new js__$Boot_HaxeError("Not authenticated. Make sure you're signed in!");
 		}
-		return firebase.auth().currentUser.getIdToken().then(function(token) {
+		firebase.auth().currentUser.getIdToken().then(function(token) {
 			var request = { method : method, url : url, headers : { authorization : "Bearer " + token}};
-			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 92, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
+			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 87, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
 			return m.request(request);
+		}).then(function(result) {
+			haxe_Log.trace("Success:" + result,{ fileName : "src/Client.hx", lineNumber : 93, className : "Main", methodName : "authenticatedRequest"});
+			return;
+		})["catch"](function(e) {
+			haxe_Log.trace("Error:" + e,{ fileName : "src/Client.hx", lineNumber : 95, className : "Main", methodName : "authenticatedRequest"});
+			return;
 		});
 	}
+};
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.iter = function(a) {
+	return { cur : 0, arr : a, hasNext : function() {
+		return this.cur < this.arr.length;
+	}, next : function() {
+		return this.arr[this.cur++];
+	}};
 };
 Math.__name__ = true;
 var Std = function() { };

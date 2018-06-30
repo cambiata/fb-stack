@@ -57,11 +57,6 @@ class Main implements Mithril {
 
             m("button", { onclick: e -> {
                 trace('Request');
-                // M.request({
-                //     method: 'get',
-                //     url: "/timestamp",
-                // }).then(result->trace(result));
-
                 this.authenticatedRequest('get', '/auth', null);
 
             }}, 'Request'),                
@@ -73,7 +68,7 @@ class Main implements Mithril {
             throw 'Not authenticated. Make sure you\'re signed in!';
         }
 
-        return Firebase.auth().currentUser.getIdToken().then(function(token) {
+        var promise:js.Promise<Dynamic> = Firebase.auth().currentUser.getIdToken().then(function(token) {
 
             var h:DynamicAccess<String> = {authorization: 'Bearer ' + token };
 
@@ -90,18 +85,16 @@ class Main implements Mithril {
             // }
 
             trace('Making authenticated request:', method, url);
-
-            return M.request(request);
-            
+            return M.request(request);            
         });
 
-
-
-
-
-
+        promise
+        .then(result->{
+            trace('Success:' + result);
+        }).catchError(e->{
+            trace('Error:' + e);
+        });
     }
-
 }
 
 
