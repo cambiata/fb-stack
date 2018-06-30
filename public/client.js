@@ -10,18 +10,17 @@ function $extend(from, fields) {
 var Client = function() { };
 Client.__name__ = true;
 Client.main = function() {
-	console.log("src/Client.hx:7:","hello");
+	haxe_Log.trace("hello",{ fileName : "src/Client.hx", lineNumber : 11, className : "Client", methodName : "main"});
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:20:","database value changed:" + Std.string(snap.val()));
+		haxe_Log.trace("database value changed:" + Std.string(snap.val()),{ fileName : "src/Client.hx", lineNumber : 24, className : "Client", methodName : "main"});
 		return;
 	});
 	app.auth().onAuthStateChanged(function(user) {
-		console.log("src/Client.hx:24:",user);
 		if(user != null) {
-			console.log("src/Client.hx:26:",user.email);
+			haxe_Log.trace(user.email,{ fileName : "src/Client.hx", lineNumber : 29, className : "Client", methodName : "main"});
 		} else {
-			console.log("src/Client.hx:29:","user == null");
+			haxe_Log.trace("user == null",{ fileName : "src/Client.hx", lineNumber : 32, className : "Client", methodName : "main"});
 		}
 		return;
 	});
@@ -35,12 +34,26 @@ Main.__name__ = true;
 Main.__interfaces__ = [mithril_Mithril];
 Main.prototype = {
 	view: function() {
+		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		return [m.m("div","Hejsan hoppsan i lingonskogen"),m.m("button",{ onclick : function(e) {
 			return firebase.auth().signInWithEmailAndPassword("jonasnys@gmail.com","123456");
 		}},"Login"),m.m("button",{ onclick : function(e1) {
 			return firebase.auth().signOut();
-		}},"Logout")];
+		}},"Logout"),m.m("button",{ onclick : function(e2) {
+			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 59, className : "Main", methodName : "view"});
+			return _gthis.authenticatedRequest("get","/auth",null);
+		}},"Request")];
+	}
+	,authenticatedRequest: function(method,url,body) {
+		if(firebase.auth().currentUser == null) {
+			throw new js__$Boot_HaxeError("Not authenticated. Make sure you're signed in!");
+		}
+		return firebase.auth().currentUser.getIdToken().then(function(token) {
+			var request = { method : method, url : url, headers : { authorization : "Bearer " + token}};
+			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 92, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
+			return m.request(request);
+		});
 	}
 };
 Math.__name__ = true;
@@ -48,6 +61,27 @@ var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
+};
+var haxe_Log = function() { };
+haxe_Log.__name__ = true;
+haxe_Log.formatOutput = function(v,infos) {
+	var str = Std.string(v);
+	if(infos == null) {
+		return str;
+	}
+	var pstr = infos.fileName + ":" + infos.lineNumber;
+	if(infos != null && infos.customParams != null) {
+		var _g = 0;
+		var _g1 = infos.customParams;
+		while(_g < _g1.length) str += ", " + Std.string(_g1[_g++]);
+	}
+	return pstr + ": " + str;
+};
+haxe_Log.trace = function(v,infos) {
+	var str = haxe_Log.formatOutput(v,infos);
+	if(typeof(console) != "undefined" && console.log != null) {
+		console.log(str);
+	}
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);

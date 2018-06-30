@@ -9,6 +9,8 @@
     "rewrites": [      
       {"source": "/helloWorld", "function": "helloWorld"},
       {"source": "/timestamp", "function": "app"},
+      {"source": "/auth", "function": "app"},
+      {"source": "/api", "function": "app"},
       {"source": "**", "destination": "/index.html"}      
     ]
   }

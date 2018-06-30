@@ -5,7 +5,8 @@
 -cp ../firebase-admin-hx/src
 
 
--lib hxnodejs
+#-lib hxnodejs
+-lib hxnodelibs
 -lib js-kit
 
 -main Server

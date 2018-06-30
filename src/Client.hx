@@ -1,3 +1,7 @@
+import haxe.Http;
+import haxe.DynamicAccess;
+import js.Lib;
+import firebase.Firebase;
 import mithril.M;
 import mithril.M.m;
 
@@ -20,8 +24,7 @@ class Client {
             trace('database value changed:' + snap.val());
         });
 
-        app.auth().onAuthStateChanged(user -> {
-			trace(user);
+        app.auth().onAuthStateChanged(user -> {			
 			if (user != null) {
 				trace(user.email);
 				
@@ -30,10 +33,8 @@ class Client {
 			}			
 		});
 
-        var element = js.Browser.document.querySelector;
-       
+        var element = js.Browser.document.querySelector;       
         M.mount(element('main'), new Main());
-
     }
 }
 
@@ -47,14 +48,60 @@ class Main implements Mithril {
         return [
             m('div', 'Hejsan hoppsan i lingonskogen'),
 			m("button", { onclick: e -> {
-				untyped firebase.Firebase.auth().signInWithEmailAndPassword('jonasnys@gmail.com', '123456');
+				firebase.Firebase.auth().signInWithEmailAndPassword('jonasnys@gmail.com', '123456');
 			}}, 'Login'),
 			
 			m("button", { onclick: e -> {
-				untyped  firebase.Firebase.auth().signOut();
-			}}, 'Logout'),            
+				firebase.Firebase.auth().signOut();
+			}}, 'Logout'),     
+
+            m("button", { onclick: e -> {
+                trace('Request');
+                // M.request({
+                //     method: 'get',
+                //     url: "/timestamp",
+                // }).then(result->trace(result));
+
+                this.authenticatedRequest('get', '/auth', null);
+
+            }}, 'Request'),                
         ];
     }
+
+    function authenticatedRequest(method:String, url:String, body:String) {
+        if (Firebase.auth().currentUser == null) {
+            throw 'Not authenticated. Make sure you\'re signed in!';
+        }
+
+        return Firebase.auth().currentUser.getIdToken().then(function(token) {
+
+            var h:DynamicAccess<String> = {authorization: 'Bearer ' + token };
+
+            var request = {
+                method: method,
+                url: url,
+                // dataType: 'json',
+                headers: h
+            };
+
+            // if (method === 'POST') {
+            //     request.contentType = 'application/json';
+            //     request.data = JSON.stringify(body);
+            // }
+
+            trace('Making authenticated request:', method, url);
+
+            return M.request(request);
+            
+        });
+
+
+
+
+
+
+    }
+
 }
 
 
