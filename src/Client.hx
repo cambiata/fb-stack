@@ -1,3 +1,4 @@
+import haxe.Json;
 import haxe.Http;
 import haxe.DynamicAccess;
 import js.Lib;
@@ -57,9 +58,26 @@ class Main implements Mithril {
 
             m("button", { onclick: e -> {
                 trace('Request');
-                this.authenticatedRequest('get', '/auth', null);
+                this.authenticatedRequest('get', '/api', null)
+                .then(result->{
+                    trace('Success:' + Json.stringify(result));
+                }).catchError(e->{
+                    trace('Error:' + e);
+                });
 
-            }}, 'Request'),                
+            }}, '/api'),                
+
+            m("button", { onclick: e -> {
+                trace('Request');
+                this.authenticatedRequest('get', '/auth', null)
+                .then(result->{
+                    trace('Success:' + Json.stringify(result));
+                }).catchError(e->{
+                    trace('Error:' + e);
+                });                
+            }}, '/auth'),                
+
+
         ];
     }
 
@@ -69,31 +87,18 @@ class Main implements Mithril {
         }
 
         var promise:js.Promise<Dynamic> = Firebase.auth().currentUser.getIdToken().then(function(token) {
-
             var h:DynamicAccess<String> = {authorization: 'Bearer ' + token };
-
             var request = {
                 method: method,
                 url: url,
-                // dataType: 'json',
+                //dataType: 'string',
                 headers: h
             };
-
-            // if (method === 'POST') {
-            //     request.contentType = 'application/json';
-            //     request.data = JSON.stringify(body);
-            // }
-
             trace('Making authenticated request:', method, url);
             return M.request(request);            
         });
 
-        promise
-        .then(result->{
-            trace('Success:' + result);
-        }).catchError(e->{
-            trace('Error:' + e);
-        });
+        return promise;
     }
 }
 

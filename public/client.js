@@ -10,17 +10,17 @@ function $extend(from, fields) {
 var Client = function() { };
 Client.__name__ = true;
 Client.main = function() {
-	haxe_Log.trace("hello",{ fileName : "src/Client.hx", lineNumber : 11, className : "Client", methodName : "main"});
+	haxe_Log.trace("hello",{ fileName : "src/Client.hx", lineNumber : 12, className : "Client", methodName : "main"});
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		haxe_Log.trace("database value changed:" + Std.string(snap.val()),{ fileName : "src/Client.hx", lineNumber : 24, className : "Client", methodName : "main"});
+		haxe_Log.trace("database value changed:" + Std.string(snap.val()),{ fileName : "src/Client.hx", lineNumber : 25, className : "Client", methodName : "main"});
 		return;
 	});
 	app.auth().onAuthStateChanged(function(user) {
 		if(user != null) {
-			haxe_Log.trace(user.email,{ fileName : "src/Client.hx", lineNumber : 29, className : "Client", methodName : "main"});
+			haxe_Log.trace(user.email,{ fileName : "src/Client.hx", lineNumber : 30, className : "Client", methodName : "main"});
 		} else {
-			haxe_Log.trace("user == null",{ fileName : "src/Client.hx", lineNumber : 32, className : "Client", methodName : "main"});
+			haxe_Log.trace("user == null",{ fileName : "src/Client.hx", lineNumber : 33, className : "Client", methodName : "main"});
 		}
 		return;
 	});
@@ -41,25 +41,33 @@ Main.prototype = {
 		}},"Login"),m.m("button",{ onclick : function(e1) {
 			return firebase.auth().signOut();
 		}},"Logout"),m.m("button",{ onclick : function(e2) {
-			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 59, className : "Main", methodName : "view"});
-			_gthis.authenticatedRequest("get","/auth",null);
-			return;
-		}},"Request")];
+			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 60, className : "Main", methodName : "view"});
+			return _gthis.authenticatedRequest("get","/api",null).then(function(result) {
+				haxe_Log.trace("Success:" + JSON.stringify(result),{ fileName : "src/Client.hx", lineNumber : 63, className : "Main", methodName : "view"});
+				return;
+			})["catch"](function(e3) {
+				haxe_Log.trace("Error:" + e3,{ fileName : "src/Client.hx", lineNumber : 65, className : "Main", methodName : "view"});
+				return;
+			});
+		}},"/api"),m.m("button",{ onclick : function(e4) {
+			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 71, className : "Main", methodName : "view"});
+			return _gthis.authenticatedRequest("get","/auth",null).then(function(result1) {
+				haxe_Log.trace("Success:" + JSON.stringify(result1),{ fileName : "src/Client.hx", lineNumber : 74, className : "Main", methodName : "view"});
+				return;
+			})["catch"](function(e5) {
+				haxe_Log.trace("Error:" + e5,{ fileName : "src/Client.hx", lineNumber : 76, className : "Main", methodName : "view"});
+				return;
+			});
+		}},"/auth")];
 	}
 	,authenticatedRequest: function(method,url,body) {
 		if(firebase.auth().currentUser == null) {
 			throw new js__$Boot_HaxeError("Not authenticated. Make sure you're signed in!");
 		}
-		firebase.auth().currentUser.getIdToken().then(function(token) {
+		return firebase.auth().currentUser.getIdToken().then(function(token) {
 			var request = { method : method, url : url, headers : { authorization : "Bearer " + token}};
-			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 87, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
+			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 97, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
 			return m.request(request);
-		}).then(function(result) {
-			haxe_Log.trace("Success:" + result,{ fileName : "src/Client.hx", lineNumber : 93, className : "Main", methodName : "authenticatedRequest"});
-			return;
-		})["catch"](function(e) {
-			haxe_Log.trace("Error:" + e,{ fileName : "src/Client.hx", lineNumber : 95, className : "Main", methodName : "authenticatedRequest"});
-			return;
 		});
 	}
 };

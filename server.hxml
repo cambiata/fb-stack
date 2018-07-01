@@ -6,7 +6,7 @@
 
 
 #-lib hxnodejs
--lib hxnodelibs
+#-lib hxnodelibs
 -lib js-kit
 
 -main Server

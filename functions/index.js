@@ -41,27 +41,37 @@ Server.main = function() {
 		return response.send("Hello from Haxe!");
 	});
 	var app = new js_npm_Express();
-	app.get("/timestamp",function(req,res) {
-		var tmp = "Haxe and Express test! " + new Date().getTime();
-		res.send(tmp);
+	app.use(function(req,res,next) {
+		console.log("src/Server.hx:19:",new Date().getTime() + " " + "logging");
+		next();
 	});
-	app.get("/auth",function(req1,res1) {
+	app.get("/timestamp",function(req1,res1) {
+		var tmp = "Haxe and Express test! " + new Date().getTime();
+		res1.send(tmp);
+	});
+	app.get("/auth",function(req2,res2) {
 		try {
-			var tokenId = req1.get("Authorization").split("Bearer ")[1];
+			var tokenId = req2.get("Authorization").split("Bearer ")[1];
 			admin.auth().verifyIdToken(tokenId).then(function(verified) {
 				return admin.auth().getUser(verified.uid);
 			}).then(function(user) {
-				res1.send("User: " + user.email);
-				res1.end();
+				var tmp1 = JSON.stringify({ verifiedUser : user.email});
+				res2.send(tmp1);
+				res2.end();
 				return;
 			})["catch"](function(e) {
-				res1.send("error2:" + e);
+				res2.send("error2:" + e);
 				return;
 			});
 		} catch( e1 ) {
-			var tmp1 = "error:" + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1);
-			res1.send(tmp1);
+			var tmp2 = "error:" + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1);
+			res2.send(tmp2);
 		}
+	});
+	app.get("/api",function(req3,res3) {
+		res3.send("Hello from api");
+		res3.end();
+		return;
 	});
 	module.exports.app = functions.https.onRequest(app);
 };
