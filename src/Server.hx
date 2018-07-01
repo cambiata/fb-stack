@@ -20,8 +20,7 @@ class Server {
             //untyped req.test = 'abc';
             next();
         }
-
-        // Todo: Untyped
+        
         app.use(log);
 
         app.get('/timestamp', function(req:Request, res) {           
@@ -41,17 +40,11 @@ class Server {
                 res.send('error:' + e);
             }
         });
-
-        // Todo: Untyped
+        
         app.get('/api', (req:Request, res:Response)->{            
             res.send('Hello from api');
             res.end();
         });
-
-        // app.get('/api/test', (req:Request, res:Response)->{
-        //     res.send('api/test');
-        //     res.end();
-        // });
 
         exports.app = Functions.https.onRequest(app);  
     }
