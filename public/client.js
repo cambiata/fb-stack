@@ -7,72 +7,92 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var Client = function() { };
-Client.__name__ = true;
-Client.main = function() {
-	haxe_Log.trace("hello",{ fileName : "src/Client.hx", lineNumber : 12, className : "Client", methodName : "main"});
+var mithril_Mithril = function() { };
+mithril_Mithril.__name__ = true;
+var Client = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		haxe_Log.trace("database value changed:" + Std.string(snap.val()),{ fileName : "src/Client.hx", lineNumber : 25, className : "Client", methodName : "main"});
+		console.log("src/Client.hx:32:","database value changed:" + Std.string(snap.val()));
 		return;
 	});
 	app.auth().onAuthStateChanged(function(user) {
 		if(user != null) {
-			haxe_Log.trace(user.email,{ fileName : "src/Client.hx", lineNumber : 30, className : "Client", methodName : "main"});
+			return FirebaseUtils.getUserToken().then(function(token) {
+				return ApiCalls.getUserData(token);
+			}).then(function(userData) {
+				console.log("src/Client.hx:42:","userData result: " + JSON.stringify(userData));
+				return;
+			})["catch"](function(e) {
+				console.log("src/Client.hx:45:","userData Error:" + e);
+				return;
+			});
 		} else {
-			haxe_Log.trace("user == null",{ fileName : "src/Client.hx", lineNumber : 33, className : "Client", methodName : "main"});
+			console.log("src/Client.hx:48:","user == null");
+			return null;
 		}
-		return;
 	});
-	m.mount(window.document.querySelector("main"),new Main());
+	m.mount(window.document.querySelector("main"),this);
 };
-var mithril_Mithril = function() { };
-mithril_Mithril.__name__ = true;
-var Main = function() {
+Client.__name__ = true;
+Client.__interfaces__ = [mithril_Mithril];
+Client.main = function() {
+	new Client();
 };
-Main.__name__ = true;
-Main.__interfaces__ = [mithril_Mithril];
-Main.prototype = {
+Client.prototype = {
 	view: function() {
-		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div","Hejsan hoppsan i lingonskogen"),m.m("button",{ onclick : function(e) {
+		return [m.m("button",{ onclick : function(e) {
 			return firebase.auth().signInWithEmailAndPassword("jonasnys@gmail.com","123456");
 		}},"Login"),m.m("button",{ onclick : function(e1) {
 			return firebase.auth().signOut();
 		}},"Logout"),m.m("button",{ onclick : function(e2) {
-			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 60, className : "Main", methodName : "view"});
-			return _gthis.authenticatedRequest("get","/api",null).then(function(result) {
-				haxe_Log.trace("Success:" + JSON.stringify(result),{ fileName : "src/Client.hx", lineNumber : 63, className : "Main", methodName : "view"});
+			return FirebaseUtils.getUserToken().then(function(token) {
+				return ApiCalls.getUserData(token);
+			}).then(function(result) {
+				console.log("src/Client.hx:76:","userData result: " + JSON.stringify(result));
 				return;
-			})["catch"](function(e3) {
-				haxe_Log.trace("Error:" + e3,{ fileName : "src/Client.hx", lineNumber : 65, className : "Main", methodName : "view"});
-				return;
-			});
-		}},"/api"),m.m("button",{ onclick : function(e4) {
-			haxe_Log.trace("Request",{ fileName : "src/Client.hx", lineNumber : 71, className : "Main", methodName : "view"});
-			return _gthis.authenticatedRequest("get","/auth",null).then(function(result1) {
-				haxe_Log.trace("Success:" + JSON.stringify(result1),{ fileName : "src/Client.hx", lineNumber : 74, className : "Main", methodName : "view"});
-				return;
-			})["catch"](function(e5) {
-				haxe_Log.trace("Error:" + e5,{ fileName : "src/Client.hx", lineNumber : 76, className : "Main", methodName : "view"});
+			})["catch"](function(error) {
+				console.log("src/Client.hx:78:","userData error: " + error);
 				return;
 			});
-		}},"/auth")];
+		}},"Test /api/userData ")];
 	}
-	,authenticatedRequest: function(method,url,body) {
-		if(firebase.auth().currentUser == null) {
-			throw new js__$Boot_HaxeError("Not authenticated. Make sure you're signed in!");
-		}
-		return firebase.auth().currentUser.getIdToken().then(function(token) {
-			var request = { method : method, url : url, headers : { authorization : "Bearer " + token}};
-			haxe_Log.trace("Making authenticated request:",{ fileName : "src/Client.hx", lineNumber : 97, className : "Main", methodName : "authenticatedRequest", customParams : [method,url]});
-			return m.request(request);
+};
+var ApiCalls = function() { };
+ApiCalls.__name__ = true;
+ApiCalls.getUserData = function(token) {
+	console.log("src/Client.hx:90:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
+	return m.request({ method : "get", url : "/api/userdata", headers : { authorization : "Bearer " + token}});
+};
+var FirebaseUtils = function() { };
+FirebaseUtils.__name__ = true;
+FirebaseUtils.getCurrentUser = function() {
+	return firebase.auth().currentUser;
+};
+FirebaseUtils.getUserToken = function() {
+	if(FirebaseUtils.getCurrentUser() != null) {
+		return FirebaseUtils.getCurrentUser().getIdToken();
+	} else {
+		return new Promise(function(res,rej) {
+			rej("Firebase.auth().currentUser == null");
+			return;
 		});
 	}
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.substr = function(s,pos,len) {
+	if(len == null) {
+		len = s.length;
+	} else if(len < 0) {
+		if(pos == 0) {
+			len = s.length + len;
+		} else {
+			return "";
+		}
+	}
+	return s.substr(pos,len);
+};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -85,27 +105,6 @@ var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
-};
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.formatOutput = function(v,infos) {
-	var str = Std.string(v);
-	if(infos == null) {
-		return str;
-	}
-	var pstr = infos.fileName + ":" + infos.lineNumber;
-	if(infos != null && infos.customParams != null) {
-		var _g = 0;
-		var _g1 = infos.customParams;
-		while(_g < _g1.length) str += ", " + Std.string(_g1[_g++]);
-	}
-	return pstr + ": " + str;
-};
-haxe_Log.trace = function(v,infos) {
-	var str = haxe_Log.formatOutput(v,infos);
-	if(typeof(console) != "undefined" && console.log != null) {
-		console.log(str);
-	}
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);

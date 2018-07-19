@@ -10,75 +10,107 @@ function $extend(from, fields) {
 }
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
-HxOverrides.strDate = function(s) {
-	switch(s.length) {
-	case 8:
-		var k = s.split(":");
-		var d = new Date();
-		d["setTime"](0);
-		d["setUTCHours"](k[0]);
-		d["setUTCMinutes"](k[1]);
-		d["setUTCSeconds"](k[2]);
-		return d;
-	case 10:
-		var k1 = s.split("-");
-		return new Date(k1[0],k1[1] - 1,k1[2],0,0,0);
-	case 19:
-		var k2 = s.split(" ");
-		var y = k2[0].split("-");
-		var t = k2[1].split(":");
-		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
-	default:
-		throw new js__$Boot_HaxeError("Invalid date format : " + s);
+HxOverrides.substr = function(s,pos,len) {
+	if(len == null) {
+		len = s.length;
+	} else if(len < 0) {
+		if(pos == 0) {
+			len = s.length + len;
+		} else {
+			return "";
+		}
 	}
+	return s.substr(pos,len);
 };
 Math.__name__ = true;
 var Server = function() { };
 Server.__name__ = true;
 Server.main = function() {
 	admin.initializeApp(functions.config().firebase);
-	module.exports.helloWorld = functions.https.onRequest(function(request,response) {
-		return response.send("Hello from Haxe!");
-	});
 	var app = new js_npm_Express();
-	app.use(function(req,res,next) {
-		console.log("src/Server.hx:19:",new Date().getTime() + " " + "logging");
-		next();
-	});
-	app.get("/timestamp",function(req1,res1) {
-		var tmp = "Haxe and Express test! " + new Date().getTime();
-		res1.send(tmp);
-	});
-	app.get("/auth",function(req2,res2) {
-		try {
-			var tokenId = req2.get("Authorization").split("Bearer ")[1];
-			admin.auth().verifyIdToken(tokenId).then(function(verified) {
-				return admin.auth().getUser(verified.uid);
-			}).then(function(user) {
-				var tmp1 = JSON.stringify({ verifiedUser : user.email});
-				res2.send(tmp1);
-				res2.end();
-				return;
-			})["catch"](function(e) {
-				res2.send("error2:" + e);
-				return;
-			});
-		} catch( e1 ) {
-			var tmp2 = "error:" + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1);
-			res2.send(tmp2);
-		}
-	});
-	app.get("/api",function(req3,res3) {
-		res3.send("Hello from api");
-		res3.end();
+	app.get("/api/userdata",AppMiddlewares.mwErrors,AppMiddlewares.mwToken,AppMiddlewares.mwUserEmail,AppMiddlewares.mwUserData,function(req,res) {
+		console.log("src/Server.hx:24:","Route /api/userdata" + " ---------------------------------");
+		res.json({ errors : res.locals.errors, userData : res.locals.userData});
+		res.end();
 		return;
 	});
 	module.exports.app = functions.https.onRequest(app);
+};
+var AppMiddlewares = function() { };
+AppMiddlewares.__name__ = true;
+AppMiddlewares.mwErrors = function(req,res,next) {
+	res.locals.errors = [];
+	next();
+};
+AppMiddlewares.mwToken = function(req,res,next) {
+	console.log("src/Server.hx:41:","Middleware mwToken ***************************");
+	var token = null;
+	try {
+		token = req.get("Authorization").split("Bearer ")[1];
+		console.log("src/Server.hx:45:","token: " + HxOverrides.substr(token,0,50) + "...");
+	} catch( e ) {
+		res.locals.errors.push("Token error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+	}
+	res.locals.token = token;
+	next();
+};
+AppMiddlewares.mwUserEmail = function(req,res,next) {
+	console.log("src/Server.hx:54:","Middleware mwUserEmail ***************************");
+	try {
+		var token = res.locals.token;
+		admin.auth().verifyIdToken(token).then(function(verified) {
+			return admin.auth().getUser(verified.uid);
+		}).then(function(user) {
+			res.locals.userEmail = user.email;
+			console.log("src/Server.hx:62:","userEmail = " + Std.string(res.locals.userEmail));
+			return next();
+		})["catch"](function(e) {
+			res.locals.errors.push("UserEmail1 error: " + e);
+			if((e == null ? "null" : "" + e).indexOf("Error: Credential implementation") > -1) {
+				console.log("src/Server.hx:68:","localhost error!");
+				res.locals.userEmail = "jonasnys@gmail.com";
+			}
+			return next();
+		});
+	} catch( e1 ) {
+		res.locals.errors.push("UserEmail2 error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
+		next();
+	}
+};
+AppMiddlewares.mwUserData = function(req,res,next) {
+	console.log("src/Server.hx:80:","Middleware mwUserData ***************************");
+	try {
+		var userEmail = res.locals.userEmail;
+		var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
+		console.log("src/Server.hx:85:","dbpath: " + dbpath);
+		admin.database().ref(dbpath).once("value",function(snap) {
+			res.locals.userData = snap.val();
+			res.locals.userData.email = userEmail;
+			console.log("src/Server.hx:90:","User data: " + Std.string(res.locals.userData));
+			return next();
+		},function(failure) {
+			console.log("src/Server.hx:93:","failure: " + failure);
+			res.locals.userData = null;
+			res.locals.errors.push("" + failure);
+			return next();
+		});
+	} catch( e ) {
+		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+		console.log("src/Server.hx:99:","error! " + Std.string(e1));
+		res.locals.userData = null;
+		res.locals.errors.push("" + Std.string(e1));
+		next();
+	}
 };
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
+};
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
 };
 var admin = require("firebase-admin");
 var functions = require("firebase-functions");
@@ -198,9 +230,16 @@ js_Boot.__string_rec = function(o,s) {
 	}
 };
 var js_npm_Express = require("express");
+var utils__$UserEmail_UserEmail_$Impl_$ = {};
+utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
+utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
+	var pa = this1;
+	pa = StringTools.replace(this1,"@","||");
+	pa = StringTools.replace(pa,".","|");
+	return pa;
+};
 String.__name__ = true;
 Array.__name__ = true;
-Date.__name__ = ["Date"];
 Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function() {
 	return String(this.val);
 }});
