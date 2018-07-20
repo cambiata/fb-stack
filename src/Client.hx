@@ -1,3 +1,4 @@
+import dataclass.JsonConverter;
 import haxe.Json;
 import haxe.Http;
 import haxe.DynamicAccess;
@@ -5,12 +6,19 @@ import js.Lib;
 import firebase.Firebase;
 import mithril.M;
 import mithril.M.m;
+import domain.Data;
+using Lambda;
+
+
 
 class Client implements Mithril {
     
     static public function main() {
         new Client();
     }
+
+    var stateMonitor:StateMonitor;
+    var developUI:DevelopUI;
     
     public function new() {
 
@@ -35,49 +43,41 @@ class Client implements Mithril {
         // Login/logout event handler
         app.auth().onAuthStateChanged(user -> {			
             if (user != null) {
-                FirebaseUtils.getUserToken().then(token->{
+                FirebaseUser.getUserToken().then(token->{
                     // If user is logged in, fetch user data from realtime database /users document
                     return ApiCalls.getUserData(token);
-                }).then(userData->{
-                    trace('userData result: ' + Json.stringify(userData));
+                }).then(data->{
+                    trace(data);
+                    var userData:Dynamic = data.userData;
+                    State.userData = new UserData(userData);
+                    var errors:Array<String> = data.errors;
+                    errors.iter(e->State.errors.unshift(e));
                 })
                 .catchError(e->{
                     trace('userData Error:' + e);
+                    State.userData = null;
+                    State.errors.unshift(e);
                 });
             } else {
                 trace('user == null');
+                State.userData = null;
+                State.errors.unshift('User == null');
                 return null;
             }
 		});
 
         // Setup Mithril ui
+        this.stateMonitor = new StateMonitor();
+        this.developUI = new DevelopUI();
+
         var element = js.Browser.document.querySelector;       
         M.mount(element('main'), this);
       }
 
     public function view() {
         return [
-            
-            // login
-			m("button", { onclick: e -> {
-				firebase.Firebase.auth().signInWithEmailAndPassword('jonasnys@gmail.com', '123456');
-			}}, 'Login'),
-			
-            // logout
-			m("button", { onclick: e -> {
-				firebase.Firebase.auth().signOut();
-			}}, 'Logout'),     
-
-            // test authenticated api call 
-            m('button', { onclick: e -> {
-                FirebaseUtils.getUserToken().then(token->{
-                    return ApiCalls.getUserData(token);
-                }).then(result->{
-                    trace('userData result: ' + Json.stringify(result));
-                }).catchError(error->{
-                    trace('userData error: ' + error);
-                });
-            }}, 'Test /api/userData '), 
+            cast this.developUI.view(),
+            cast this.stateMonitor.view(),
 
         ];
     }
@@ -99,10 +99,61 @@ class ApiCalls {
 }
 
 // Firebase user related stuff
-class FirebaseUtils {
+class FirebaseUser {
     static public function getCurrentUser() return Firebase.auth().currentUser;
-
     static public function getUserToken():js.Promise<Dynamic> {
         return getCurrentUser() != null ? getCurrentUser().getIdToken() : new js.Promise<Dynamic>((res,rej)->rej("Firebase.auth().currentUser == null")); // returns .then(function(token)->token)
+    }
+}
+
+class State {
+    static public var userData:UserData ;
+    static public var errors:Array<String> = [];
+}
+
+class StateMonitor implements Mithril {
+    public function new() {}
+
+    public function view() {
+        return [
+            m('div', 'State.userData:'),
+            m('div', '' + State.userData),
+            m('div', 'State.errors:'),
+            m('div', State.errors.map(e->m('div', 'Error:'+e))),
+        ];
+    }
+}
+
+
+class DevelopUI implements Mithril {
+    public function new() {}
+    public function view() {
+        return [
+            // login
+			m("button", { onclick: e -> {
+				firebase.Firebase.auth().signInWithEmailAndPassword('jonasnys@gmail.com', '123456');
+			}}, 'Login'),
+			
+            // logout
+			m("button", { onclick: e -> {
+				firebase.Firebase.auth().signOut();
+			}}, 'Logout'),     
+
+            // test authenticated api call 
+            m('button', { onclick: e -> {
+                FirebaseUser.getUserToken().then(token->{
+                    return ApiCalls.getUserData(token);
+                }).then(data->{
+                    trace('userData result: ' + Json.stringify(data));
+
+                    var d = Json.parse(Json.stringify(data));
+                    trace(d.errors);
+                    var errors:Array<String> = d.errors;
+                    errors.iter(e->State.errors.unshift(e));
+                }).catchError(error->{
+                    trace('userData error: ' + error);
+                });
+            }}, 'Test /api/userData '), 
+        ];
     }
 }

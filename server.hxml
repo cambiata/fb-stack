@@ -5,6 +5,7 @@
 -cp ../firebase-admin-hx/src
 
 -lib js-kit
+-lib dataclass
 
 -main Server
 -js functions/index.js

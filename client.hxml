@@ -5,6 +5,7 @@
 -cp ../firebase-client-hx/src
 
 -lib mithril
+-lib dataclass
 
 -main Client
 
