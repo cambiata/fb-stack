@@ -34,7 +34,6 @@ class Client implements Mithril {
 
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
-
         // Test clientside realtime database connection
         app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
             trace('database value changed:' + snap.val());
@@ -43,25 +42,28 @@ class Client implements Mithril {
         // Login/logout event handler
         app.auth().onAuthStateChanged(user -> {			
             if (user != null) {
+                State.setUserState(UserState.Loading);
                 FirebaseUser.getUserToken().then(token->{
                     // If user is logged in, fetch user data from realtime database /users document
                     return ApiCalls.getUserData(token);
                 }).then(data->{
                     trace(data);
-                    var userData:Dynamic = data.userData;
-                    State.userData = new UserData(userData);
                     var errors:Array<String> = data.errors;
-                    errors.iter(e->State.errors.unshift(e));
+                    State.setErrors(errors);
+                    var userData:Dynamic = data.userData;
+                    State.setUserState(UserState.User(new UserData(userData)));
                 })
                 .catchError(e->{
                     trace('userData Error:' + e);
-                    State.userData = null;
+                    // State.userData = null;
                     State.errors.unshift(e);
+                    State.setUserState(UserState.None);
                 });
             } else {
                 trace('user == null');
-                State.userData = null;
+                // State.userData = null;
                 State.errors.unshift('User == null');
+                State.setUserState(UserState.None);
                 return null;
             }
 		});
@@ -107,19 +109,40 @@ class FirebaseUser {
 }
 
 class State {
-    static public var userData:UserData ;
-    static public var errors:Array<String> = [];
+    // static public var userData:UserData ;
+
+    static public var errors(default,null):Array<String> = [];
+    static public function setErrors(err:Array<String>) {
+        err.iter(e->errors.push(e));
+        M.redraw();
+    }
+    
+    static public var userState(default,null):UserState = None;
+    static public function setUserState(state:UserState) {
+        userState = state;
+        M.redraw();
+    }
 }
+
+enum UserState {
+    None;
+    Loading;
+    User(userData:UserData);
+}
+
+
 
 class StateMonitor implements Mithril {
     public function new() {}
 
     public function view() {
         return [
-            m('div', 'State.userData:'),
-            m('div', '' + State.userData),
+            // m('div', 'State.userData:'),
+            // m('div', '' + State.userData),
             m('div', 'State.errors:'),
             m('div', State.errors.map(e->m('div', 'Error:'+e))),
+            m('div', 'State.userState:'),
+            m('div', '' + State.userState),
         ];
     }
 }

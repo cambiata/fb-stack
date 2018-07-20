@@ -13,31 +13,29 @@ mithril_Mithril.__name__ = true;
 var Client = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:40:","database value changed:" + Std.string(snap.val()));
+		console.log("src/Client.hx:39:","database value changed:" + Std.string(snap.val()));
 		return;
 	});
 	app.auth().onAuthStateChanged(function(user) {
 		if(user != null) {
+			State.setUserState(UserState.Loading);
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
 				console.log("src/Client.hx:50:",data);
-				State.userData = new domain_UserData(data.userData);
-				Lambda.iter(data.errors,function(e) {
-					State.errors.unshift(e);
-					return;
-				});
+				State.setErrors(data.errors);
+				State.setUserState(UserState.User(new domain_UserData(data.userData)));
 				return;
-			})["catch"](function(e1) {
-				console.log("src/Client.hx:57:","userData Error:" + e1);
-				State.userData = null;
-				State.errors.unshift(e1);
+			})["catch"](function(e) {
+				console.log("src/Client.hx:57:","userData Error:" + e);
+				State.errors.unshift(e);
+				State.setUserState(UserState.None);
 				return;
 			});
 		} else {
-			console.log("src/Client.hx:62:","user == null");
-			State.userData = null;
+			console.log("src/Client.hx:63:","user == null");
 			State.errors.unshift("User == null");
+			State.setUserState(UserState.None);
 			return null;
 		}
 	});
@@ -62,7 +60,7 @@ var ApiCalls = function() { };
 $hxClasses["ApiCalls"] = ApiCalls;
 ApiCalls.__name__ = true;
 ApiCalls.getUserData = function(token) {
-	console.log("src/Client.hx:90:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
+	console.log("src/Client.hx:92:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
 	return m.request({ method : "get", url : "/api/userdata", headers : { authorization : "Bearer " + token}});
 };
 var FirebaseUser = function() { };
@@ -81,9 +79,24 @@ FirebaseUser.getUserToken = function() {
 		});
 	}
 };
+var UserState = $hxEnums["UserState"] = { __ename__ : true, __constructs__ : ["None","Loading","User"]
+	,None: {_hx_index:0,__enum__:"UserState",toString:$estr}
+	,Loading: {_hx_index:1,__enum__:"UserState",toString:$estr}
+	,User: ($_=function(userData) { return {_hx_index:2,userData:userData,__enum__:"UserState",toString:$estr}; },$_.__params__ = ["userData"],$_)
+};
 var State = function() { };
 $hxClasses["State"] = State;
 State.__name__ = true;
+State.setErrors = function(err) {
+	Lambda.iter(err,function(e) {
+		return State.errors.push(e);
+	});
+	m.redraw();
+};
+State.setUserState = function(state) {
+	State.userState = state;
+	m.redraw();
+};
 var StateMonitor = function() {
 };
 $hxClasses["StateMonitor"] = StateMonitor;
@@ -92,9 +105,9 @@ StateMonitor.__interfaces__ = [mithril_Mithril];
 StateMonitor.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div","State.userData:"),m.m("div","" + Std.string(State.userData)),m.m("div","State.errors:"),m.m("div",State.errors.map(function(e) {
+		return [m.m("div","State.errors:"),m.m("div",State.errors.map(function(e) {
 			return m.m("div","Error:" + e);
-		}))];
+		})),m.m("div","State.userState:"),m.m("div","" + Std.string(State.userState))];
 	}
 	,__class__: StateMonitor
 };
@@ -114,9 +127,9 @@ DevelopUI.prototype = {
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:147:","userData result: " + JSON.stringify(data));
+				console.log("src/Client.hx:170:","userData result: " + JSON.stringify(data));
 				var d = JSON.parse(JSON.stringify(data));
-				console.log("src/Client.hx:150:",d.errors);
+				console.log("src/Client.hx:173:",d.errors);
 				var errors = d.errors;
 				Lambda.iter(errors,function(e3) {
 					State.errors.unshift(e3);
@@ -124,7 +137,7 @@ DevelopUI.prototype = {
 				});
 				return;
 			})["catch"](function(error) {
-				console.log("src/Client.hx:154:","userData error: " + error);
+				console.log("src/Client.hx:177:","userData error: " + error);
 				return;
 			});
 		}},"Test /api/userData ")];
@@ -569,16 +582,18 @@ dataclass_Converter.prototype = {
 		while(_g < _g1.length) {
 			var field = _g1[_g];
 			++_g;
-			var input = inputData[field];
-			if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && input != null && StringTools.startsWith(rtti[field],"DataClass<") && Object.prototype.hasOwnProperty.call(input,"$ref")) {
-				var refData = { obj : Reflect.field(input,"$ref"), field : field};
-				if(!refAssign.h.hasOwnProperty(currentId)) {
-					refAssign.h[currentId] = [refData];
+			if(Object.prototype.hasOwnProperty.call(inputData,field)) {
+				var input = inputData[field];
+				if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && input != null && StringTools.startsWith(rtti[field],"DataClass<") && Object.prototype.hasOwnProperty.call(input,"$ref")) {
+					var refData = { obj : Reflect.field(input,"$ref"), field : field};
+					if(!refAssign.h.hasOwnProperty(currentId)) {
+						refAssign.h[currentId] = [refData];
+					} else {
+						refAssign.h[currentId].push(refData);
+					}
 				} else {
-					refAssign.h[currentId].push(refData);
+					outputData[field] = this.toField(rtti[field],input,refCount,refAssign,toDataClass);
 				}
-			} else {
-				outputData[field] = this.toField(rtti[field],input,refCount,refAssign,toDataClass);
 			}
 		}
 		if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && !toDataClass && currentId > 0) {
@@ -1083,6 +1098,7 @@ var __varName1 = GLOBAL.m;
 		})(__varName1);
 } catch(_) {}
 State.errors = [];
+State.userState = UserState.None;
 DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
