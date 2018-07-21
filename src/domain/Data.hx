@@ -6,7 +6,7 @@ class Data {}
 class UserData implements DataClass {
     public var firstname:String;
     public var lastname:String;
-    public var email:String;
+    public var email:utils.UserEmail;
     public var access:Access = Access.Admin;
     public var domains:Domains = [Domain.Kak, Domain.Kantor];
     static public function fromJson(json) return dataclass.JsonConverter.fromJson(UserData, json);
@@ -54,3 +54,29 @@ abstract Domains(Array<Domain>) to Array<Domain> from Array<Domain> {
 //     "email": "jonasnys@gmail.com"
 //   }
 // }
+
+class SiteConfigData implements DataClass {
+    public var arr:Array<String>;
+    public var domains:Array<DomainData>;
+
+    static public var defaultValue(default,null):SiteConfigData = new SiteConfigData(
+        {
+            arr:['A'], 
+            domains:[new DomainData({
+                name:'default-domain',
+                fullname:'Default domain',
+                color:'gray',
+            })]
+        }
+    );
+}
+
+class DomainData implements DataClass {
+    public var name:String = 'shortname';
+    public var fullname:String = 'Fullname'; 
+    public var color:String = 'grey';
+}
+
+class UserConfigData implements DataClass {
+    public var domain:String;
+}

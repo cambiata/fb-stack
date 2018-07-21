@@ -11,34 +11,7 @@ var mithril_Mithril = function() { };
 $hxClasses["mithril.Mithril"] = mithril_Mithril;
 mithril_Mithril.__name__ = true;
 var Client = function() {
-	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
-	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:39:","database value changed:" + Std.string(snap.val()));
-		return;
-	});
-	app.auth().onAuthStateChanged(function(user) {
-		if(user != null) {
-			State.setUserState(UserState.Loading);
-			return FirebaseUser.getUserToken().then(function(token) {
-				return ApiCalls.getUserData(token);
-			}).then(function(data) {
-				console.log("src/Client.hx:50:",data);
-				State.setErrors(data.errors);
-				State.setUserState(UserState.User(new domain_UserData(data.userData)));
-				return;
-			})["catch"](function(e) {
-				console.log("src/Client.hx:57:","userData Error:" + e);
-				State.errors.unshift(e);
-				State.setUserState(UserState.None);
-				return;
-			});
-		} else {
-			console.log("src/Client.hx:63:","user == null");
-			State.errors.unshift("User == null");
-			State.setUserState(UserState.None);
-			return null;
-		}
-	});
+	ClientInit.initApplication();
 	this.stateMonitor = new StateMonitor();
 	this.developUI = new DevelopUI();
 	m.mount(window.document.querySelector("main"),this);
@@ -60,7 +33,7 @@ var ApiCalls = function() { };
 $hxClasses["ApiCalls"] = ApiCalls;
 ApiCalls.__name__ = true;
 ApiCalls.getUserData = function(token) {
-	console.log("src/Client.hx:92:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
+	console.log("src/Client.hx:107:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
 	return m.request({ method : "get", url : "/api/userdata", headers : { authorization : "Bearer " + token}});
 };
 var FirebaseUser = function() { };
@@ -79,22 +52,178 @@ FirebaseUser.getUserToken = function() {
 		});
 	}
 };
-var UserState = $hxEnums["UserState"] = { __ename__ : true, __constructs__ : ["None","Loading","User"]
-	,None: {_hx_index:0,__enum__:"UserState",toString:$estr}
-	,Loading: {_hx_index:1,__enum__:"UserState",toString:$estr}
-	,User: ($_=function(userData) { return {_hx_index:2,userData:userData,__enum__:"UserState",toString:$estr}; },$_.__params__ = ["userData"],$_)
+var ClientInit = function() { };
+$hxClasses["ClientInit"] = ClientInit;
+ClientInit.__name__ = true;
+ClientInit.initApplication = function() {
+	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
+	app.database().ref("test").on("value",function(snap,str) {
+		console.log("src/Client.hx:143:","database value changed:" + Std.string(snap.val()));
+		return;
+	});
+	app.database().ref("site-config").on("value",function(snap1,str1) {
+		console.log("src/Client.hx:147:","Site config data:" + Std.string(snap1.val()));
+		try {
+			if(snap1.val() == null) {
+				throw new js__$Boot_HaxeError("No site config data in site-config");
+			}
+			State.addLog("site-config loaded!");
+			State.setSiteConfig(dataclass_JsonConverter.fromJson(domain_SiteConfigData,snap1.val()));
+		} catch( e ) {
+			State.setErrors(["Can not find site-configx data","" + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)]);
+		}
+		return;
+	});
+	app.auth().onAuthStateChanged(function(user) {
+		if(user != null) {
+			State.setUserData(StateMode.Loading);
+			return FirebaseUser.getUserToken().then(function(token) {
+				return ApiCalls.getUserData(token);
+			}).then(function(data) {
+				console.log("src/Client.hx:165:",data);
+				State.addLog("user loaded!");
+				State.setErrors(data.errors);
+				var userData = new domain_UserData(data.userData);
+				State.setUserData(StateMode.Data(userData));
+				var dbref = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userData.email);
+				return app.database().ref(dbref).once("value",function(snap2,str2) {
+					console.log("src/Client.hx:174:","user-config loaded! " + Std.string(snap2.val()));
+					try {
+						if(snap2.val() == null) {
+							throw new js__$Boot_HaxeError("Could not load " + dbref);
+						}
+						State.addLog("user-config loaded: " + Std.string(snap2.val()));
+						State.setUserConfig(new domain_UserConfigData(snap2.val()));
+					} catch( e1 ) {
+						State.setErrors(["" + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1)]);
+					}
+					return;
+				});
+			})["catch"](function(e2) {
+				console.log("src/Client.hx:189:","userData Error:" + e2);
+				State.setErrors(["User == null","" + e2]);
+				State.setUserData(StateMode.None);
+				State.setUserConfig(null);
+				return;
+			});
+		} else {
+			console.log("src/Client.hx:196:","user == null");
+			State.addLog("User == null");
+			State.setUserData(StateMode.None);
+			State.setUserConfig(null);
+			return null;
+		}
+	});
+};
+var DataClass = function() { };
+$hxClasses["DataClass"] = DataClass;
+DataClass.__name__ = true;
+var domain_DomainData = function(data) {
+	this.color = "grey";
+	this.fullname = "Fullname";
+	this.name = "shortname";
+	if(data != null) {
+		if(Object.prototype.hasOwnProperty.call(data,"name")) {
+			this.set_name(data.name);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"fullname")) {
+			this.set_fullname(data.fullname);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"color")) {
+			this.set_color(data.color);
+		}
+	}
+};
+$hxClasses["domain.DomainData"] = domain_DomainData;
+domain_DomainData.__name__ = true;
+domain_DomainData.__interfaces__ = [DataClass];
+domain_DomainData.prototype = {
+	set_name: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.name.");
+		}
+		return this.name = v;
+	}
+	,set_fullname: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.fullname.");
+		}
+		return this.fullname = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.color.");
+		}
+		return this.color = v;
+	}
+	,__class__: domain_DomainData
+	,__properties__: {set_color:"set_color",set_fullname:"set_fullname",set_name:"set_name"}
+};
+var domain_SiteConfigData = function(data) {
+	this.set_arr(data.arr);
+	this.set_domains(data.domains);
+};
+$hxClasses["domain.SiteConfigData"] = domain_SiteConfigData;
+domain_SiteConfigData.__name__ = true;
+domain_SiteConfigData.__interfaces__ = [DataClass];
+domain_SiteConfigData.validate = function(data) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data,"arr")) {
+		output.push("arr");
+	} else if(data.arr == null) {
+		output.push("arr");
+	}
+	if(!Object.prototype.hasOwnProperty.call(data,"domains")) {
+		output.push("domains");
+	} else if(data.domains == null) {
+		output.push("domains");
+	}
+	return output;
+};
+domain_SiteConfigData.prototype = {
+	set_arr: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.arr.");
+		}
+		return this.arr = v;
+	}
+	,set_domains: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.domains.");
+		}
+		return this.domains = v;
+	}
+	,__class__: domain_SiteConfigData
+	,__properties__: {set_domains:"set_domains",set_arr:"set_arr"}
+};
+var StateMode = $hxEnums["StateMode"] = { __ename__ : true, __constructs__ : ["None","Loading","Data"]
+	,None: {_hx_index:0,__enum__:"StateMode",toString:$estr}
+	,Loading: {_hx_index:1,__enum__:"StateMode",toString:$estr}
+	,Data: ($_=function(data) { return {_hx_index:2,data:data,__enum__:"StateMode",toString:$estr}; },$_.__params__ = ["data"],$_)
 };
 var State = function() { };
 $hxClasses["State"] = State;
 State.__name__ = true;
+State.addLog = function(log) {
+	State.logs.push(log);
+	m.redraw();
+};
 State.setErrors = function(err) {
 	Lambda.iter(err,function(e) {
 		return State.errors.push(e);
 	});
 	m.redraw();
 };
-State.setUserState = function(state) {
-	State.userState = state;
+State.setUserData = function(state) {
+	State.userData = state;
+	m.redraw();
+};
+State.setUserConfig = function(config) {
+	State.userConfig = config;
+	m.redraw();
+};
+State.setSiteConfig = function(config) {
+	State.siteConfig = config;
 	m.redraw();
 };
 var StateMonitor = function() {
@@ -105,9 +234,11 @@ StateMonitor.__interfaces__ = [mithril_Mithril];
 StateMonitor.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div","State.errors:"),m.m("div",State.errors.map(function(e) {
-			return m.m("div","Error:" + e);
-		})),m.m("div","State.userState:"),m.m("div","" + Std.string(State.userState))];
+		return [m.m("div.statelabel","userData:"),m.m("div.stateitems","" + Std.string(State.userData)),m.m("div.statelabel","userConfig"),m.m("div.stateitems","" + Std.string(State.userConfig)),m.m("div.statelabel","siteConfig"),m.m("div.stateitems","" + Std.string(State.siteConfig)),m.m("div.statelabel","logs:"),m.m("div.stateitems",State.logs.map(function(e) {
+			return m.m("div.stateitem.statelog","Log:" + e);
+		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",State.errors.map(function(e1) {
+			return m.m("div.stateitem.stateerror","Error:" + e1);
+		}))];
 	}
 	,__class__: StateMonitor
 };
@@ -127,9 +258,9 @@ DevelopUI.prototype = {
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:170:","userData result: " + JSON.stringify(data));
+				console.log("src/Client.hx:295:","userData result: " + JSON.stringify(data));
 				var d = JSON.parse(JSON.stringify(data));
-				console.log("src/Client.hx:173:",d.errors);
+				console.log("src/Client.hx:298:",d.errors);
 				var errors = d.errors;
 				Lambda.iter(errors,function(e3) {
 					State.errors.unshift(e3);
@@ -137,16 +268,13 @@ DevelopUI.prototype = {
 				});
 				return;
 			})["catch"](function(error) {
-				console.log("src/Client.hx:177:","userData error: " + error);
+				console.log("src/Client.hx:302:","userData error: " + error);
 				return;
 			});
 		}},"Test /api/userData ")];
 	}
 	,__class__: DevelopUI
 };
-var DataClass = function() { };
-$hxClasses["DataClass"] = DataClass;
-DataClass.__name__ = true;
 var DateTools = function() { };
 $hxClasses["DateTools"] = DateTools;
 DateTools.__name__ = true;
@@ -424,6 +552,9 @@ StringTools.lpad = function(s,c,l) {
 	}
 	while(s.length < l) s = c + s;
 	return s;
+};
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
 };
 var Type = function() { };
 $hxClasses["Type"] = Type;
@@ -796,6 +927,22 @@ domain_UserData.prototype = {
 	,__class__: domain_UserData
 	,__properties__: {set_domains:"set_domains",set_access:"set_access",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
 };
+var domain_UserConfigData = function(data) {
+	this.set_domain(data.domain);
+};
+$hxClasses["domain.UserConfigData"] = domain_UserConfigData;
+domain_UserConfigData.__name__ = true;
+domain_UserConfigData.__interfaces__ = [DataClass];
+domain_UserConfigData.prototype = {
+	set_domain: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserConfigData.domain.");
+		}
+		return this.domain = v;
+	}
+	,__class__: domain_UserConfigData
+	,__properties__: {set_domain:"set_domain"}
+};
 var haxe_ds_IntMap = function() {
 	this.h = { };
 };
@@ -1048,6 +1195,15 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+var utils__$UserEmail_UserEmail_$Impl_$ = {};
+$hxClasses["utils._UserEmail.UserEmail_Impl_"] = utils__$UserEmail_UserEmail_$Impl_$;
+utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
+utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
+	var pa = this1;
+	pa = StringTools.replace(this1,"@","||");
+	pa = StringTools.replace(pa,".","|");
+	return pa;
+};
 function $getIterator(o) { if( o instanceof Array ) return HxOverrides.iter(o); else return o.iterator(); }
 $hxClasses["Math"] = Math;
 String.prototype.__class__ = $hxClasses["String"] = String;
@@ -1097,8 +1253,13 @@ var __varName1 = GLOBAL.m;
 			}
 		})(__varName1);
 } catch(_) {}
+domain_DomainData.__meta__ = { obj : { dataClassRtti : [{ name : "String", fullname : "String", color : "String"}]}};
+domain_SiteConfigData.__meta__ = { obj : { dataClassRtti : [{ arr : "Array<String>", domains : "Array<DataClass<domain.DomainData>>"}]}};
+domain_SiteConfigData.defaultValue = new domain_SiteConfigData({ arr : ["A"], domains : [new domain_DomainData({ name : "default-domain", fullname : "Default domain", color : "gray"})]});
+State.logs = [];
 State.errors = [];
-State.userState = UserState.None;
+State.userData = StateMode.None;
+State.siteConfig = domain_SiteConfigData.defaultValue;
 DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1108,6 +1269,7 @@ dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 domain_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", access : "String", domains : "Array<String>"}]}};
+domain_UserConfigData.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
 js_Boot.__toStr = ({ }).toString;
 Client.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

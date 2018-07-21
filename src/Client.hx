@@ -1,3 +1,5 @@
+import firebase.EventType;
+import firebase.database.Reference;
 import dataclass.JsonConverter;
 import haxe.Json;
 import haxe.Http;
@@ -8,6 +10,7 @@ import mithril.M;
 import mithril.M.m;
 import domain.Data;
 using Lambda;
+using dataclass.JsonConverter;
 
 
 
@@ -21,52 +24,64 @@ class Client implements Mithril {
     var developUI:DevelopUI;
     
     public function new() {
+        
+        ClientInit.initApplication();
 
-        // Init Firebase
-        var config = {
-            apiKey: "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04",
-            authDomain: "fb-stack.firebaseapp.com",
-            databaseURL: "https://fb-stack.firebaseio.com",
-            projectId: "fb-stack",
-            storageBucket: "fb-stack.appspot.com",
-            messagingSenderId: "665827748546"
-        };
+        // // Init Firebase
+        // var config = {
+        //     apiKey: "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04",
+        //     authDomain: "fb-stack.firebaseapp.com",
+        //     databaseURL: "https://fb-stack.firebaseio.com",
+        //     projectId: "fb-stack",
+        //     storageBucket: "fb-stack.appspot.com",
+        //     messagingSenderId: "665827748546"
+        // };
 
-        var app:firebase.app.App = firebase.Firebase.initializeApp(config);
+        // var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
-        // Test clientside realtime database connection
-        app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
-            trace('database value changed:' + snap.val());
-        });
+        // // Test clientside realtime database connection
+        // app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
+        //     trace('database value changed:' + snap.val());
+        // });
 
-        // Login/logout event handler
-        app.auth().onAuthStateChanged(user -> {			
-            if (user != null) {
-                State.setUserState(UserState.Loading);
-                FirebaseUser.getUserToken().then(token->{
-                    // If user is logged in, fetch user data from realtime database /users document
-                    return ApiCalls.getUserData(token);
-                }).then(data->{
-                    trace(data);
-                    var errors:Array<String> = data.errors;
-                    State.setErrors(errors);
-                    var userData:Dynamic = data.userData;
-                    State.setUserState(UserState.User(new UserData(userData)));
-                })
-                .catchError(e->{
-                    trace('userData Error:' + e);
-                    // State.userData = null;
-                    State.errors.unshift(e);
-                    State.setUserState(UserState.None);
-                });
-            } else {
-                trace('user == null');
-                // State.userData = null;
-                State.errors.unshift('User == null');
-                State.setUserState(UserState.None);
-                return null;
-            }
-		});
+        // app.database().ref(DBRefs.SiteConfig).on(firebase.EventType.Value, (snap, str)->{
+        //     trace('Site config data:' + snap.val());
+        //     try {
+        //         if (snap.val() == null) throw 'No site config data in ${DBRefs.SiteConfig}';
+        //         State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
+        //     } catch (e:Dynamic) {
+        //         State.setErrors(['Can not find site-configx data', '$e']);
+        //     }
+        // });
+
+        // // Login/logout event handler
+        // app.auth().onAuthStateChanged(user -> {			
+        //     if (user != null) {
+        //         State.userData(StateMode.Loading);
+        //         FirebaseUser.getUserToken().then(token->{
+        //             // If user is logged in, fetch user data from realtime database /users document
+        //             return ApiCalls.getUserData(token);
+        //         }).then(data->{
+        //             trace(data);
+        //             var errors:Array<String> = data.errors;
+        //             State.setErrors(errors);
+        //             var userData:Dynamic = data.userData;
+        //             State.userData(StateMode.Data(new UserData(userData)));
+        //         })
+        //         .catchError(e->{
+        //             trace('userData Error:' + e);
+        //             // State.userData = null;
+        //             State.setErrors(['User == null', '$e']);
+        //             State.userData(StateMode.None);
+        //         });
+        //     } else {
+        //         trace('user == null');
+        //         // State.userData = null;
+        //         State.setErrors(['User == null']);
+        //         State.userData(StateMode.None);
+        //         return null;
+        //     }
+		// });
 
         // Setup Mithril ui
         this.stateMonitor = new StateMonitor();
@@ -108,8 +123,97 @@ class FirebaseUser {
     }
 }
 
+class ClientInit {
+    static public function initApplication() {
+
+       // Init Firebase
+        var config = {
+            apiKey: "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04",
+            authDomain: "fb-stack.firebaseapp.com",
+            databaseURL: "https://fb-stack.firebaseio.com",
+            projectId: "fb-stack",
+            storageBucket: "fb-stack.appspot.com",
+            messagingSenderId: "665827748546"
+        };
+
+        var app:firebase.app.App = firebase.Firebase.initializeApp(config);
+
+        // Test clientside realtime database connection
+        app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
+            trace('database value changed:' + snap.val());
+        });
+
+        app.database().ref('site-config').on(firebase.EventType.Value, (snap, str)->{
+            trace('Site config data:' + snap.val());
+            try {
+                if (snap.val() == null) throw 'No site config data in site-config';
+                State.addLog('site-config loaded!');
+                State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
+            } catch (e:Dynamic) {
+                State.setErrors(['Can not find site-configx data', '$e']);
+            }
+        });
+
+        // Login/logout event handler
+        app.auth().onAuthStateChanged(user -> {			
+            if (user != null) {
+                State.setUserData(StateMode.Loading);
+                FirebaseUser.getUserToken().then(token->{
+                    // If user is logged in, fetch user data from realtime database /users document
+                    return ApiCalls.getUserData(token);
+                }).then(data->{
+                    trace(data);
+                    State.addLog('user loaded!');
+                    var errors:Array<String> = data.errors;
+                    State.setErrors(errors);
+                    var userData:UserData = new UserData(data.userData);
+                    State.setUserData(StateMode.Data(userData));
+
+                    var dbref = 'user-config/' + userData.email.toPiped();    
+                    app.database().ref(dbref).once(EventType.Value, (snap, str) -> {
+                        trace('user-config loaded! ' + snap.val());
+                        try {
+                            if (snap.val() == null) throw 'Could not load $dbref';
+                            State.addLog('user-config loaded: ' + snap.val());
+                            var config:UserConfigData = new UserConfigData(snap.val());
+                            State.setUserConfig(config);
+                        } catch (e:Dynamic) {
+                            State.setErrors(['$e']);
+                        }
+                    });
+                    
+
+
+                })
+                .catchError(e->{
+                    trace('userData Error:' + e);
+                    // State.userData = null;
+                    State.setErrors(['User == null', '$e']);
+                    State.setUserData(StateMode.None);
+                    State.setUserConfig(null);
+                });
+            } else {
+                trace('user == null');
+                // State.userData = null;
+                State.addLog('User == null');
+                State.setUserData(StateMode.None);
+                State.setUserConfig(null);
+                return null;
+            }
+		});
+
+
+    }
+}
+
 class State {
     // static public var userData:UserData ;
+
+    static public var logs(default,null):Array<String> = [];
+    static public function addLog(log:String) {
+        logs.unshift(log);
+        M.redraw();
+    }
 
     static public var errors(default,null):Array<String> = [];
     static public function setErrors(err:Array<String>) {
@@ -117,19 +221,36 @@ class State {
         M.redraw();
     }
     
-    static public var userState(default,null):UserState = None;
-    static public function setUserState(state:UserState) {
-        userState = state;
+    // static public var userData(default,null):UserState = None;
+    // static public function setUserData(state:UserState) {
+    //     userData = state;
+    //     M.redraw();
+    // }
+
+    static public var userData(default,null):StateMode<UserData> = None;
+    static public function setUserData(state:StateMode<UserData>) {
+        userData = state;
+        M.redraw();
+    }    
+
+    static public var userConfig(default,null):UserConfigData = null;
+    static public function setUserConfig(config:UserConfigData) {
+        userConfig = config;
+        M.redraw();
+    }
+
+    static public var siteConfig(default,null):SiteConfigData = SiteConfigData.defaultValue;
+    static public function setSiteConfig(config:SiteConfigData) {
+        siteConfig = config;
         M.redraw();
     }
 }
 
-enum UserState {
+enum StateMode<T> {
     None;
     Loading;
-    User(userData:UserData);
+    Data(data:T);
 }
-
 
 
 class StateMonitor implements Mithril {
@@ -137,12 +258,16 @@ class StateMonitor implements Mithril {
 
     public function view() {
         return [
-            // m('div', 'State.userData:'),
-            // m('div', '' + State.userData),
-            m('div', 'State.errors:'),
-            m('div', State.errors.map(e->m('div', 'Error:'+e))),
-            m('div', 'State.userState:'),
-            m('div', '' + State.userState),
+            m('div.statelabel', 'userData:'),
+            m('div.stateitems', '' + State.userData),
+            m('div.statelabel', 'userConfig'),
+            m('div.stateitems', '' + State.userConfig),
+            m('div.statelabel', 'siteConfig'),
+            m('div.stateitems', '' + State.siteConfig),
+            m('div.statelabel', 'logs:'),
+            m('div.stateitems', State.logs.map(e->m('div.stateitem.statelog', 'Log:'+e))),
+            m('div.statelabel', 'errors:'),
+            m('div.stateitems', State.errors.map(e->m('div.stateitem.stateerror', 'Error:'+e))),
         ];
     }
 }

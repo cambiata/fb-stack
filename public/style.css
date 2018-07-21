@@ -1,0 +1,25 @@
+body {
+    background-color: white;
+    font-family: "Open sans";
+}
+
+.statelabel {
+    font-weight: bold;
+}
+
+.stateitems {
+    padding-left: 20px;
+}
+.stateitem {
+    padding-left: 4px;
+    margin-bottom: 2px;
+    border-radius: 4px;
+}
+
+.statelog {
+    background-color: #aaf;  
+}
+
+.stateerror {
+    background-color: #faa;
+}
