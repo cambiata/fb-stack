@@ -9,10 +9,9 @@ import firebase.Firebase;
 import mithril.M;
 import mithril.M.m;
 import domain.Data;
+import ClientUI;
 using Lambda;
 using dataclass.JsonConverter;
-
-
 
 class Client implements Mithril {
     
@@ -22,68 +21,14 @@ class Client implements Mithril {
 
     var stateMonitor:StateMonitor;
     var developUI:DevelopUI;
+    var uiUserData:UIUserData;
     
     public function new() {
         
         ClientInit.initApplication();
 
-        // // Init Firebase
-        // var config = {
-        //     apiKey: "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04",
-        //     authDomain: "fb-stack.firebaseapp.com",
-        //     databaseURL: "https://fb-stack.firebaseio.com",
-        //     projectId: "fb-stack",
-        //     storageBucket: "fb-stack.appspot.com",
-        //     messagingSenderId: "665827748546"
-        // };
-
-        // var app:firebase.app.App = firebase.Firebase.initializeApp(config);
-
-        // // Test clientside realtime database connection
-        // app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
-        //     trace('database value changed:' + snap.val());
-        // });
-
-        // app.database().ref(DBRefs.SiteConfig).on(firebase.EventType.Value, (snap, str)->{
-        //     trace('Site config data:' + snap.val());
-        //     try {
-        //         if (snap.val() == null) throw 'No site config data in ${DBRefs.SiteConfig}';
-        //         State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
-        //     } catch (e:Dynamic) {
-        //         State.setErrors(['Can not find site-configx data', '$e']);
-        //     }
-        // });
-
-        // // Login/logout event handler
-        // app.auth().onAuthStateChanged(user -> {			
-        //     if (user != null) {
-        //         State.userData(StateMode.Loading);
-        //         FirebaseUser.getUserToken().then(token->{
-        //             // If user is logged in, fetch user data from realtime database /users document
-        //             return ApiCalls.getUserData(token);
-        //         }).then(data->{
-        //             trace(data);
-        //             var errors:Array<String> = data.errors;
-        //             State.setErrors(errors);
-        //             var userData:Dynamic = data.userData;
-        //             State.userData(StateMode.Data(new UserData(userData)));
-        //         })
-        //         .catchError(e->{
-        //             trace('userData Error:' + e);
-        //             // State.userData = null;
-        //             State.setErrors(['User == null', '$e']);
-        //             State.userData(StateMode.None);
-        //         });
-        //     } else {
-        //         trace('user == null');
-        //         // State.userData = null;
-        //         State.setErrors(['User == null']);
-        //         State.userData(StateMode.None);
-        //         return null;
-        //     }
-		// });
-
         // Setup Mithril ui
+        this.uiUserData = new UIUserData();
         this.stateMonitor = new StateMonitor();
         this.developUI = new DevelopUI();
 
@@ -93,9 +38,9 @@ class Client implements Mithril {
 
     public function view() {
         return [
+            cast this.uiUserData.view(),
             cast this.developUI.view(),
             cast this.stateMonitor.view(),
-
         ];
     }
 }
@@ -150,7 +95,7 @@ class ClientInit {
                 State.addLog('site-config loaded!');
                 State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
             } catch (e:Dynamic) {
-                State.setErrors(['Can not find site-configx data', '$e']);
+                State.setErrors(['Can not find site-config data', '$e']);
             }
         });
 
@@ -181,9 +126,6 @@ class ClientInit {
                             State.setErrors(['$e']);
                         }
                     });
-                    
-
-
                 })
                 .catchError(e->{
                     trace('userData Error:' + e);
@@ -207,8 +149,6 @@ class ClientInit {
 }
 
 class State {
-    // static public var userData:UserData ;
-
     static public var logs(default,null):Array<String> = [];
     static public function addLog(log:String) {
         logs.unshift(log);
@@ -221,13 +161,7 @@ class State {
         M.redraw();
     }
     
-    // static public var userData(default,null):UserState = None;
-    // static public function setUserData(state:UserState) {
-    //     userData = state;
-    //     M.redraw();
-    // }
-
-    static public var userData(default,null):StateMode<UserData> = None;
+    static public var userData(default,null):StateMode<UserData> = Loading;
     static public function setUserData(state:StateMode<UserData>) {
         userData = state;
         M.redraw();
@@ -236,13 +170,32 @@ class State {
     static public var userConfig(default,null):UserConfigData = null;
     static public function setUserConfig(config:UserConfigData) {
         userConfig = config;
+        if (userConfig != null) {
+            setCurrentDomain(userConfig.domain);
+        } else {
+            State.siteCurrentDomain = DomainData.getDefault();
+        }
+
         M.redraw();
     }
 
-    static public var siteConfig(default,null):SiteConfigData = SiteConfigData.defaultValue;
+    static public var siteConfig(default,null):SiteConfigData = null;
     static public function setSiteConfig(config:SiteConfigData) {
         siteConfig = config;
         M.redraw();
+    }
+
+    static public var siteCurrentDomain(default,null):DomainData = DomainData.getDefault();
+    static public function setCurrentDomain(domainName:String) {
+        var domains:Array<DomainData> = siteConfig.domains;
+        try {
+            var domainData = domains.filter(d -> d.name == domainName)[0];
+            siteCurrentDomain = domainData;
+            M.redraw();
+        } catch (e:Dynamic) {
+            
+        }
+        
     }
 }
 
@@ -264,6 +217,8 @@ class StateMonitor implements Mithril {
             m('div.stateitems', '' + State.userConfig),
             m('div.statelabel', 'siteConfig'),
             m('div.stateitems', '' + State.siteConfig),
+            m('div.statelabel', 'siteCurrentDomain'),
+            m('div.stateitems', '' + State.siteCurrentDomain),
             m('div.statelabel', 'logs:'),
             m('div.stateitems', State.logs.map(e->m('div.stateitem.statelog', 'Log:'+e))),
             m('div.statelabel', 'errors:'),
@@ -271,6 +226,8 @@ class StateMonitor implements Mithril {
         ];
     }
 }
+
+
 
 
 class DevelopUI implements Mithril {

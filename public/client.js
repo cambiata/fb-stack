@@ -12,6 +12,7 @@ $hxClasses["mithril.Mithril"] = mithril_Mithril;
 mithril_Mithril.__name__ = true;
 var Client = function() {
 	ClientInit.initApplication();
+	this.uiUserData = new UIUserData();
 	this.stateMonitor = new StateMonitor();
 	this.developUI = new DevelopUI();
 	m.mount(window.document.querySelector("main"),this);
@@ -25,7 +26,7 @@ Client.main = function() {
 Client.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [this.developUI.view(),this.stateMonitor.view()];
+		return [this.uiUserData.view(),this.developUI.view(),this.stateMonitor.view()];
 	}
 	,__class__: Client
 };
@@ -33,7 +34,7 @@ var ApiCalls = function() { };
 $hxClasses["ApiCalls"] = ApiCalls;
 ApiCalls.__name__ = true;
 ApiCalls.getUserData = function(token) {
-	console.log("src/Client.hx:107:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
+	console.log("src/Client.hx:52:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
 	return m.request({ method : "get", url : "/api/userdata", headers : { authorization : "Bearer " + token}});
 };
 var FirebaseUser = function() { };
@@ -58,11 +59,11 @@ ClientInit.__name__ = true;
 ClientInit.initApplication = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:143:","database value changed:" + Std.string(snap.val()));
+		console.log("src/Client.hx:88:","database value changed:" + Std.string(snap.val()));
 		return;
 	});
 	app.database().ref("site-config").on("value",function(snap1,str1) {
-		console.log("src/Client.hx:147:","Site config data:" + Std.string(snap1.val()));
+		console.log("src/Client.hx:92:","Site config data:" + Std.string(snap1.val()));
 		try {
 			if(snap1.val() == null) {
 				throw new js__$Boot_HaxeError("No site config data in site-config");
@@ -70,7 +71,7 @@ ClientInit.initApplication = function() {
 			State.addLog("site-config loaded!");
 			State.setSiteConfig(dataclass_JsonConverter.fromJson(domain_SiteConfigData,snap1.val()));
 		} catch( e ) {
-			State.setErrors(["Can not find site-configx data","" + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)]);
+			State.setErrors(["Can not find site-config data","" + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)]);
 		}
 		return;
 	});
@@ -80,14 +81,14 @@ ClientInit.initApplication = function() {
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:165:",data);
+				console.log("src/Client.hx:110:",data);
 				State.addLog("user loaded!");
 				State.setErrors(data.errors);
 				var userData = new domain_UserData(data.userData);
 				State.setUserData(StateMode.Data(userData));
 				var dbref = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userData.email);
 				return app.database().ref(dbref).once("value",function(snap2,str2) {
-					console.log("src/Client.hx:174:","user-config loaded! " + Std.string(snap2.val()));
+					console.log("src/Client.hx:119:","user-config loaded! " + Std.string(snap2.val()));
 					try {
 						if(snap2.val() == null) {
 							throw new js__$Boot_HaxeError("Could not load " + dbref);
@@ -100,14 +101,14 @@ ClientInit.initApplication = function() {
 					return;
 				});
 			})["catch"](function(e2) {
-				console.log("src/Client.hx:189:","userData Error:" + e2);
+				console.log("src/Client.hx:131:","userData Error:" + e2);
 				State.setErrors(["User == null","" + e2]);
 				State.setUserData(StateMode.None);
 				State.setUserConfig(null);
 				return;
 			});
 		} else {
-			console.log("src/Client.hx:196:","user == null");
+			console.log("src/Client.hx:138:","user == null");
 			State.addLog("User == null");
 			State.setUserData(StateMode.None);
 			State.setUserConfig(null);
@@ -137,6 +138,9 @@ var domain_DomainData = function(data) {
 $hxClasses["domain.DomainData"] = domain_DomainData;
 domain_DomainData.__name__ = true;
 domain_DomainData.__interfaces__ = [DataClass];
+domain_DomainData.getDefault = function() {
+	return new domain_DomainData({ name : "default", fullname : "Default domain", color : "yellow"});
+};
 domain_DomainData.prototype = {
 	set_name: function(v) {
 		if(v == null) {
@@ -158,43 +162,6 @@ domain_DomainData.prototype = {
 	}
 	,__class__: domain_DomainData
 	,__properties__: {set_color:"set_color",set_fullname:"set_fullname",set_name:"set_name"}
-};
-var domain_SiteConfigData = function(data) {
-	this.set_arr(data.arr);
-	this.set_domains(data.domains);
-};
-$hxClasses["domain.SiteConfigData"] = domain_SiteConfigData;
-domain_SiteConfigData.__name__ = true;
-domain_SiteConfigData.__interfaces__ = [DataClass];
-domain_SiteConfigData.validate = function(data) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data,"arr")) {
-		output.push("arr");
-	} else if(data.arr == null) {
-		output.push("arr");
-	}
-	if(!Object.prototype.hasOwnProperty.call(data,"domains")) {
-		output.push("domains");
-	} else if(data.domains == null) {
-		output.push("domains");
-	}
-	return output;
-};
-domain_SiteConfigData.prototype = {
-	set_arr: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.arr.");
-		}
-		return this.arr = v;
-	}
-	,set_domains: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.domains.");
-		}
-		return this.domains = v;
-	}
-	,__class__: domain_SiteConfigData
-	,__properties__: {set_domains:"set_domains",set_arr:"set_arr"}
 };
 var StateMode = $hxEnums["StateMode"] = { __ename__ : true, __constructs__ : ["None","Loading","Data"]
 	,None: {_hx_index:0,__enum__:"StateMode",toString:$estr}
@@ -220,11 +187,27 @@ State.setUserData = function(state) {
 };
 State.setUserConfig = function(config) {
 	State.userConfig = config;
+	if(State.userConfig != null) {
+		State.setCurrentDomain(State.userConfig.domain);
+	} else {
+		State.siteCurrentDomain = domain_DomainData.getDefault();
+	}
 	m.redraw();
 };
 State.setSiteConfig = function(config) {
 	State.siteConfig = config;
 	m.redraw();
+};
+State.setCurrentDomain = function(domainName) {
+	var domains = State.siteConfig.domains;
+	try {
+		State.siteCurrentDomain = domains.filter(function(d) {
+			return d.name == domainName;
+		})[0];
+		m.redraw();
+	} catch( e ) {
+		(e instanceof js__$Boot_HaxeError);
+	}
 };
 var StateMonitor = function() {
 };
@@ -234,7 +217,7 @@ StateMonitor.__interfaces__ = [mithril_Mithril];
 StateMonitor.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.statelabel","userData:"),m.m("div.stateitems","" + Std.string(State.userData)),m.m("div.statelabel","userConfig"),m.m("div.stateitems","" + Std.string(State.userConfig)),m.m("div.statelabel","siteConfig"),m.m("div.stateitems","" + Std.string(State.siteConfig)),m.m("div.statelabel","logs:"),m.m("div.stateitems",State.logs.map(function(e) {
+		return [m.m("div.statelabel","userData:"),m.m("div.stateitems","" + Std.string(State.userData)),m.m("div.statelabel","userConfig"),m.m("div.stateitems","" + Std.string(State.userConfig)),m.m("div.statelabel","siteConfig"),m.m("div.stateitems","" + Std.string(State.siteConfig)),m.m("div.statelabel","siteCurrentDomain"),m.m("div.stateitems","" + Std.string(State.siteCurrentDomain)),m.m("div.statelabel","logs:"),m.m("div.stateitems",State.logs.map(function(e) {
 			return m.m("div.stateitem.statelog","Log:" + e);
 		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",State.errors.map(function(e1) {
 			return m.m("div.stateitem.stateerror","Error:" + e1);
@@ -258,9 +241,9 @@ DevelopUI.prototype = {
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:295:","userData result: " + JSON.stringify(data));
+				console.log("src/Client.hx:252:","userData result: " + JSON.stringify(data));
 				var d = JSON.parse(JSON.stringify(data));
-				console.log("src/Client.hx:298:",d.errors);
+				console.log("src/Client.hx:255:",d.errors);
 				var errors = d.errors;
 				Lambda.iter(errors,function(e3) {
 					State.errors.unshift(e3);
@@ -268,12 +251,88 @@ DevelopUI.prototype = {
 				});
 				return;
 			})["catch"](function(error) {
-				console.log("src/Client.hx:302:","userData error: " + error);
+				console.log("src/Client.hx:259:","userData error: " + error);
 				return;
 			});
 		}},"Test /api/userData ")];
 	}
 	,__class__: DevelopUI
+};
+var UIUserData = function() {
+	this.password = "";
+	this.username = "";
+};
+$hxClasses["UIUserData"] = UIUserData;
+UIUserData.__name__ = true;
+UIUserData.__interfaces__ = [mithril_Mithril];
+UIUserData.prototype = {
+	view: function() {
+		var _gthis = this;
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var loginform;
+		var _g = State.userData;
+		switch(_g._hx_index) {
+		case 0:
+			loginform = [m.m("h1","Log in"),m.m("input[type=input][placeholder='Email']#username",{ onkeyup : function(e) {
+				console.log("src/ClientUI.hx:23:",e.target.value);
+				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(e.target.value)) {
+					window.document.querySelector("#username").classList.add("invalid");
+				} else {
+					window.document.querySelector("#username").classList.remove("invalid");
+					_gthis.username = e.target.value;
+				}
+				return null;
+			}}),m.m("input[type=password][placeholder='Password']#password",{ onkeyup : function(e1) {
+				console.log("src/ClientUI.hx:33:",e1.target.value);
+				if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(e1.target.value)) {
+					window.document.querySelector("#password").classList.add("invalid");
+				} else {
+					window.document.querySelector("#password").classList.remove("invalid");
+					_gthis.password = e1.target.value;
+				}
+				return null;
+			}}),m.m("button[type=button]",{ onclick : function(e2) {
+				console.log("src/ClientUI.hx:43:",_gthis.username + " " + _gthis.password);
+				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(_gthis.username)) {
+					js_Browser.alert("Username " + _gthis.username + " is invalid");
+				} else if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(_gthis.password)) {
+					js_Browser.alert("Password " + _gthis.password + " is invalid");
+				} else {
+					console.log("src/ClientUI.hx:49:",_gthis.username + " " + _gthis.password);
+					firebase.auth().signInWithEmailAndPassword(_gthis.username,_gthis.password);
+				}
+				return null;
+			}},"Login")];
+			break;
+		case 1:
+			loginform = [m.m("h1","Loading...")];
+			break;
+		case 2:
+			var userData = _g.data;
+			var domainAlternatives = userData.domains.slice();
+			domainAlternatives.unshift("- Select domain");
+			var loginform1 = m.m("h1","Välkommen, " + userData.firstname + " " + userData.lastname + "!");
+			var loginform2 = m.m("button",{ onclick : function(e3) {
+				return firebase.auth().signOut();
+			}},"Logout");
+			var loginform3 = domainAlternatives.map(function(v) {
+				return m.m("option",{ value : v},"Alt " + v);
+			});
+			loginform = [loginform1,loginform2,m.m("select",{ onchange : function(e4) {
+				console.log("src/ClientUI.hx:72:",e4.target.selectedIndex);
+				console.log("src/ClientUI.hx:73:",e4.target.value);
+				var value = e4.target.value;
+				if(!StringTools.startsWith(value,"-")) {
+					State.setCurrentDomain(e4.target.value);
+				}
+				return;
+			}},loginform3),m.m("div","Data: " + Std.string(userData))];
+			break;
+		}
+		var header = m.m("header",{ style : { backgroundColor : State.siteCurrentDomain.color}},[m.m("form",loginform)]);
+		return header;
+	}
+	,__class__: UIUserData
 };
 var DateTools = function() { };
 $hxClasses["DateTools"] = DateTools;
@@ -369,6 +428,22 @@ DateTools.__format = function(d,f) {
 };
 DateTools.format = function(d,f) {
 	return DateTools.__format(d,f);
+};
+var EReg = function(r,opt) {
+	this.r = new RegExp(r,opt.split("u").join(""));
+};
+$hxClasses["EReg"] = EReg;
+EReg.__name__ = true;
+EReg.prototype = {
+	match: function(s) {
+		if(this.r.global) {
+			this.r.lastIndex = 0;
+		}
+		this.r.m = this.r.exec(s);
+		this.r.s = s;
+		return this.r.m != null;
+	}
+	,__class__: EReg
 };
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
@@ -856,43 +931,21 @@ dataclass_JsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_JsonConverter
 });
 var domain_UserData = function(data) {
-	this.domains = ["kak","kantor"];
-	this.access = "admin";
+	this.access = 2;
+	this.domains = ["default"];
 	this.set_firstname(data.firstname);
 	this.set_lastname(data.lastname);
 	this.set_email(data.email);
-	if(Object.prototype.hasOwnProperty.call(data,"access")) {
-		this.set_access(data.access);
-	}
 	if(Object.prototype.hasOwnProperty.call(data,"domains")) {
 		this.set_domains(data.domains);
+	}
+	if(Object.prototype.hasOwnProperty.call(data,"access")) {
+		this.set_access(data.access);
 	}
 };
 $hxClasses["domain.UserData"] = domain_UserData;
 domain_UserData.__name__ = true;
 domain_UserData.__interfaces__ = [DataClass];
-domain_UserData.fromJson = function(json) {
-	return dataclass_JsonConverter.fromJson(domain_UserData,json);
-};
-domain_UserData.validate = function(data) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data,"firstname")) {
-		output.push("firstname");
-	} else if(data.firstname == null) {
-		output.push("firstname");
-	}
-	if(!Object.prototype.hasOwnProperty.call(data,"lastname")) {
-		output.push("lastname");
-	} else if(data.lastname == null) {
-		output.push("lastname");
-	}
-	if(!Object.prototype.hasOwnProperty.call(data,"email")) {
-		output.push("email");
-	} else if(data.email == null) {
-		output.push("email");
-	}
-	return output;
-};
 domain_UserData.prototype = {
 	set_firstname: function(v) {
 		if(v == null) {
@@ -912,20 +965,54 @@ domain_UserData.prototype = {
 		}
 		return this.email = v;
 	}
-	,set_access: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.access.");
-		}
-		return this.access = v;
-	}
 	,set_domains: function(v) {
 		if(v == null) {
 			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.domains.");
 		}
 		return this.domains = v;
 	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.access.");
+		}
+		return this.access = v;
+	}
 	,__class__: domain_UserData
-	,__properties__: {set_domains:"set_domains",set_access:"set_access",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
+	,__properties__: {set_access:"set_access",set_domains:"set_domains",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
+};
+var domain_SiteConfigData = function(data) {
+	this.domains = [];
+	this.arr = [];
+	if(data != null) {
+		if(Object.prototype.hasOwnProperty.call(data,"arr")) {
+			this.set_arr(data.arr);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"domains")) {
+			this.set_domains(data.domains);
+		}
+	}
+};
+$hxClasses["domain.SiteConfigData"] = domain_SiteConfigData;
+domain_SiteConfigData.__name__ = true;
+domain_SiteConfigData.__interfaces__ = [DataClass];
+domain_SiteConfigData.validate = function(data) {
+	return [];
+};
+domain_SiteConfigData.prototype = {
+	set_arr: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.arr.");
+		}
+		return this.arr = v;
+	}
+	,set_domains: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfigData.domains.");
+		}
+		return this.domains = v;
+	}
+	,__class__: domain_SiteConfigData
+	,__properties__: {set_domains:"set_domains",set_arr:"set_arr"}
 };
 var domain_UserConfigData = function(data) {
 	this.set_domain(data.domain);
@@ -1195,14 +1282,29 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+var js_Browser = function() { };
+$hxClasses["js.Browser"] = js_Browser;
+js_Browser.__name__ = true;
+js_Browser.alert = function(v) {
+	window.alert(js_Boot.__string_rec(v,""));
+};
 var utils__$UserEmail_UserEmail_$Impl_$ = {};
 $hxClasses["utils._UserEmail.UserEmail_Impl_"] = utils__$UserEmail_UserEmail_$Impl_$;
 utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
+utils__$UserEmail_UserEmail_$Impl_$.isValid = function(address) {
+	return utils__$UserEmail_UserEmail_$Impl_$.ereg.match(address);
+};
 utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
 	var pa = this1;
 	pa = StringTools.replace(this1,"@","||");
 	pa = StringTools.replace(pa,".","|");
 	return pa;
+};
+var utils__$UserPassword_UserPassword_$Impl_$ = {};
+$hxClasses["utils._UserPassword.UserPassword_Impl_"] = utils__$UserPassword_UserPassword_$Impl_$;
+utils__$UserPassword_UserPassword_$Impl_$.__name__ = true;
+utils__$UserPassword_UserPassword_$Impl_$.isValid = function(str) {
+	return str.length > 3;
 };
 function $getIterator(o) { if( o instanceof Array ) return HxOverrides.iter(o); else return o.iterator(); }
 $hxClasses["Math"] = Math;
@@ -1254,12 +1356,10 @@ var __varName1 = GLOBAL.m;
 		})(__varName1);
 } catch(_) {}
 domain_DomainData.__meta__ = { obj : { dataClassRtti : [{ name : "String", fullname : "String", color : "String"}]}};
-domain_SiteConfigData.__meta__ = { obj : { dataClassRtti : [{ arr : "Array<String>", domains : "Array<DataClass<domain.DomainData>>"}]}};
-domain_SiteConfigData.defaultValue = new domain_SiteConfigData({ arr : ["A"], domains : [new domain_DomainData({ name : "default-domain", fullname : "Default domain", color : "gray"})]});
 State.logs = [];
 State.errors = [];
-State.userData = StateMode.None;
-State.siteConfig = domain_SiteConfigData.defaultValue;
+State.userData = StateMode.Loading;
+State.siteCurrentDomain = domain_DomainData.getDefault();
 DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1268,8 +1368,10 @@ dataclass_Converter.directConversions = ["Int","Bool","Float","String"];
 dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
-domain_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", access : "String", domains : "Array<String>"}]}};
+domain_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
+domain_SiteConfigData.__meta__ = { obj : { dataClassRtti : [{ arr : "Array<String>", domains : "Array<DataClass<domain.DomainData>>"}]}};
 domain_UserConfigData.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
 js_Boot.__toStr = ({ }).toString;
+utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
 Client.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

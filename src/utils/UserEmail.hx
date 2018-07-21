@@ -2,8 +2,12 @@ package utils;
 
 abstract UserEmail(String) to String {
     static var ereg = ~/^[\w-\.]{2,}@[\w-\.]{2,}\.[a-z]{2,6}$/i;
+
+    static public function isValid(address:String):Bool {
+      return ereg.match(address);
+    }
   inline public function new(address:String) {
-    if (!ereg.match(address)) throw 'EmailAddress "$address" is invalid';
+    if (isValid(address)) throw 'EmailAddress "$address" is invalid';
     this = address.toLowerCase();
   }
 
