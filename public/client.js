@@ -205,7 +205,7 @@ var State = function() { };
 $hxClasses["State"] = State;
 State.__name__ = true;
 State.addLog = function(log) {
-	State.logs.push(log);
+	State.logs.unshift(log);
 	m.redraw();
 };
 State.setErrors = function(err) {
