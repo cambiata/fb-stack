@@ -10,11 +10,11 @@
 -main Server
 -js functions/index.js
 
---next
+# --next
 
--cp src
--main utils.CleanupIndex
---interp
+# -cp src
+# -main utils.CleanupIndex
+# --interp
 
 # --next 
 # -cp src

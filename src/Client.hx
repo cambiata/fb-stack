@@ -48,15 +48,23 @@ class Client implements Mithril {
 
 // Wrapper for api calls
 class ApiCalls {
-    static public function getUserData(token) {
-        trace('User token: ' + Std.string(token).substr(0, 20));
+
+    static public function getAuthRequest(token, url) {
         var h:DynamicAccess<String> = {authorization: 'Bearer ' + token };
         var request = {
             method: 'get',
-            url: '/api/userdata',
+            url: url,
             headers: h
         };
-        return M.request(request);
+        return M.request(request);        
+    }
+
+    static public function getUserData(token) {
+        return getAuthRequest(token, '/api/userdata');
+    }
+
+    static public function getUserConfig(token) {
+        return getAuthRequest(token, '/api/userconfig');
     }
 }
 
@@ -83,67 +91,40 @@ class ClientInit {
 
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
-        // Test clientside realtime database connection
-        app.database().ref('test').on(firebase.EventType.Value, (snap, str)->{
-            trace('database value changed:' + snap.val());
-        });
-
+        var starttime:Float = Date.now().getTime();
+       
         app.database().ref('site-config').on(firebase.EventType.Value, (snap, str)->{
-            trace('Site config data:' + snap.val());
-            try {
-                if (snap.val() == null) throw 'No site config data in site-config';
-                State.addLog('site-config loaded!');
-                State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
-            } catch (e:Dynamic) {
-                State.setErrors(['Can not find site-config data', '$e']);
-            }
+           State.addLog('Site config ms:' + (Date.now().getTime() - starttime));
+           State.setSiteConfig(SiteConfigData.fromJson(snap.val()));
         });
 
-        // Login/logout event handler
-        app.auth().onAuthStateChanged(user -> {			
+        app.auth().onAuthStateChanged(user -> {
+            State.addLog('Auth changed ms:' + (Date.now().getTime() - starttime));
             if (user != null) {
-                State.setUserData(StateMode.Loading);
-                FirebaseUser.getUserToken().then(token->{
-                    // If user is logged in, fetch user data from realtime database /users document
-                    return ApiCalls.getUserData(token);
-                }).then(data->{
-                    trace(data);
-                    State.addLog('user loaded!');
-                    var errors:Array<String> = data.errors;
-                    State.setErrors(errors);
-                    var userData:UserData = new UserData(data.userData);
-                    State.setUserData(StateMode.Data(userData));
 
-                    var dbref = 'user-config/' + userData.email.toPiped();    
-                    app.database().ref(dbref).once(EventType.Value, (snap, str) -> {
-                        trace('user-config loaded! ' + snap.val());
-                        try {
-                            if (snap.val() == null) throw 'Could not load $dbref';
-                            State.addLog('user-config loaded: ' + snap.val());
-                            var config:UserConfigData = new UserConfigData(snap.val());
-                            State.setUserConfig(config);
-                        } catch (e:Dynamic) {
-                            State.setErrors(['$e']);
-                        }
-                    });
-                })
-                .catchError(e->{
-                    trace('userData Error:' + e);
-                    // State.userData = null;
-                    State.setErrors(['User == null', '$e']);
-                    State.setUserData(StateMode.None);
-                    State.setUserConfig(null);
+                // Hämta user token
+                FirebaseUser.getUserToken()
+                .then(token->{
+                    return ApiCalls.getUserConfig(token);
+                }).then(data->{
+                    State.addLog('User config loaded ms:' + (Date.now().getTime() - starttime));
+                    trace(data);
+                    var userConfig = UserConfigData.fromJson(data.userConfig);
+                    var userData = UserData.fromJson(data.userData);
+                    State.setUserConfig(userConfig);
+                    State.setUserData(StateMode.Data(userData));
+                }).catchError(error->{
+                    State.setError(error);
                 });
             } else {
-                trace('user == null');
-                // State.userData = null;
-                State.addLog('User == null');
+                State.setError('No user!');
                 State.setUserData(StateMode.None);
-                State.setUserConfig(null);
                 return null;
             }
-		});
 
+        }, error -> {
+            State.addLog('Error: ' + error);
+        });
 
     }
 }
@@ -157,7 +138,10 @@ class State {
 
     static public var errors(default,null):Array<String> = [];
     static public function setErrors(err:Array<String>) {
-        err.iter(e->errors.push(e));
+        err.iter(e-> setError(e));
+    }
+    static public function setError(e:String) {
+        errors.push(e);
         M.redraw();
     }
     
@@ -237,7 +221,11 @@ class DevelopUI implements Mithril {
             // login
 			m("button", { onclick: e -> {
 				firebase.Firebase.auth().signInWithEmailAndPassword('jonasnys@gmail.com', '123456');
+                State.setUserData(StateMode.Loading);
 			}}, 'Login'),
+			m("button", { onclick: e -> {
+				firebase.Firebase.auth().signInWithEmailAndPassword('jonasnysx@gmail.com', 'x123456');
+			}}, 'Login error'),
 			
             // logout
 			m("button", { onclick: e -> {
@@ -250,15 +238,22 @@ class DevelopUI implements Mithril {
                     return ApiCalls.getUserData(token);
                 }).then(data->{
                     trace('userData result: ' + Json.stringify(data));
-
-                    var d = Json.parse(Json.stringify(data));
-                    trace(d.errors);
-                    var errors:Array<String> = d.errors;
-                    errors.iter(e->State.errors.unshift(e));
                 }).catchError(error->{
                     trace('userData error: ' + error);
                 });
             }}, 'Test /api/userData '), 
+
+            m('button', { onclick: e -> {
+                FirebaseUser.getUserToken().then(token->{
+                    // return ApiCalls.getUserData(token);
+                    return ApiCalls.getAuthRequest(token, '/api/userconfig');
+                }).then(data->{
+                    trace('userconfig result: ' + Json.stringify(data));
+                }).catchError(error->{
+                    trace('userconfig error: ' + error);
+                });
+            }}, 'Test /api/userConfig '), 
+
         ];
     }
 }

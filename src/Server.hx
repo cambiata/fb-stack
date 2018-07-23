@@ -26,6 +26,23 @@ class Server {
             res.end();
         });
 
+        app.get('/api/userconfig', AppMiddlewares.mwErrors, AppMiddlewares.mwToken, AppMiddlewares.mwUserEmail, AppMiddlewares.mwUserData, (req:Request, res:Response)->{            
+
+            var userEmail:utils.UserEmail = res.locals.userEmail;
+            var dbpath = 'user-config/' + userEmail.toPiped();
+
+            Admin.database().ref(dbpath).once(firebase.EventType.Value, (snap)->{
+                var userconfigdata = snap.val();
+                trace('userconfigdata: ' + userconfigdata);
+                res.json({userData:res.locals.userData, userConfig :userconfigdata, dbpath:dbpath, errors:res.locals.errors});
+                res.end();
+            }, failure-> {
+                res.json({userData:res.locals.userData, userConfig:null, dbpath:dbpath, errors:res.locals.errors});
+                res.end();
+            });
+
+        });
+
         exports.app = Functions.https.onRequest(app);  
     }
 }

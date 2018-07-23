@@ -33,9 +33,14 @@ Client.prototype = {
 var ApiCalls = function() { };
 $hxClasses["ApiCalls"] = ApiCalls;
 ApiCalls.__name__ = true;
+ApiCalls.getAuthRequest = function(token,url) {
+	return m.request({ method : "get", url : url, headers : { authorization : "Bearer " + token}});
+};
 ApiCalls.getUserData = function(token) {
-	console.log("src/Client.hx:52:","User token: " + HxOverrides.substr(token == null ? "null" : "" + token,0,20));
-	return m.request({ method : "get", url : "/api/userdata", headers : { authorization : "Bearer " + token}});
+	return ApiCalls.getAuthRequest(token,"/api/userdata");
+};
+ApiCalls.getUserConfig = function(token) {
+	return ApiCalls.getAuthRequest(token,"/api/userconfig");
 };
 var FirebaseUser = function() { };
 $hxClasses["FirebaseUser"] = FirebaseUser;
@@ -58,62 +63,37 @@ $hxClasses["ClientInit"] = ClientInit;
 ClientInit.__name__ = true;
 ClientInit.initApplication = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
-	app.database().ref("test").on("value",function(snap,str) {
-		console.log("src/Client.hx:88:","database value changed:" + Std.string(snap.val()));
-		return;
-	});
-	app.database().ref("site-config").on("value",function(snap1,str1) {
-		console.log("src/Client.hx:92:","Site config data:" + Std.string(snap1.val()));
-		try {
-			if(snap1.val() == null) {
-				throw new js__$Boot_HaxeError("No site config data in site-config");
-			}
-			State.addLog("site-config loaded!");
-			State.setSiteConfig(dataclass_JsonConverter.fromJson(domain_SiteConfigData,snap1.val()));
-		} catch( e ) {
-			State.setErrors(["Can not find site-config data","" + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)]);
-		}
+	var starttime = new Date().getTime();
+	app.database().ref("site-config").on("value",function(snap,str) {
+		State.addLog("Site config ms:" + (new Date().getTime() - starttime));
+		State.setSiteConfig(dataclass_JsonConverter.fromJson(domain_SiteConfigData,snap.val()));
 		return;
 	});
 	app.auth().onAuthStateChanged(function(user) {
+		State.addLog("Auth changed ms:" + (new Date().getTime() - starttime));
 		if(user != null) {
-			State.setUserData(StateMode.Loading);
 			return FirebaseUser.getUserToken().then(function(token) {
-				return ApiCalls.getUserData(token);
+				return ApiCalls.getUserConfig(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:110:",data);
-				State.addLog("user loaded!");
-				State.setErrors(data.errors);
-				var userData = new domain_UserData(data.userData);
+				State.addLog("User config loaded ms:" + (new Date().getTime() - starttime));
+				console.log("src/Client.hx:111:",data);
+				var userConfig = dataclass_JsonConverter.fromJson(domain_UserConfigData,data.userConfig);
+				var userData = dataclass_JsonConverter.fromJson(domain_UserData,data.userData);
+				State.setUserConfig(userConfig);
 				State.setUserData(StateMode.Data(userData));
-				var dbref = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userData.email);
-				return app.database().ref(dbref).once("value",function(snap2,str2) {
-					console.log("src/Client.hx:119:","user-config loaded! " + Std.string(snap2.val()));
-					try {
-						if(snap2.val() == null) {
-							throw new js__$Boot_HaxeError("Could not load " + dbref);
-						}
-						State.addLog("user-config loaded: " + Std.string(snap2.val()));
-						State.setUserConfig(new domain_UserConfigData(snap2.val()));
-					} catch( e1 ) {
-						State.setErrors(["" + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1)]);
-					}
-					return;
-				});
-			})["catch"](function(e2) {
-				console.log("src/Client.hx:131:","userData Error:" + e2);
-				State.setErrors(["User == null","" + e2]);
-				State.setUserData(StateMode.None);
-				State.setUserConfig(null);
+				return;
+			})["catch"](function(error) {
+				State.setError(error);
 				return;
 			});
 		} else {
-			console.log("src/Client.hx:138:","user == null");
-			State.addLog("User == null");
+			State.setError("No user!");
 			State.setUserData(StateMode.None);
-			State.setUserConfig(null);
 			return null;
 		}
+	},function(error1) {
+		State.addLog("Error: " + Std.string(error1));
+		return;
 	});
 };
 var DataClass = function() { };
@@ -175,10 +155,8 @@ State.addLog = function(log) {
 	State.logs.unshift(log);
 	m.redraw();
 };
-State.setErrors = function(err) {
-	Lambda.iter(err,function(e) {
-		return State.errors.push(e);
-	});
+State.setError = function(e) {
+	State.errors.push(e);
 	m.redraw();
 };
 State.setUserData = function(state) {
@@ -234,27 +212,34 @@ DevelopUI.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		return [m.m("button",{ onclick : function(e) {
-			return firebase.auth().signInWithEmailAndPassword("jonasnys@gmail.com","123456");
+			firebase.auth().signInWithEmailAndPassword("jonasnys@gmail.com","123456");
+			State.setUserData(StateMode.Loading);
+			return;
 		}},"Login"),m.m("button",{ onclick : function(e1) {
+			return firebase.auth().signInWithEmailAndPassword("jonasnysx@gmail.com","x123456");
+		}},"Login error"),m.m("button",{ onclick : function(e2) {
 			return firebase.auth().signOut();
-		}},"Logout"),m.m("button",{ onclick : function(e2) {
+		}},"Logout"),m.m("button",{ onclick : function(e3) {
 			return FirebaseUser.getUserToken().then(function(token) {
 				return ApiCalls.getUserData(token);
 			}).then(function(data) {
-				console.log("src/Client.hx:252:","userData result: " + JSON.stringify(data));
-				var d = JSON.parse(JSON.stringify(data));
-				console.log("src/Client.hx:255:",d.errors);
-				var errors = d.errors;
-				Lambda.iter(errors,function(e3) {
-					State.errors.unshift(e3);
-					return;
-				});
+				console.log("src/Client.hx:240:","userData result: " + JSON.stringify(data));
 				return;
 			})["catch"](function(error) {
-				console.log("src/Client.hx:259:","userData error: " + error);
+				console.log("src/Client.hx:242:","userData error: " + error);
 				return;
 			});
-		}},"Test /api/userData ")];
+		}},"Test /api/userData "),m.m("button",{ onclick : function(e4) {
+			return FirebaseUser.getUserToken().then(function(token1) {
+				return ApiCalls.getAuthRequest(token1,"/api/userconfig");
+			}).then(function(data1) {
+				console.log("src/Client.hx:251:","userconfig result: " + JSON.stringify(data1));
+				return;
+			})["catch"](function(error1) {
+				console.log("src/Client.hx:253:","userconfig error: " + error1);
+				return;
+			});
+		}},"Test /api/userConfig ")];
 	}
 	,__class__: DevelopUI
 };
@@ -299,6 +284,7 @@ UIUserData.prototype = {
 					js_Browser.alert("Password " + _gthis.password + " is invalid");
 				} else {
 					console.log("src/ClientUI.hx:49:",_gthis.username + " " + _gthis.password);
+					State.setUserData(StateMode.Loading);
 					firebase.auth().signInWithEmailAndPassword(_gthis.username,_gthis.password);
 				}
 				return null;
@@ -319,8 +305,8 @@ UIUserData.prototype = {
 				return m.m("option",{ value : v},"Alt " + v);
 			});
 			loginform = [loginform1,loginform2,m.m("select",{ onchange : function(e4) {
-				console.log("src/ClientUI.hx:72:",e4.target.selectedIndex);
-				console.log("src/ClientUI.hx:73:",e4.target.value);
+				console.log("src/ClientUI.hx:73:",e4.target.selectedIndex);
+				console.log("src/ClientUI.hx:74:",e4.target.value);
 				var value = e4.target.value;
 				if(!StringTools.startsWith(value,"-")) {
 					State.setCurrentDomain(e4.target.value);
@@ -506,10 +492,6 @@ Lambda.has = function(it,elt) {
 	}
 	return false;
 };
-Lambda.iter = function(it,f) {
-	var x = $getIterator(it);
-	while(x.hasNext()) f(x.next());
-};
 Math.__name__ = true;
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
@@ -627,9 +609,6 @@ StringTools.lpad = function(s,c,l) {
 	}
 	while(s.length < l) s = c + s;
 	return s;
-};
-StringTools.replace = function(s,sub,by) {
-	return s.split(sub).join(by);
 };
 var Type = function() { };
 $hxClasses["Type"] = Type;
@@ -946,6 +925,25 @@ var domain_UserData = function(data) {
 $hxClasses["domain.UserData"] = domain_UserData;
 domain_UserData.__name__ = true;
 domain_UserData.__interfaces__ = [DataClass];
+domain_UserData.validate = function(data) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data,"firstname")) {
+		output.push("firstname");
+	} else if(data.firstname == null) {
+		output.push("firstname");
+	}
+	if(!Object.prototype.hasOwnProperty.call(data,"lastname")) {
+		output.push("lastname");
+	} else if(data.lastname == null) {
+		output.push("lastname");
+	}
+	if(!Object.prototype.hasOwnProperty.call(data,"email")) {
+		output.push("email");
+	} else if(data.email == null) {
+		output.push("email");
+	}
+	return output;
+};
 domain_UserData.prototype = {
 	set_firstname: function(v) {
 		if(v == null) {
@@ -1020,6 +1018,15 @@ var domain_UserConfigData = function(data) {
 $hxClasses["domain.UserConfigData"] = domain_UserConfigData;
 domain_UserConfigData.__name__ = true;
 domain_UserConfigData.__interfaces__ = [DataClass];
+domain_UserConfigData.validate = function(data) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data,"domain")) {
+		output.push("domain");
+	} else if(data.domain == null) {
+		output.push("domain");
+	}
+	return output;
+};
 domain_UserConfigData.prototype = {
 	set_domain: function(v) {
 		if(v == null) {
@@ -1293,12 +1300,6 @@ $hxClasses["utils._UserEmail.UserEmail_Impl_"] = utils__$UserEmail_UserEmail_$Im
 utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
 utils__$UserEmail_UserEmail_$Impl_$.isValid = function(address) {
 	return utils__$UserEmail_UserEmail_$Impl_$.ereg.match(address);
-};
-utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
-	var pa = this1;
-	pa = StringTools.replace(this1,"@","||");
-	pa = StringTools.replace(pa,".","|");
-	return pa;
 };
 var utils__$UserPassword_UserPassword_$Impl_$ = {};
 $hxClasses["utils._UserPassword.UserPassword_Impl_"] = utils__$UserPassword_UserPassword_$Impl_$;

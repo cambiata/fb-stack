@@ -39,11 +39,11 @@ Server.main = function() {
 		return admin.database().ref(dbpath).once("value",function(snap) {
 			var userconfigdata = snap.val();
 			console.log("src/Server.hx:36:","userconfigdata: " + userconfigdata);
-			res1.json({ userData : res1.locals.userData, userConfig : userconfigdata, dbpath : dbpath, errors : res1.locals.errors});
+			res1.json({ userconfigdata : userconfigdata, dbpath : dbpath, errors : res1.locals.errors});
 			res1.end();
 			return;
 		},function(failure) {
-			res1.json({ userData : res1.locals.userData, userConfig : null, dbpath : dbpath, errors : res1.locals.errors});
+			res1.json({ userconfigdata : null, dbpath : dbpath, errors : res1.locals.errors});
 			res1.end();
 			return;
 		});
@@ -248,11 +248,11 @@ js_Boot.__string_rec = function(o,s) {
 var js_npm_Express = require("express");
 var utils__$UserEmail_UserEmail_$Impl_$ = {};
 utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
-utils__$UserEmail_UserEmail_$Impl_$.makePiped = function(email) {
-	return StringTools.replace(StringTools.replace(email,"@","||"),".","|");
-};
 utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
-	return utils__$UserEmail_UserEmail_$Impl_$.makePiped(this1);
+	var pa = this1;
+	pa = StringTools.replace(this1,"@","||");
+	pa = StringTools.replace(pa,".","|");
+	return pa;
 };
 String.__name__ = true;
 Array.__name__ = true;

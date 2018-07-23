@@ -47,6 +47,7 @@ class UIUserData implements Mithril {
                             Browser.alert('Password $password is invalid');
                         } else {
                         trace(username + ' ' + password);
+                            State.setUserData(StateMode.Loading);
                             Firebase.auth().signInWithEmailAndPassword(username, password);
                         }
                         return null;
