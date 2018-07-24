@@ -27,10 +27,8 @@ class Server {
         });
 
         app.get('/api/userconfig', AppMiddlewares.mwErrors, AppMiddlewares.mwToken, AppMiddlewares.mwUserEmail, AppMiddlewares.mwUserData, (req:Request, res:Response)->{            
-
             var userEmail:utils.UserEmail = res.locals.userEmail;
             var dbpath = 'user-config/' + userEmail.toPiped();
-
             Admin.database().ref(dbpath).once(firebase.EventType.Value, (snap)->{
                 var userconfigdata = snap.val();
                 trace('userconfigdata: ' + userconfigdata);
