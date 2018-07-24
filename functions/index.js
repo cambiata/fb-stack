@@ -63,8 +63,7 @@ AppMiddlewares.mwToken = function(req,res,next) {
 		token = req.get("Authorization").split("Bearer ")[1];
 		console.log("src/Server.hx:62:","token: " + HxOverrides.substr(token,0,50) + "...");
 	} catch( e ) {
-		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-		res.locals.errors.push("Token error: " + Std.string(e1));
+		res.locals.errors.push("Middleware mwToken error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
 	}
 	res.locals.token = token;
 	next();
@@ -80,7 +79,7 @@ AppMiddlewares.mwUserEmail = function(req,res,next) {
 			console.log("src/Server.hx:79:","userEmail = " + Std.string(res.locals.userEmail));
 			return next();
 		})["catch"](function(e) {
-			res.locals.errors.push("UserEmail1 error: " + e);
+			res.locals.errors.push("Middleware mwUserEmail error 1: " + e);
 			if((e == null ? "null" : "" + e).indexOf("Error: Credential implementation") > -1) {
 				console.log("src/Server.hx:85:","localhost error!");
 				res.locals.userEmail = "jonasnys@gmail.com";
@@ -88,8 +87,7 @@ AppMiddlewares.mwUserEmail = function(req,res,next) {
 			return next();
 		});
 	} catch( e1 ) {
-		var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
-		res.locals.errors.push("UserEmail2 error: " + Std.string(e2));
+		res.locals.errors.push("Middleware mwUserEmail error 2: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
 		next();
 	}
 };
@@ -105,14 +103,14 @@ AppMiddlewares.mwUserData = function(req,res,next) {
 			console.log("src/Server.hx:107:","User data: " + Std.string(res.locals.userData));
 			return next();
 		},function(failure) {
-			console.log("src/Server.hx:110:","failure: " + failure);
+			console.log("src/Server.hx:110:","Middleware mwUserData error 1: " + failure);
 			res.locals.userData = null;
 			res.locals.errors.push("" + failure);
 			return next();
 		});
 	} catch( e ) {
 		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-		console.log("src/Server.hx:116:","error! " + Std.string(e1));
+		console.log("src/Server.hx:116:","Middleware mwUserData error 2: " + Std.string(e1));
 		res.locals.userData = null;
 		res.locals.errors.push("" + Std.string(e1));
 		next();

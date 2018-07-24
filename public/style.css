@@ -1,6 +1,7 @@
 * {
     padding: 0;
     margin: 0;
+    box-sizing: border-box; 
 }
 
 body {
@@ -9,8 +10,25 @@ body {
 }
 
 header {
-    padding: 10px;
+    padding: 1em;
     background-color: #afa;
+    min-height: 2em;
+    width:100%;
+    display: inline-grid;
+    grid-template-columns: auto auto ;
+    grid-column-gap: 1em;
+
+}
+
+main {
+    padding: 1em;
+}
+
+form {
+    display: inline-grid;
+    grid-template-columns: auto auto auto ;
+    grid-column-gap: 1em;
+    text-align: right;
 }
 
 .statelabel {
@@ -21,7 +39,7 @@ header {
     padding-left: 20px;
 }
 .stateitem {
-    padding-left: 4px;
+    padding-left: 1em;
     margin-bottom: 2px;
     border-radius: 4px;
 }
@@ -40,4 +58,10 @@ header {
 
 input {
     padding: 4px;
+
 }
+
+button {
+    padding: 4px;
+}
+

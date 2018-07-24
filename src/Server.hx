@@ -61,7 +61,7 @@ class AppMiddlewares {
             token = req.get('Authorization').split('Bearer ')[1];
             trace('token: ' + token.substr(0, 50) + '...');
         } catch (e:Dynamic) {
-            res.locals.errors.push('Token error: ' + e);
+            res.locals.errors.push('Middleware mwToken error: ' + e);
         }
         res.locals.token = token;
         next();
@@ -79,7 +79,7 @@ class AppMiddlewares {
                 trace('userEmail = ' + res.locals.userEmail);
                 next();    
             }).catchError(e->{
-                res.locals.errors.push('UserEmail1 error: ' + e);
+                res.locals.errors.push('Middleware mwUserEmail error 1: ' + e);
                 // Hack to work localhost
                 if (Std.string(e).indexOf('Error: Credential implementation') >-1 ) {
                     trace('localhost error!');
@@ -88,7 +88,7 @@ class AppMiddlewares {
                 next();
             });
         } catch (e:Dynamic) {
-            res.locals.errors.push('UserEmail2 error: ' + e);
+            res.locals.errors.push('Middleware mwUserEmail error 2: ' + e);
             next();    
         }
     }
@@ -107,13 +107,13 @@ class AppMiddlewares {
                 trace('User data: ' + res.locals.userData);
                 next();
             }, failure-> {
-                trace('failure: ' + failure);
+                trace('Middleware mwUserData error 1: ' + failure);
                 res.locals.userData = null;
                 res.locals.errors.push(''+failure);
                 next();
             });
         } catch (e:Dynamic) {
-            trace('error! ' + e);
+            trace('Middleware mwUserData error 2: ' + e);
             res.locals.userData = null;
             res.locals.errors.push(''+e);        
             next();
