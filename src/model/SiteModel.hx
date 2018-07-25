@@ -1,4 +1,28 @@
 package model;
+import Client;
+import mithril.M;
+
+class SiteModel {
+    private function new() {
+    }
+
+    public function init() {
+        this.siteConfig = SiteConfig.defaultValues();
+    }
+
+    public static var instance(default, null): SiteModel = new SiteModel();
+
+    public var siteConfig(default,set):SiteConfig;
+    function set_siteConfig(d:SiteConfig)  {
+        this.siteConfig = d;
+        ErrorsAndLogs.addLog('SiteConfig:' + this.siteConfig);
+        M.redraw();
+        return d;
+    }
+
+}
+
+
 
 class SiteConfig implements DataClass {
     public var arr:Array<String> = [];
@@ -22,6 +46,4 @@ class DomainData implements DataClass {
 
     static public function getDefault() return new DomainData({name:'default', fullname:'Default domain', color:'yellow'});
 }
-
-
 

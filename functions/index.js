@@ -38,13 +38,21 @@ Server.main = function() {
 		var dbpath = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(res1.locals.userEmail);
 		return admin.database().ref(dbpath).once("value",function(snap) {
 			var userconfigdata = snap.val();
-			console.log("src/Server.hx:36:","userconfigdata: " + userconfigdata);
+			console.log("src/Server.hx:34:","userconfigdata: " + userconfigdata);
 			res1.json({ userData : res1.locals.userData, userConfig : userconfigdata, dbpath : dbpath, errors : res1.locals.errors});
 			res1.end();
 			return;
 		},function(failure) {
 			res1.json({ userData : res1.locals.userData, userConfig : null, dbpath : dbpath, errors : res1.locals.errors});
 			res1.end();
+			return;
+		});
+	});
+	app.get("/api/content-tree",function(req2,res2) {
+		return admin.database().ref("content-tree").once("value",function(snap1) {
+			var tmp = snap1.val();
+			res2.json({ errors : [], data : tmp});
+			res2.end();
 			return;
 		});
 	});
@@ -57,60 +65,62 @@ AppMiddlewares.mwErrors = function(req,res,next) {
 	next();
 };
 AppMiddlewares.mwToken = function(req,res,next) {
-	console.log("src/Server.hx:58:","Middleware mwToken ***************************");
+	console.log("src/Server.hx:64:","Middleware mwToken ***************************");
 	var token = null;
 	try {
 		token = req.get("Authorization").split("Bearer ")[1];
-		console.log("src/Server.hx:62:","token: " + HxOverrides.substr(token,0,50) + "...");
+		console.log("src/Server.hx:68:","token: " + HxOverrides.substr(token,0,50) + "...");
 	} catch( e ) {
-		res.locals.errors.push("Middleware mwToken error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+		res.locals.errors.push("Middleware mwToken error: " + Std.string(e1));
 	}
 	res.locals.token = token;
 	next();
 };
 AppMiddlewares.mwUserEmail = function(req,res,next) {
-	console.log("src/Server.hx:71:","Middleware mwUserEmail ***************************");
+	console.log("src/Server.hx:77:","Middleware mwUserEmail ***************************");
 	try {
 		var token = res.locals.token;
 		admin.auth().verifyIdToken(token).then(function(verified) {
 			return admin.auth().getUser(verified.uid);
 		}).then(function(user) {
 			res.locals.userEmail = user.email;
-			console.log("src/Server.hx:79:","userEmail = " + Std.string(res.locals.userEmail));
+			console.log("src/Server.hx:85:","userEmail = " + Std.string(res.locals.userEmail));
 			return next();
 		})["catch"](function(e) {
 			res.locals.errors.push("Middleware mwUserEmail error 1: " + e);
 			if((e == null ? "null" : "" + e).indexOf("Error: Credential implementation") > -1) {
-				console.log("src/Server.hx:85:","localhost error!");
+				console.log("src/Server.hx:91:","localhost error!");
 				res.locals.userEmail = "jonasnys@gmail.com";
 			}
 			return next();
 		});
 	} catch( e1 ) {
-		res.locals.errors.push("Middleware mwUserEmail error 2: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
+		var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
+		res.locals.errors.push("Middleware mwUserEmail error 2: " + Std.string(e2));
 		next();
 	}
 };
 AppMiddlewares.mwUserData = function(req,res,next) {
-	console.log("src/Server.hx:97:","Middleware mwUserData ***************************");
+	console.log("src/Server.hx:103:","Middleware mwUserData ***************************");
 	try {
 		var userEmail = res.locals.userEmail;
 		var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-		console.log("src/Server.hx:102:","dbpath: " + dbpath);
+		console.log("src/Server.hx:108:","dbpath: " + dbpath);
 		admin.database().ref(dbpath).once("value",function(snap) {
 			res.locals.userData = snap.val();
 			res.locals.userData.email = userEmail;
-			console.log("src/Server.hx:107:","User data: " + Std.string(res.locals.userData));
+			console.log("src/Server.hx:113:","User data: " + Std.string(res.locals.userData));
 			return next();
 		},function(failure) {
-			console.log("src/Server.hx:110:","Middleware mwUserData error 1: " + failure);
+			console.log("src/Server.hx:116:","Middleware mwUserData error 1: " + failure);
 			res.locals.userData = null;
 			res.locals.errors.push("" + failure);
 			return next();
 		});
 	} catch( e ) {
 		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-		console.log("src/Server.hx:116:","Middleware mwUserData error 2: " + Std.string(e1));
+		console.log("src/Server.hx:122:","Middleware mwUserData error 2: " + Std.string(e1));
 		res.locals.userData = null;
 		res.locals.errors.push("" + Std.string(e1));
 		next();

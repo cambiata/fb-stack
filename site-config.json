@@ -1,8 +1,19 @@
 {
-    "arr" : ["A", "B"],
-    "domains" : [
-        {"name":"kak", "fullname":"Körakademin", "color":"blue"},
-        {"name":"kantor", "fullname": "Kantorsutbildning", "color":"red"}
+    "arr": [
+        "A",
+        "B"
     ],
-    "hello" : "baby"
+    "domains": [
+        {
+            "name": "kak",
+            "fullname": "Körakademin",
+            "color": "blue"
+        },
+        {
+            "name": "kantor",
+            "fullname": "Kantorsutbildning",
+            "color": "red"
+        }
+    ],
+    "hello": "baby"
 }

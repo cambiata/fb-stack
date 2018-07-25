@@ -65,3 +65,14 @@ button {
     padding: 4px;
 }
 
+.padleft {
+    padding-left: 2em;
+}
+
+details {
+    padding-left: 1em;
+}
+
+summary {
+    /* padding-left: 1em; */
+}

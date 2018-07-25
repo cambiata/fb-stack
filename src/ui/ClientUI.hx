@@ -7,6 +7,9 @@ import mithril.M;
 import mithril.M.m;
 import Client;
 import model.UserModel;
+import model.ContentModel;
+import model.ErrorsAndLogs;
+import model.ApiCalls;
 
 using StringTools;
 
@@ -19,7 +22,6 @@ enum abstract Colors(String) to String {
     var Valid = 'white';
     var Invalid = '#fcc';
 }
-
 
 class MInputEmail<T:{email:String, validEmail:Bool}> implements Mithril {
     public var state:T;
@@ -114,7 +116,7 @@ class UIHeader implements Mithril {
     }
 
     public function view() {
-        var userView = switch AppState.instance.currentUser {
+        var userView = switch UserModel.instance.currentUser {
                 case Data(d): cast this.logoutform.setUser(d).view() ;
                 case Loading: m('h2', {style:{textAlign:'right', paddingRight:'1em'}}, 'Loading user data...');
                 case Nil: cast this.loginform.view();
@@ -125,4 +127,122 @@ class UIHeader implements Mithril {
         ];
     }
 
+}
+
+
+
+class TestUI implements Mithril {
+    public function new() {
+    }
+
+    public function view() {
+        return [
+            m('button', { onclick: e -> {
+                ApiCalls.getAuthRequest('/api/userdata')
+                .then(data->{
+                    ErrorsAndLogs.addLog(haxe.Json.stringify(data));
+                    trace('userData result: ' + haxe.Json.stringify(data));
+                }).catchError(error->{
+                    trace('userData error: ' + error);
+                    ErrorsAndLogs.addError(error);
+
+                });
+            }}, 'Test /api/userData '), 
+
+            m('button', { onclick: e -> {
+                ApiCalls.getAuthRequest('/api/userconfig')
+                .then(data->{
+                    trace('userconfig result: ' + haxe.Json.stringify(data));
+                    ErrorsAndLogs.addLog(haxe.Json.stringify(data));
+                }).catchError(error->{
+                    trace('userconfig error: ' + error);
+                    ErrorsAndLogs.addError(error);
+
+                });
+            }}, 'Test /api/userConfig '), 
+
+            m('button', { onclick: e -> {
+                ApiCalls.getRequest('/api/content-tree')
+                .then(data->{
+                    trace('content-tree result: ' + haxe.Json.stringify(data));
+                    ErrorsAndLogs.addLog(haxe.Json.stringify(data));
+                }).catchError(error->{
+                    trace('content-tree error: ' + error);
+                    ErrorsAndLogs.addError(error);
+
+                });
+            }}, 'Test /api/content-treeB '), 
+        ];
+    }
+
+}
+
+class UIContentTree implements Mithril {
+
+    public function new() {
+
+    }
+
+    public function view() {
+        return switch ContentModel.instance.contentTree {
+            case Nil: m('h1', 'Nil');
+            case Loading: m('h1', 'Loading');
+            case Data(d): [
+                m('div', 'ContentTree ' + d.id ),
+                m('div.padleft', d.rooms.map(room-> new UIRoom(room).view() )),
+            ];
+        }
+    }
+}
+
+class UIRoom implements Mithril {
+    public function new(room:Room) {
+        this.room = room;
+    }
+    var room:Room = null;
+    public function view() {
+        return [
+            m('div', 'Room ' + this.room.id ),
+            m('div.padleft', this.room.shelves.map(shelf -> new UIShelf(shelf).view())),
+        ];
+    }
+}
+
+class UIShelf implements Mithril {
+    public function new(item:Shelf) {
+        this.item = item;
+    }
+    var item:Shelf = null;
+    public function view() {
+        return [
+            m('div', 'Shelf ' + this.item.id ),
+            m('div.padleft', this.item.books.map(item2 -> new UIBook(item2).view())),
+        ];
+    }
+}
+
+class UIBook implements Mithril {
+    public function new(item:Book) {
+        this.item = item;
+    }
+    var item:Book = null;
+    public function view() {
+        return [
+            m('div', 'Book ' + this.item.id ),
+            m('div', this.item.chapters.map(item2 -> new UIChapter(item2).view())),
+        ];
+    }
+}
+
+class UIChapter implements Mithril {
+    public function new(item:Chapter) {
+        this.item = item;
+    }
+    var item:Chapter = null;
+    public function view() {
+        return [
+            m('div', 'Chapter ' + this.item.id ),
+            this.item.chapters != null ? m('div.padleft', this.item.chapters.map(item2 -> new UIChapter(item2).view())) : null,
+        ];
+    }
 }

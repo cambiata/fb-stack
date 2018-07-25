@@ -6,9 +6,10 @@ import firebase.Firebase;
 import mithril.M;
 import mithril.M.m;
 import ui.ClientUI;
-import model.SiteConfig;
+import model.*;
 import js.Promise;
 import model.UserModel;
+import model.ContentModel;
 
 using Lambda;
 using dataclass.JsonConverter;
@@ -36,7 +37,8 @@ class Client implements Mithril {
 
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
-        // Init user model - loading logged in user config data etc.
+        SiteModel.instance.init();
+        ContentModel.instance.init();
         UserModel.instance.init(app);
 
         // Setup Mithril ui
@@ -59,68 +61,8 @@ class Client implements Mithril {
 
 
 
-class ErrorsAndLogs {
-
-    static public var logs(default,null):Array<String> = [];
-    static public function addLog(log:String) {
-        logs.unshift(log);
-        M.redraw();
-    }
-
-    static public var errors(default,null):Array<String> = [];
-    static public function addErrors(err:Array<String>) {
-        err.iter(e-> addError(e));
-    }
-    static public function addError(e:String) {
-        errors.unshift(e);
-        M.redraw();
-    }
-  
-}
-
-class AppState {
-    public static var instance(default, null):AppState = new AppState();
-    private function new () {
-        this.siteConfig = SiteConfig.defaultValues();
-    }  // private constructor
-
-    public var currentUser(default, set):DataMode<CurrentUser> = Nil;
-    function set_currentUser(u:DataMode<CurrentUser>) {
-        if (this.currentUser == Nil && u == Nil) return null;
-        if (this.currentUser == Loading && u == Loading) return null;
-        this.currentUser = u;
-        ErrorsAndLogs.addLog('CurrentUser:' + this.currentUser);
-        M.redraw();
-        return u;
-    }
-
-    public var siteConfig(default,set):SiteConfig;
-    function set_siteConfig(d:SiteConfig)  {
-        this.siteConfig = d;
-        ErrorsAndLogs.addLog('SiteConfig:' + this.siteConfig);
-        M.redraw();
-        return d;
-    }
-}
 
 
-// Wrapper for api calls
-class ApiCalls {
-    static public function getAuthRequest(url) {
-
-        return UserModel.instance.getFBUserToken()
-        .then(token->{
-            var h:haxe.DynamicAccess<String> = {authorization: 'Bearer ' + token };
-            var request = {
-                method: 'get',
-                url: url,
-                headers: h
-            };
-            ErrorsAndLogs.addLog('AuthRequest: $url');
-            M.request(request);       
-        }); 
-    }
-}
 
 
 enum DataModes<T> {
@@ -144,53 +86,20 @@ abstract DataMode<T>(DataModes<T>) from DataModes<T> {
     static public function nil() return DataModes.Nil;
 }
 
-
 class StateMonitor implements Mithril {
     public function new() {}
 
     public function view() {
         return [
-            // m('div.statelabel', 'CurrentUser:'),
-            // m('div.stateitems', '' + AppState.instance.currentUser),
-            // m('div.statelabel', 'siteConfig'),
-            // m('div.stateitems', '' + AppState.instance.siteConfig),
             m('div.statelabel', 'logs:'),
             m('div.stateitems', ErrorsAndLogs.logs.map(e->m('div.stateitem.statelog', ''+e))),
             m('div.statelabel', 'errors:'),
             m('div.stateitems', ErrorsAndLogs.errors.map(e->m('div.stateitem.stateerror', ''+e))),
+            m('div.statelabel', 'content-tree'),
+            m('div.stateitems', '' + ContentModel.instance.contentTree),
+
+            new UIContentTree().view(),
         ];
     }
 }
 
-class TestUI implements Mithril {
-    public function new() {
-    }
-
-    public function view() {
-        return [
-            m('button', { onclick: e -> {
-                ApiCalls.getAuthRequest('/api/userdata')
-                .then(data->{
-                    ErrorsAndLogs.addLog(haxe.Json.stringify(data));
-                    trace('userData result: ' + haxe.Json.stringify(data));
-                }).catchError(error->{
-                    trace('userData error: ' + error);
-                    ErrorsAndLogs.addError(error);
-
-                });
-            }}, 'Test /api/userData '), 
-
-            m('button', { onclick: e -> {
-                ApiCalls.getAuthRequest('/api/userconfig')
-                .then(data->{
-                    trace('userconfig result: ' + haxe.Json.stringify(data));
-                    ErrorsAndLogs.addLog(haxe.Json.stringify(data));
-                }).catchError(error->{
-                    trace('userconfig error: ' + error);
-                    ErrorsAndLogs.addError(error);
-
-                });
-            }}, 'Test /api/userConfig '), 
-        ];
-    }
-}

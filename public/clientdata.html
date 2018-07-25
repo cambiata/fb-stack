@@ -9,20 +9,27 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header>Header</header>
-    <main id="main">
-        Main...
-    </main>
 
     <details open>
         <summary>Root</summary>
         <details>
             <summary>Child 1</summary>
+            <p>Hejsan Child 1</p>
         </details>
-    </details>
-
-    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
-    <script src="client.js" ></script>
+        <details>
+            <summary>Child 2</summary>
+            <p>Hejsan Child 2</p>
+            <details>
+                <summary>Child 2A</summary>
+                <p>Hejsan Child 2A</p>
+            </details>
+            <details>
+                <summary>Child 2B</summary>
+                <p>Hejsan Child 2B</p>
+            </details>
+        </details>        
+    </details> 
+    
+    <script src="/clientdata.js"></script>
 </body>
 </html>

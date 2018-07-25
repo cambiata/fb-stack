@@ -1,0 +1,11 @@
+-D analyzer-optimize
+-dce full
+
+-cp src
+
+-lib mithril
+-lib dataclass
+
+-main utils.ClientData
+
+-js public/clientdata.js 

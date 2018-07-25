@@ -1,1 +1,7 @@
-{"jonasnys||gmail|com":{"firstname":"Jonas", "lastname": "Nyström", "access":"admin"}}
+{
+    "jonasnys||gmail|com": {
+        "firstname": "Jonas",
+        "lastname": "Nyström",
+        "access": "admin"
+    }
+}

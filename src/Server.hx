@@ -41,6 +41,14 @@ class Server {
 
         });
 
+        app.get('/api/content-tree', (req:Request, res:Response)->{ 
+            var dbpath = 'content-tree';
+            Admin.database().ref(dbpath).once(firebase.EventType.Value, (snap)->{
+                res.json({errors:[], data:snap.val()});
+                res.end();
+            }); 
+        });
+
         exports.app = Functions.https.onRequest(app);  
     }
 }

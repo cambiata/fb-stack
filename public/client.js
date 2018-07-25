@@ -11,9 +11,11 @@ var mithril_Mithril = function() { };
 mithril_Mithril.__name__ = true;
 var Client = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
+	model_SiteModel.instance.init();
+	model_ContentModel.instance.init();
 	model_UserModel.instance.init(app);
 	this.stateMonitor = new StateMonitor();
-	this.testUi = new TestUI();
+	this.testUi = new ui_TestUI();
 	var element = ($_=window.document,$bind($_,$_.querySelector));
 	m.mount(element("header"),new ui_UIHeader());
 	m.mount(element("main"),this);
@@ -29,131 +31,19 @@ Client.prototype = {
 		return [this.testUi.view(),this.stateMonitor.view()];
 	}
 };
-var ErrorsAndLogs = function() { };
-ErrorsAndLogs.__name__ = true;
-ErrorsAndLogs.addLog = function(log) {
-	ErrorsAndLogs.logs.unshift(log);
-	m.redraw();
-};
-ErrorsAndLogs.addErrors = function(err) {
-	Lambda.iter(err,function(e) {
-		ErrorsAndLogs.addError(e);
-		return;
-	});
-};
-ErrorsAndLogs.addError = function(e) {
-	ErrorsAndLogs.errors.unshift(e);
-	m.redraw();
-};
-var DataClass = function() { };
-DataClass.__name__ = true;
-var model_SiteConfig = function(data) {
-	this.domains = [];
-	this.arr = [];
-	if(data != null) {
-		if(Object.prototype.hasOwnProperty.call(data,"arr")) {
-			this.set_arr(data.arr);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"domains")) {
-			this.set_domains(data.domains);
-		}
-	}
-};
-model_SiteConfig.__name__ = true;
-model_SiteConfig.__interfaces__ = [DataClass];
-model_SiteConfig.defaultValues = function() {
-	return new model_SiteConfig({ arr : ["A"], domains : [new model_DomainData({ name : "kak", fullname : "Körakademin", color : "blue"}),new model_DomainData({ name : "kantor", fullname : "Kantorsutbildningen", color : "red"})]});
-};
-model_SiteConfig.prototype = {
-	set_arr: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.arr.");
-		}
-		return this.arr = v;
-	}
-	,set_domains: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.domains.");
-		}
-		return this.domains = v;
-	}
-};
-var model_DomainData = function(data) {
-	this.color = "grey";
-	this.fullname = "Fullname";
-	this.name = "shortname";
-	if(data != null) {
-		if(Object.prototype.hasOwnProperty.call(data,"name")) {
-			this.set_name(data.name);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"fullname")) {
-			this.set_fullname(data.fullname);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"color")) {
-			this.set_color(data.color);
-		}
-	}
-};
-model_DomainData.__name__ = true;
-model_DomainData.__interfaces__ = [DataClass];
-model_DomainData.prototype = {
-	set_name: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.name.");
-		}
-		return this.name = v;
-	}
-	,set_fullname: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.fullname.");
-		}
-		return this.fullname = v;
-	}
-	,set_color: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.color.");
-		}
-		return this.color = v;
-	}
-};
-var AppState = function() {
-	this.currentUser = DataModes.Nil;
-	this.set_siteConfig(model_SiteConfig.defaultValues());
-};
-AppState.__name__ = true;
-AppState.prototype = {
-	set_currentUser: function(u) {
-		if(this.currentUser == DataModes.Nil && u == DataModes.Nil) {
-			return null;
-		}
-		if(this.currentUser == DataModes.Loading && u == DataModes.Loading) {
-			return null;
-		}
-		this.currentUser = u;
-		ErrorsAndLogs.addLog("CurrentUser:" + Std.string(this.currentUser));
-		m.redraw();
-		return u;
-	}
-	,set_siteConfig: function(d) {
-		this.siteConfig = d;
-		ErrorsAndLogs.addLog("SiteConfig:" + Std.string(this.siteConfig));
-		m.redraw();
-		return d;
-	}
-};
-var ApiCalls = function() { };
-ApiCalls.__name__ = true;
-ApiCalls.getAuthRequest = function(url) {
-	return model_UserModel.instance.getFBUserToken().then(function(token) {
-		var request = { method : "get", url : url, headers : { authorization : "Bearer " + token}};
-		ErrorsAndLogs.addLog("AuthRequest: " + url);
-		return m.request(request);
-	});
-};
 var DataModes = $hxEnums["DataModes"] = { __ename__ : true, __constructs__ : ["Nil","Loading","Data"]
 	,Nil: {_hx_index:0,__enum__:"DataModes",toString:$estr}
 	,Loading: {_hx_index:1,__enum__:"DataModes",toString:$estr}
 	,Data: ($_=function(d) { return {_hx_index:2,d:d,__enum__:"DataModes",toString:$estr}; },$_.__params__ = ["d"],$_)
+};
+var _$Client_DataMode_$Impl_$ = {};
+_$Client_DataMode_$Impl_$.__name__ = true;
+_$Client_DataMode_$Impl_$.fromData = function(data) {
+	if(data != null) {
+		return DataModes.Data(data);
+	} else {
+		return DataModes.Nil;
+	}
 };
 var StateMonitor = function() {
 };
@@ -162,43 +52,15 @@ StateMonitor.__interfaces__ = [mithril_Mithril];
 StateMonitor.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.statelabel","logs:"),m.m("div.stateitems",ErrorsAndLogs.logs.map(function(e) {
+		return [m.m("div.statelabel","logs:"),m.m("div.stateitems",model_ErrorsAndLogs.logs.map(function(e) {
 			return m.m("div.stateitem.statelog","" + e);
-		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",ErrorsAndLogs.errors.map(function(e1) {
+		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",model_ErrorsAndLogs.errors.map(function(e1) {
 			return m.m("div.stateitem.stateerror","" + e1);
-		}))];
+		})),m.m("div.statelabel","content-tree"),m.m("div.stateitems","" + Std.string(model_ContentModel.instance.contentTree)),new ui_UIContentTree().view()];
 	}
 };
-var TestUI = function() {
-};
-TestUI.__name__ = true;
-TestUI.__interfaces__ = [mithril_Mithril];
-TestUI.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("button",{ onclick : function(e) {
-			return ApiCalls.getAuthRequest("/api/userdata").then(function(data) {
-				ErrorsAndLogs.addLog(JSON.stringify(data));
-				console.log("src/Client.hx:175:","userData result: " + JSON.stringify(data));
-				return;
-			})["catch"](function(error) {
-				console.log("src/Client.hx:177:","userData error: " + error);
-				ErrorsAndLogs.addError(error);
-				return;
-			});
-		}},"Test /api/userData "),m.m("button",{ onclick : function(e1) {
-			return ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-				console.log("src/Client.hx:186:","userconfig result: " + JSON.stringify(data1));
-				ErrorsAndLogs.addLog(JSON.stringify(data1));
-				return;
-			})["catch"](function(error1) {
-				console.log("src/Client.hx:189:","userconfig error: " + error1);
-				ErrorsAndLogs.addError(error1);
-				return;
-			});
-		}},"Test /api/userConfig ")];
-	}
-};
+var DataClass = function() { };
+DataClass.__name__ = true;
 var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
 };
@@ -363,48 +225,407 @@ js_Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+var model_ApiCalls = function() { };
+model_ApiCalls.__name__ = true;
+model_ApiCalls.getAuthRequest = function(url) {
+	return model_UserModel.instance.getFBUserToken().then(function(token) {
+		var request = { method : "get", url : url, headers : { authorization : "Bearer " + token}};
+		model_ErrorsAndLogs.addLog("AuthRequest: " + url);
+		return m.request(request);
+	});
+};
+model_ApiCalls.getRequest = function(url) {
+	model_ErrorsAndLogs.addLog("Request: " + url);
+	return m.request({ method : "get", url : url});
+};
+var model_ContentModel = function() {
+	this.contentTree = DataModes.Nil;
+};
+model_ContentModel.__name__ = true;
+model_ContentModel.prototype = {
+	init: function() {
+		var _gthis = this;
+		this.set_contentTree(DataModes.Loading);
+		model_ApiCalls.getRequest("/api/content-tree").then(function(item) {
+			model_ErrorsAndLogs.addErrors(item.errors);
+			_gthis.set_contentTree(_$Client_DataMode_$Impl_$.fromData(new model_ContentTree(item.data)));
+			model_ErrorsAndLogs.addLog("Content-tree loaded: " + Std.string(item.data));
+			return;
+		})["catch"](function(error) {
+			model_ErrorsAndLogs.addError("Content-tree error: " + error);
+			return;
+		});
+	}
+	,set_contentTree: function(u) {
+		this.contentTree = u;
+		model_ErrorsAndLogs.addLog("ContentTree:" + Std.string(this.contentTree));
+		m.redraw();
+		return u;
+	}
+};
+var model_ContentTree = function(data) {
+	this.rooms = [];
+	this.set_id(data.id);
+	if(Object.prototype.hasOwnProperty.call(data,"rooms")) {
+		this.set_rooms(data.rooms);
+	}
+};
+model_ContentTree.__name__ = true;
+model_ContentTree.__interfaces__ = [DataClass];
+model_ContentTree.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.id.");
+		}
+		return this.id = v;
+	}
+	,set_rooms: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.rooms.");
+		}
+		return this.rooms = v;
+	}
+};
+var model_Room = function(data) {
+	this.shelves = [];
+	this.set_id(data.id);
+	if(Object.prototype.hasOwnProperty.call(data,"shelves")) {
+		this.set_shelves(data.shelves);
+	}
+};
+model_Room.__name__ = true;
+model_Room.__interfaces__ = [DataClass];
+model_Room.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.id.");
+		}
+		return this.id = v;
+	}
+	,set_shelves: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.shelves.");
+		}
+		return this.shelves = v;
+	}
+};
+var model_Shelf = function(data) {
+	this.books = [];
+	this.set_id(data.id);
+	this.set_title(data.title);
+	this.set_access(data.access);
+	this.set_info(data.info);
+	if(Object.prototype.hasOwnProperty.call(data,"books")) {
+		this.set_books(data.books);
+	}
+};
+model_Shelf.__name__ = true;
+model_Shelf.__interfaces__ = [DataClass];
+model_Shelf.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.access.");
+		}
+		return this.access = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.info.");
+		}
+		return this.info = v;
+	}
+	,set_books: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.books.");
+		}
+		return this.books = v;
+	}
+};
+var model_Booktype = $hxEnums["model.Booktype"] = { __ename__ : true, __constructs__ : ["Standard","Lexicon"]
+	,Standard: {_hx_index:0,__enum__:"model.Booktype",toString:$estr}
+	,Lexicon: {_hx_index:1,__enum__:"model.Booktype",toString:$estr}
+};
+var model_Book = function(data) {
+	this.chapters = [];
+	this.set_id(data.id);
+	this.set_title(data.title);
+	this.set_access(data.access);
+	this.set_type(data.type);
+	this.set_info(data.info);
+	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
+		this.set_chapters(data.chapters);
+	}
+};
+model_Book.__name__ = true;
+model_Book.__interfaces__ = [DataClass];
+model_Book.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.access.");
+		}
+		return this.access = v;
+	}
+	,set_type: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.type.");
+		}
+		return this.type = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.info.");
+		}
+		return this.info = v;
+	}
+	,set_chapters: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.chapters.");
+		}
+		return this.chapters = v;
+	}
+};
+var model_Chaptertype = $hxEnums["model.Chaptertype"] = { __ename__ : true, __constructs__ : ["Info","Article","Video","Exercise"]
+	,Info: {_hx_index:0,__enum__:"model.Chaptertype",toString:$estr}
+	,Article: {_hx_index:1,__enum__:"model.Chaptertype",toString:$estr}
+	,Video: {_hx_index:2,__enum__:"model.Chaptertype",toString:$estr}
+	,Exercise: {_hx_index:3,__enum__:"model.Chaptertype",toString:$estr}
+};
+var model_Chapter = function(data) {
+	this.chapters = [];
+	this.set_id(data.id);
+	this.set_title(data.title);
+	this.set_access(data.access);
+	this.set_type(data.type);
+	this.set_info(data.info);
+	this.set_text(data.text);
+	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
+		this.set_chapters(data.chapters);
+	}
+};
+model_Chapter.__name__ = true;
+model_Chapter.__interfaces__ = [DataClass];
+model_Chapter.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.access.");
+		}
+		return this.access = v;
+	}
+	,set_type: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.type.");
+		}
+		return this.type = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.info.");
+		}
+		return this.info = v;
+	}
+	,set_text: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.text.");
+		}
+		return this.text = v;
+	}
+	,set_chapters: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.chapters.");
+		}
+		return this.chapters = v;
+	}
+};
+var model_ErrorsAndLogs = function() { };
+model_ErrorsAndLogs.__name__ = true;
+model_ErrorsAndLogs.addLog = function(log) {
+	model_ErrorsAndLogs.logs.unshift(log);
+	m.redraw();
+};
+model_ErrorsAndLogs.addErrors = function(err) {
+	Lambda.iter(err,function(e) {
+		model_ErrorsAndLogs.addError(e);
+		return;
+	});
+};
+model_ErrorsAndLogs.addError = function(e) {
+	model_ErrorsAndLogs.errors.unshift(e);
+	m.redraw();
+};
+var model_SiteConfig = function(data) {
+	this.domains = [];
+	this.arr = [];
+	if(data != null) {
+		if(Object.prototype.hasOwnProperty.call(data,"arr")) {
+			this.set_arr(data.arr);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"domains")) {
+			this.set_domains(data.domains);
+		}
+	}
+};
+model_SiteConfig.__name__ = true;
+model_SiteConfig.__interfaces__ = [DataClass];
+model_SiteConfig.defaultValues = function() {
+	return new model_SiteConfig({ arr : ["A"], domains : [new model_DomainData({ name : "kak", fullname : "Körakademin", color : "blue"}),new model_DomainData({ name : "kantor", fullname : "Kantorsutbildningen", color : "red"})]});
+};
+model_SiteConfig.prototype = {
+	set_arr: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.arr.");
+		}
+		return this.arr = v;
+	}
+	,set_domains: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.domains.");
+		}
+		return this.domains = v;
+	}
+};
+var model_DomainData = function(data) {
+	this.color = "grey";
+	this.fullname = "Fullname";
+	this.name = "shortname";
+	if(data != null) {
+		if(Object.prototype.hasOwnProperty.call(data,"name")) {
+			this.set_name(data.name);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"fullname")) {
+			this.set_fullname(data.fullname);
+		}
+		if(Object.prototype.hasOwnProperty.call(data,"color")) {
+			this.set_color(data.color);
+		}
+	}
+};
+model_DomainData.__name__ = true;
+model_DomainData.__interfaces__ = [DataClass];
+model_DomainData.prototype = {
+	set_name: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.name.");
+		}
+		return this.name = v;
+	}
+	,set_fullname: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.fullname.");
+		}
+		return this.fullname = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.color.");
+		}
+		return this.color = v;
+	}
+};
+var model_SiteModel = function() {
+};
+model_SiteModel.__name__ = true;
+model_SiteModel.prototype = {
+	init: function() {
+		this.set_siteConfig(model_SiteConfig.defaultValues());
+	}
+	,set_siteConfig: function(d) {
+		this.siteConfig = d;
+		model_ErrorsAndLogs.addLog("SiteConfig:" + Std.string(this.siteConfig));
+		m.redraw();
+		return d;
+	}
+};
 var model_UserModel = function() {
+	this.currentUser = DataModes.Nil;
 };
 model_UserModel.__name__ = true;
 model_UserModel.prototype = {
-	init: function(app) {
+	set_currentUser: function(u) {
+		if(this.currentUser == DataModes.Nil && u == DataModes.Nil) {
+			return null;
+		}
+		if(this.currentUser == DataModes.Loading && u == DataModes.Loading) {
+			return null;
+		}
+		this.currentUser = u;
+		model_ErrorsAndLogs.addLog("CurrentUser:" + Std.string(this.currentUser));
+		m.redraw();
+		return u;
+	}
+	,init: function(app) {
 		var starttime = new Date().getTime();
-		AppState.instance.set_currentUser(DataModes.Loading);
+		model_UserModel.instance.set_currentUser(DataModes.Loading);
 		app.auth().onAuthStateChanged(function(user) {
 			if(user != null) {
-				ErrorsAndLogs.addLog("Browser session user found.");
-				AppState.instance.set_currentUser(DataModes.Loading);
-				return ApiCalls.getAuthRequest("/api/userconfig").then(function(data) {
-					ErrorsAndLogs.addLog("User config loaded ms:" + (new Date().getTime() - starttime));
-					AppState.instance.set_currentUser(DataModes.Data(new model_CurrentUser(data)));
-					ErrorsAndLogs.addErrors(data.errors);
+				model_ErrorsAndLogs.addLog("Browser session user found.");
+				model_UserModel.instance.set_currentUser(DataModes.Loading);
+				return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data) {
+					model_ErrorsAndLogs.addLog("User config loaded ms:" + (new Date().getTime() - starttime));
+					model_UserModel.instance.set_currentUser(DataModes.Data(new model_CurrentUser(data)));
+					model_ErrorsAndLogs.addErrors(data.errors);
 					return;
 				})["catch"](function(error) {
-					ErrorsAndLogs.addError("Could not load userconfig for browser session user");
-					ErrorsAndLogs.addError(error);
+					model_ErrorsAndLogs.addError("Could not load userconfig for browser session user");
+					model_ErrorsAndLogs.addError(error);
 					return;
 				});
 			} else {
-				ErrorsAndLogs.addLog("No browser session user found.");
-				AppState.instance.set_currentUser(DataModes.Nil);
+				model_ErrorsAndLogs.addLog("No browser session user found.");
+				model_UserModel.instance.set_currentUser(DataModes.Nil);
 				return null;
 			}
 		},function(error1) {
-			ErrorsAndLogs.addLog("Error: " + Std.string(error1));
-			return AppState.instance.set_currentUser(DataModes.Nil);
+			model_ErrorsAndLogs.addLog("Error: " + Std.string(error1));
+			return model_UserModel.instance.set_currentUser(DataModes.Nil);
 		});
 	}
 	,signIn: function(email,password) {
 		this.validate(email,password).then(function(valid) {
-			AppState.instance.set_currentUser(DataModes.Loading);
+			model_UserModel.instance.set_currentUser(DataModes.Loading);
 			return firebase.auth().signInWithEmailAndPassword(email,password);
 		}).then(function(user) {
-			console.log("src/model/UserModel.hx:54:","USER " + user);
+			console.log("src/model/UserModel.hx:66:","USER " + user);
 			return null;
 		})["catch"](function(error) {
-			console.log("src/model/UserModel.hx:58:","ERROR" + error);
-			ErrorsAndLogs.addError("error:" + error);
-			AppState.instance.set_currentUser(DataModes.Nil);
+			console.log("src/model/UserModel.hx:70:","ERROR" + error);
+			model_ErrorsAndLogs.addError("error:" + error);
+			model_UserModel.instance.set_currentUser(DataModes.Nil);
 			return;
 		});
 	}
@@ -531,7 +752,7 @@ ui_MInputEmail.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserEmail_UserEmail_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:33:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:35:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
 		this.state.email = str;
 		this.state.validEmail = valid;
 		m.redraw();
@@ -558,7 +779,7 @@ ui_MInputPassword.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserPassword_UserPassword_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:50:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:52:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
 		this.state.password = str;
 		this.state.validPassword = valid;
 		m.redraw();
@@ -567,7 +788,7 @@ ui_MInputPassword.prototype = {
 };
 var ui_MLoginForm = function() {
 	this.submitCallback = function(email,password) {
-		console.log("src/ui/ClientUI.hx:76:","callback " + email + ", " + password);
+		console.log("src/ui/ClientUI.hx:78:","callback " + email + ", " + password);
 		return;
 	};
 	this.state = null;
@@ -625,7 +846,7 @@ ui_UIHeader.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var userView;
-		var _g = AppState.instance.currentUser;
+		var _g = model_UserModel.instance.currentUser;
 		switch(_g._hx_index) {
 		case 0:
 			userView = this.loginform.view();
@@ -639,6 +860,123 @@ ui_UIHeader.prototype = {
 			break;
 		}
 		return [m.m("h2","Header"),userView];
+	}
+};
+var ui_TestUI = function() {
+};
+ui_TestUI.__name__ = true;
+ui_TestUI.__interfaces__ = [mithril_Mithril];
+ui_TestUI.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("button",{ onclick : function(e) {
+			return model_ApiCalls.getAuthRequest("/api/userdata").then(function(data) {
+				model_ErrorsAndLogs.addLog(JSON.stringify(data));
+				console.log("src/ui/ClientUI.hx:144:","userData result: " + JSON.stringify(data));
+				return;
+			})["catch"](function(error) {
+				console.log("src/ui/ClientUI.hx:146:","userData error: " + error);
+				model_ErrorsAndLogs.addError(error);
+				return;
+			});
+		}},"Test /api/userData "),m.m("button",{ onclick : function(e1) {
+			return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
+				console.log("src/ui/ClientUI.hx:155:","userconfig result: " + JSON.stringify(data1));
+				model_ErrorsAndLogs.addLog(JSON.stringify(data1));
+				return;
+			})["catch"](function(error1) {
+				console.log("src/ui/ClientUI.hx:158:","userconfig error: " + error1);
+				model_ErrorsAndLogs.addError(error1);
+				return;
+			});
+		}},"Test /api/userConfig "),m.m("button",{ onclick : function(e2) {
+			return model_ApiCalls.getRequest("/api/content-tree").then(function(data2) {
+				console.log("src/ui/ClientUI.hx:167:","content-tree result: " + JSON.stringify(data2));
+				model_ErrorsAndLogs.addLog(JSON.stringify(data2));
+				return;
+			})["catch"](function(error2) {
+				console.log("src/ui/ClientUI.hx:170:","content-tree error: " + error2);
+				model_ErrorsAndLogs.addError(error2);
+				return;
+			});
+		}},"Test /api/content-treeB ")];
+	}
+};
+var ui_UIContentTree = function() {
+};
+ui_UIContentTree.__name__ = true;
+ui_UIContentTree.__interfaces__ = [mithril_Mithril];
+ui_UIContentTree.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var _g = model_ContentModel.instance.contentTree;
+		switch(_g._hx_index) {
+		case 0:
+			return m.m("h1","Nil");
+		case 1:
+			return m.m("h1","Loading");
+		case 2:
+			var d = _g.d;
+			return [m.m("div","ContentTree " + d.id),m.m("div.padleft",d.rooms.map(function(room) {
+				return new ui_UIRoom(room).view();
+			}))];
+		}
+	}
+};
+var ui_UIRoom = function(room) {
+	this.room = null;
+	this.room = room;
+};
+ui_UIRoom.__name__ = true;
+ui_UIRoom.__interfaces__ = [mithril_Mithril];
+ui_UIRoom.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Room " + this.room.id),m.m("div.padleft",this.room.shelves.map(function(shelf) {
+			return new ui_UIShelf(shelf).view();
+		}))];
+	}
+};
+var ui_UIShelf = function(item) {
+	this.item = null;
+	this.item = item;
+};
+ui_UIShelf.__name__ = true;
+ui_UIShelf.__interfaces__ = [mithril_Mithril];
+ui_UIShelf.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Shelf " + this.item.id),m.m("div.padleft",this.item.books.map(function(item2) {
+			return new ui_UIBook(item2).view();
+		}))];
+	}
+};
+var ui_UIBook = function(item) {
+	this.item = null;
+	this.item = item;
+};
+ui_UIBook.__name__ = true;
+ui_UIBook.__interfaces__ = [mithril_Mithril];
+ui_UIBook.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Book " + this.item.id),m.m("div",this.item.chapters.map(function(item2) {
+			return new ui_UIChapter(item2).view();
+		}))];
+	}
+};
+var ui_UIChapter = function(item) {
+	this.item = null;
+	this.item = item;
+};
+ui_UIChapter.__name__ = true;
+ui_UIChapter.__interfaces__ = [mithril_Mithril];
+ui_UIChapter.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Chapter " + this.item.id),this.item.chapters != null ? m.m("div.padleft",this.item.chapters.map(function(item2) {
+			return new ui_UIChapter(item2).view();
+		})) : null];
 	}
 };
 var utils__$UserEmail_UserEmail_$Impl_$ = {};
@@ -691,11 +1029,17 @@ var __varName1 = GLOBAL.m;
 			}
 		})(__varName1);
 } catch(_) {}
-ErrorsAndLogs.logs = [];
-ErrorsAndLogs.errors = [];
+model_ContentModel.instance = new model_ContentModel();
+model_ContentTree.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<model.Room>>"}]}};
+model_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<model.Shelf>>"}]}};
+model_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<model.Book>>"}]}};
+model_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Booktype>", info : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
+model_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Chaptertype>", info : "String", text : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
+model_ErrorsAndLogs.logs = [];
+model_ErrorsAndLogs.errors = [];
 model_SiteConfig.__meta__ = { obj : { dataClassRtti : [{ arr : "Array<String>", domains : "Array<DataClass<model.DomainData>>"}]}};
 model_DomainData.__meta__ = { obj : { dataClassRtti : [{ name : "String", fullname : "String", color : "String"}]}};
-AppState.instance = new AppState();
+model_SiteModel.instance = new model_SiteModel();
 model_UserModel.instance = new model_UserModel();
 model_CurrentUser.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<model.UserData>", userConfig : "DataClass<model.UserConfig>"}]}};
 model_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};

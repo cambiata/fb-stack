@@ -3,7 +3,7 @@ using StringTools;
 
 abstract UserEmail(String) to String {
     static var ereg = ~/^[\w-\.]{2,}@[\w-\.]{2,}\.[a-z]{2,6}$/i;
-
+  
     static public function isValid(address:String):Bool {
       return ereg.match(address);
     }

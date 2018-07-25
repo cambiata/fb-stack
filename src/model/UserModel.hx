@@ -4,6 +4,7 @@ import Client;
 import js.Promise;
 import utils.UserEmail;
 import utils.UserPassword;
+import mithril.M;
 
 using StringTools;
 
@@ -14,19 +15,30 @@ class UserModel {
     
     private function new () {}  // private constructor
 
+    public var currentUser(default, set):DataMode<CurrentUser> = Nil;
+    function set_currentUser(u:DataMode<CurrentUser>) {
+        if (this.currentUser == Nil && u == Nil) return null;
+        if (this.currentUser == Loading && u == Loading) return null;
+        this.currentUser = u;
+        ErrorsAndLogs.addLog('CurrentUser:' + this.currentUser);
+        M.redraw();
+        return u;
+    }
+
+
     public function init(app:firebase.app.App) {
         var starttime = Date.now().getTime();
 
-        AppState.instance.currentUser = Loading;
+        UserModel.instance.currentUser = Loading;
 
         app.auth().onAuthStateChanged(user -> {
             if (user != null) {
                 ErrorsAndLogs.addLog('Browser session user found.');
-                AppState.instance.currentUser = Loading;
+                UserModel.instance.currentUser = Loading;
                 ApiCalls.getAuthRequest('/api/userconfig')
                 .then(data->{
                     ErrorsAndLogs.addLog('User config loaded ms:' + (Date.now().getTime() - starttime));
-                    AppState.instance.currentUser = Data(new CurrentUser(cast data));
+                    UserModel.instance.currentUser = Data(new CurrentUser(cast data));
                     ErrorsAndLogs.addErrors(data.errors);
                 }).catchError(error->{
                     ErrorsAndLogs.addError('Could not load userconfig for browser session user');
@@ -34,12 +46,12 @@ class UserModel {
                 });
             } else {
                 ErrorsAndLogs.addLog('No browser session user found.');
-                AppState.instance.currentUser = Nil;
+                UserModel.instance.currentUser = Nil;
                 return null;
             }
         }, error -> {
             ErrorsAndLogs.addLog('Error: ' + error);
-            AppState.instance.currentUser = Nil;
+            UserModel.instance.currentUser = Nil;
         });
     }
 
@@ -47,7 +59,7 @@ class UserModel {
     public function signIn(email:String, password:String) {
         validate(email, password)
         .then(valid->{
-            AppState.instance.currentUser = Loading;
+            UserModel.instance.currentUser = Loading;
             return cast firebase.Firebase.auth().signInWithEmailAndPassword(email, password);
         })
         .then(user->{
@@ -57,7 +69,7 @@ class UserModel {
         .catchError(error->{
             trace('ERROR' + error);
             ErrorsAndLogs.addError('error:' + error);
-            AppState.instance.currentUser = Nil;
+            UserModel.instance.currentUser = Nil;
             return null;
         });
     }
