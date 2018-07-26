@@ -1,0 +1,56 @@
+{
+  "id" : "current-display-tree",
+  "children" : [ {
+    "id" : "kak",
+    "children" : [ {
+      "access" : 123,
+      "children" : [ {
+        "access" : 123,
+        "children" : [ {
+          "access" : 123,
+          "children" : [ {
+            "access" : 123,
+            "id" : "c1",
+            "info" : "Information om c1",
+            "text" : "text i c1",
+            "title" : "Chapter c1",
+            "type" : "Info"
+          } ],
+          "id" : "c3",
+          "info" : "Information om c3",
+          "text" : "text i c3",
+          "title" : "Chapter c3",
+          "type" : "Article"
+        }, {
+          "access" : 123,
+          "id" : "c2",
+          "info" : "Information om c2",
+          "text" : "text i c2",
+          "title" : "Chapter c2",
+          "type" : "Info"
+        } ],
+        "id" : "b1",
+        "info" : "Information om b1",
+        "title" : "Book b1",
+        "type" : "Standard"
+      }, {
+        "access" : 123,
+        "children" : [ {
+          "access" : 123,
+          "id" : "ci1",
+          "info" : "Information om ci1",
+          "text" : "text i ci1",
+          "title" : "Chapter ci1",
+          "type" : "Info"
+        } ],
+        "id" : "b2",
+        "info" : "Information om b2",
+        "title" : "Book b2",
+        "type" : "Standard"
+      } ],
+      "id" : "si",
+      "info" : "Information om si",
+      "title" : "Book si"
+    } ]
+  } ]
+}

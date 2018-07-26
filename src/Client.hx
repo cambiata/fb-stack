@@ -1,30 +1,18 @@
 import firebase.app.App;
-import firebase.EventType;
-import firebase.database.Reference;
-import js.Lib;
 import firebase.Firebase;
 import mithril.M;
 import mithril.M.m;
 import ui.ClientUI;
 import model.*;
-import js.Promise;
-import model.UserModel;
-import model.ContentModel;
+import utils.*;
 
-using Lambda;
-using dataclass.JsonConverter;
-
-class Client implements Mithril {
+class Client {
     
     static public function main() {
         new Client();
     }
 
-    var stateMonitor:StateMonitor;
-    var testUi:TestUI;
-    
     public function new() {
-        
        // Init Firebase
         var config = {
             apiKey: "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04",
@@ -37,33 +25,39 @@ class Client implements Mithril {
 
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
+        Profile.instance.init();
         SiteModel.instance.init();
         ContentModel.instance.init();
+        ContentModel.instance.initRealtimeUpdate();
         UserModel.instance.init(app);
+        UserModel.instance.initRealtimeUpdate();
 
-        // Setup Mithril ui
-        this.stateMonitor = new StateMonitor();
-        this.testUi = new TestUI();
+        ClientUI.instance.init();
 
-        var element = js.Browser.document.querySelector;       
+        // var element = js.Browser.document.querySelector;       
+        // M.mount(element('header'), new UIHeader());
+        // M.mount(element('main'), new UIMain());
+
+        // var routeHandler:SimpleRouteResolver = { 
+        //     onmatch: function(args, path) {
+        //         trace(args);
+        //         trace(path);
+        //         return null;
+        //     },
+        //     render:function(vnode) {
+        //         return m('div', 'Hehe');
+        //     }
+        // }
+        // $type(routeHandler);
+
+        // var routes = {
+        //     "/": routeHandler,
+        // }       
         
-        M.mount(element('header'), new UIHeader());
-        M.mount(element('main'), this);
+        // M.route(element('#routes'), '/', routes); 
       }
 
-    public function view() {
-        return [
-            cast this.testUi.view(),
-            cast this.stateMonitor.view(),
-        ];
-    }
 }
-
-
-
-
-
-
 
 enum DataModes<T> {
     Nil;
@@ -72,7 +66,7 @@ enum DataModes<T> {
 }
 
 abstract DataMode<T>(DataModes<T>) from DataModes<T> {
-    @:to public function toData():T return switch this {
+    @:to public function getData():T return switch this {
         case Data(d): d;
         case _: null;
     }
@@ -86,20 +80,5 @@ abstract DataMode<T>(DataModes<T>) from DataModes<T> {
     static public function nil() return DataModes.Nil;
 }
 
-class StateMonitor implements Mithril {
-    public function new() {}
 
-    public function view() {
-        return [
-            m('div.statelabel', 'logs:'),
-            m('div.stateitems', ErrorsAndLogs.logs.map(e->m('div.stateitem.statelog', ''+e))),
-            m('div.statelabel', 'errors:'),
-            m('div.stateitems', ErrorsAndLogs.errors.map(e->m('div.stateitem.stateerror', ''+e))),
-            m('div.statelabel', 'content-tree'),
-            m('div.stateitems', '' + ContentModel.instance.contentTree),
-
-            new UIContentTree().view(),
-        ];
-    }
-}
 

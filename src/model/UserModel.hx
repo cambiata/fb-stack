@@ -1,13 +1,16 @@
 package model;
 
+import js.Browser;
+import firebase.Firebase;
+import utils.Profile;
 import Client;
 import js.Promise;
 import utils.UserEmail;
 import utils.UserPassword;
 import mithril.M;
+using dataclass.JsonConverter;
 
 using StringTools;
-
 
 class UserModel {
 
@@ -20,25 +23,22 @@ class UserModel {
         if (this.currentUser == Nil && u == Nil) return null;
         if (this.currentUser == Loading && u == Loading) return null;
         this.currentUser = u;
-        ErrorsAndLogs.addLog('CurrentUser:' + this.currentUser);
+        // ErrorsAndLogs.addLog('CurrentUser:' + this.currentUser);
         M.redraw();
         return u;
     }
 
 
     public function init(app:firebase.app.App) {
-        var starttime = Date.now().getTime();
-
         UserModel.instance.currentUser = Loading;
-
         app.auth().onAuthStateChanged(user -> {
             if (user != null) {
                 ErrorsAndLogs.addLog('Browser session user found.');
                 UserModel.instance.currentUser = Loading;
                 ApiCalls.getAuthRequest('/api/userconfig')
                 .then(data->{
-                    ErrorsAndLogs.addLog('User config loaded ms:' + (Date.now().getTime() - starttime));
                     UserModel.instance.currentUser = Data(new CurrentUser(cast data));
+                    ErrorsAndLogs.addLog('UserModel loaded' + Profile.instance.msString());
                     ErrorsAndLogs.addErrors(data.errors);
                 }).catchError(error->{
                     ErrorsAndLogs.addError('Could not load userconfig for browser session user');
@@ -53,6 +53,48 @@ class UserModel {
             ErrorsAndLogs.addLog('Error: ' + error);
             UserModel.instance.currentUser = Nil;
         });
+
+        
+    }
+
+    public function initRealtimeUpdate() {
+
+        haxe.Timer.delay(()->{
+            
+            try {
+                if (this.currentUser.getData() != null) { 
+                    var userEmail:utils.UserEmail = this.currentUser.getData().userData.email;
+                    trace(userEmail);
+                    
+                    var dbpath = 'users/' + userEmail.toPiped();
+                    trace('dbpath: ' + dbpath);
+                    Firebase.database().ref(dbpath).on(firebase.EventType.Value, (snap, str)->{
+                        var userCopy:CurrentUser = this.currentUser.getData();
+                        var data:Dynamic = snap.val();
+                        data.email = userEmail;
+                        ErrorsAndLogs.addLog('UserModel UserData realtime update active');
+                        userCopy.userData = UserData.fromJson(data);
+                        this.currentUser = Data(userCopy);
+                    }); 
+                    
+                    var dbpath = 'user-config/' + userEmail.toPiped();
+                    Firebase.database().ref(dbpath).on(firebase.EventType.Value, (snap, str)->{
+                        ErrorsAndLogs.addLog('UserModel User Config realtime update active');
+                        var data:Dynamic = snap.val();
+                        var userCopy:CurrentUser = this.currentUser.getData();
+                        userCopy.userConfig = UserConfig.fromJson(data);
+                        this.currentUser = Data(userCopy);
+                    }); 
+                } else {
+                    ErrorsAndLogs.addLog('Can not use Realtime data for anonymous user.');
+                    return null;
+                }
+                
+            } catch (e:Dynamic) {
+                ErrorsAndLogs.addError('initRealtimeDatabase error: ' + e);
+                return null;    
+            }
+        }, 3000);
     }
 
 

@@ -11,17 +11,20 @@ body {
 
 header {
     padding: 1em;
-    background-color: #afa;
+    background-color: #aaf;
     min-height: 2em;
     width:100%;
     display: inline-grid;
-    grid-template-columns: auto auto ;
+    grid-template-columns: 1fr 2fr ;
     grid-column-gap: 1em;
 
 }
 
 main {
     padding: 1em;
+    display: inline-grid;
+    grid-template-columns: 1fr 2fr;
+    grid-column-gap: 1em;
 }
 
 form {
@@ -33,23 +36,24 @@ form {
 
 .statelabel {
     font-weight: bold;
+    padding: 2px;
 }
 
 .stateitems {
-    padding-left: 20px;
+    /* padding-left: 20px; */
 }
 .stateitem {
     padding-left: 1em;
     margin-bottom: 2px;
-    border-radius: 4px;
+    /* border-radius: 4px; */
 }
 
 .statelog {
-    background-color: #aaf;  
+    background-color: #ccf;  
 }
 
 .stateerror {
-    background-color: #faa;
+    background-color: #fcc;
 }
 
 .invalid {
@@ -70,9 +74,19 @@ button {
 }
 
 details {
+    padding: 2px;
     padding-left: 1em;
+    border: 1px solid #aaa;
 }
 
 summary {
-    /* padding-left: 1em; */
+    padding: 2px;
+}
+
+.protected {
+    background-color: #fcc;
+}
+
+.open {
+    background-color: #cfc;
 }

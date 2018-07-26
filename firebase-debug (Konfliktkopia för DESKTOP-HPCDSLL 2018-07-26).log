@@ -1,0 +1,403 @@
+[debug] [2018-07-25T12:12:27.979Z] ----------------------------------------------------------------------
+[debug] [2018-07-25T12:12:27.979Z] Command:       C:\Users\jonas\AppData\Local\nvs\node\6.11.5\x64\node.exe C:\Users\jonas\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] [2018-07-25T12:12:27.979Z] CLI Version:   3.19.3
+[debug] [2018-07-25T12:12:27.979Z] Platform:      win32
+[debug] [2018-07-25T12:12:27.979Z] Node Version:  v6.11.5
+[debug] [2018-07-25T12:12:27.979Z] Time:          Wed Jul 25 2018 14:12:27 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:27.979Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-07-25T12:12:28.010Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-07-25T12:12:28.010Z] > authorizing via signed-in user
+[debug] [2018-07-25T12:12:28.010Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/fb-stack  
+  
+ Wed Jul 25 2018 14:12:28 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:29.196Z] <<< HTTP RESPONSE 200
+[debug] [2018-07-25T12:12:29.196Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/fb-stack/tokens  
+  
+ Wed Jul 25 2018 14:12:29 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:30.055Z] <<< HTTP RESPONSE 200
+[debug] [2018-07-25T12:12:30.055Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/fb-stack  
+  
+ Wed Jul 25 2018 14:12:30 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:31.164Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from 'C:\Users\jonas\Dropbox\_dev\fb-stack'...
+[info] 
+[info] i  functions: Preparing to emulate functions.
+[debug] [2018-07-25T12:12:38.149Z] Fetching environment
+[debug] [2018-07-25T12:12:38.149Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/665827748546:getServerAppConfig  
+  
+ Wed Jul 25 2018 14:12:38 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:38.149Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/665827748546/clients/_:getWebAppConfig  
+  
+ Wed Jul 25 2018 14:12:38 GMT+0200 (Västeuropa, sommartid)
+[debug] [2018-07-25T12:12:38.712Z] <<< HTTP RESPONSE 200
+[debug] [2018-07-25T12:12:38.806Z] <<< HTTP RESPONSE 200
+[debug] [2018-07-25T12:12:38.806Z] Starting @google-cloud/functions-emulator
+[info] i  hosting: Serving hosting files from: public
+[info] +  hosting: Local server: http://localhost:5000
+
+[debug] [2018-07-25T12:12:41.384Z] Parsing function triggers
+[info] +  functions: app: http://localhost:5001/fb-stack/us-central1/app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content to local function app
+[info] [hosting] Rewriting /api/content to local function app
+[info] [hosting] Rewriting /api/content to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/test to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app
+[info] [hosting] Rewriting /api/content-tree to local function app
+[info] [hosting] Rewriting /api/userconfig to local function app

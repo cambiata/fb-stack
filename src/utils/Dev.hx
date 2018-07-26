@@ -1,6 +1,6 @@
 package utils;
 
-class ClientData {
+class Dev {
     static public function main() {
         trace('hello');
     }

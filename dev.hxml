@@ -6,6 +6,6 @@
 -lib mithril
 -lib dataclass
 
--main utils.ClientData
+-main utils.Dev
 
--js public/clientdata.js 
+-js public/dev.js 

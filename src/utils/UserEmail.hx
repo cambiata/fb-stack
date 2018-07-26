@@ -8,7 +8,7 @@ abstract UserEmail(String) to String {
       return ereg.match(address);
     }
   inline public function new(address:String) {
-    if (isValid(address)) throw 'EmailAddress "$address" is invalid';
+    if (!isValid(address)) throw 'EmailAddress "$address" is invalid';
     this = address.toLowerCase();
   }
 

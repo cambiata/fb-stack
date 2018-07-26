@@ -9,9 +9,9 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
-var utils_ClientData = function() { };
-utils_ClientData.main = function() {
-	console.log("src/utils/ClientData.hx:5:","hello");
+var utils_Dev = function() { };
+utils_Dev.main = function() {
+	console.log("src/utils/Dev.hx:5:","hello");
 };
-utils_ClientData.main();
+utils_Dev.main();
 })();
