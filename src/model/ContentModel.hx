@@ -22,7 +22,7 @@ class ContentModel {
         .then(item->{
             ErrorsAndLogs.addErrors(item.errors);
             this.contentTree = new ContentTree(item.data);
-            ErrorsAndLogs.addLog('Content-tree loaded: ' + item.data + Profile.instance.msString());
+            ErrorsAndLogs.addLog('Content-tree loaded ' + Profile.instance.msString());
         })
         .catchError(error->{
             ErrorsAndLogs.addError('Content-tree error: $error');

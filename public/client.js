@@ -961,7 +961,7 @@ model_ContentModel.prototype = {
 		model_ApiCalls.getRequest("/api/content-tree").then(function(item) {
 			model_ErrorsAndLogs.addErrors(item.errors);
 			_gthis.set_contentTree(_$Client_DataMode_$Impl_$.fromData(new model_ContentTree(item.data)));
-			model_ErrorsAndLogs.addLog("Content-tree loaded: " + Std.string(item.data) + utils_Profile.instance.msString());
+			model_ErrorsAndLogs.addLog("Content-tree loaded " + utils_Profile.instance.msString());
 			return;
 		})["catch"](function(error) {
 			model_ErrorsAndLogs.addError("Content-tree error: " + error);
@@ -1582,7 +1582,7 @@ ui_ClientUI.prototype = {
 			console.log("src/ui/ClientUI.hx:38:",path);
 			return null;
 		}, render : function(vnode) {
-			return m.m("div","Hehe");
+			return m.m("div","RouteHandler");
 		}};
 		m.route(element("#routes"),"/",{ "/" : routeHandler, "/yxa" : routeHandler});
 	}
@@ -1645,7 +1645,7 @@ ui_MInputEmail.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserEmail_UserEmail_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:114:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:112:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
 		this.state.email = str;
 		this.state.validEmail = valid;
 		m.redraw();
@@ -1674,7 +1674,7 @@ ui_MInputPassword.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserPassword_UserPassword_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:131:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:129:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
 		this.state.password = str;
 		this.state.validPassword = valid;
 		m.redraw();
@@ -1684,7 +1684,7 @@ ui_MInputPassword.prototype = {
 };
 var ui_MLoginForm = function() {
 	this.submitCallback = function(email,password) {
-		console.log("src/ui/ClientUI.hx:157:","callback " + email + ", " + password);
+		console.log("src/ui/ClientUI.hx:155:","callback " + email + ", " + password);
 		return;
 	};
 	this.state = null;
@@ -1775,30 +1775,30 @@ ui_TestUI.prototype = {
 		return [m.m("button",{ onclick : function(e) {
 			return model_ApiCalls.getAuthRequest("/api/userdata").then(function(data) {
 				model_ErrorsAndLogs.addLog(JSON.stringify(data));
-				console.log("src/ui/ClientUI.hx:220:","userData result: " + JSON.stringify(data));
+				console.log("src/ui/ClientUI.hx:218:","userData result: " + JSON.stringify(data));
 				return;
 			})["catch"](function(error) {
-				console.log("src/ui/ClientUI.hx:222:","userData error: " + error);
+				console.log("src/ui/ClientUI.hx:220:","userData error: " + error);
 				model_ErrorsAndLogs.addError(error);
 				return;
 			});
 		}},"Test /api/userData "),m.m("button",{ onclick : function(e1) {
 			return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-				console.log("src/ui/ClientUI.hx:231:","userconfig result: " + JSON.stringify(data1));
+				console.log("src/ui/ClientUI.hx:229:","userconfig result: " + JSON.stringify(data1));
 				model_ErrorsAndLogs.addLog(JSON.stringify(data1));
 				return;
 			})["catch"](function(error1) {
-				console.log("src/ui/ClientUI.hx:234:","userconfig error: " + error1);
+				console.log("src/ui/ClientUI.hx:232:","userconfig error: " + error1);
 				model_ErrorsAndLogs.addError(error1);
 				return;
 			});
 		}},"Test /api/userConfig "),m.m("button",{ onclick : function(e2) {
 			return model_ApiCalls.getRequest("/api/content-tree").then(function(data2) {
-				console.log("src/ui/ClientUI.hx:242:","content-tree result: " + JSON.stringify(data2));
+				console.log("src/ui/ClientUI.hx:240:","content-tree result: " + JSON.stringify(data2));
 				model_ErrorsAndLogs.addLog(JSON.stringify(data2));
 				return;
 			})["catch"](function(error2) {
-				console.log("src/ui/ClientUI.hx:245:","content-tree error: " + error2);
+				console.log("src/ui/ClientUI.hx:243:","content-tree error: " + error2);
 				model_ErrorsAndLogs.addError(error2);
 				return;
 			});

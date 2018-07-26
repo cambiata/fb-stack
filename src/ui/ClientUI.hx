@@ -39,7 +39,7 @@ class ClientUI {
                 return null;
             },
             render:function(vnode) {
-                return m('div', 'Hehe');
+                return m('div', 'RouteHandler');
             }
         }
 
