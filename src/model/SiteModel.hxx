@@ -27,10 +27,12 @@ class SiteModel {
 class SiteConfig implements DataClass {
     public var arr:Array<String> = [];
     public var domains:Array<DomainData> = [];
+    public var activeContentTreeId:String = 'active-content-tree';
 
     static public function defaultValues():SiteConfig return new SiteConfig(
         {
             arr:['A'], 
+            activeContentTreeId: 'active-tree',
             domains:[
                 new DomainData({name:'kak',fullname:'Körakademin',color:'blue'}),
                 new DomainData({name:'kantor',fullname:'Kantorsutbildningen',color:'red'}),

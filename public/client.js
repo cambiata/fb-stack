@@ -10,12 +10,13 @@ function $extend(from, fields) {
 var Client = function() {
 	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	utils_Profile.instance.init();
-	model_SiteModel.instance.init();
-	model_ContentModel.instance.init();
-	model_ContentModel.instance.initRealtimeUpdate();
-	model_UserModel.instance.init(app);
-	model_UserModel.instance.initRealtimeUpdate();
+	model_ContentTreeModel.instance.init();
+	model_ContentTreeModel.instance.load();
+	model_ContentTreeModel.instance.loadRealtimeUpdate();
+	model_UserModel.instance.load(app);
+	model_UserModel.instance.loadRealtimeUpdate();
 	ui_ClientUI.instance.init();
+	model_Routes.instance.init();
 };
 $hxClasses["Client"] = Client;
 Client.__name__ = true;
@@ -949,15 +950,44 @@ model_ApiCalls.getRequest = function(url) {
 	model_ErrorsAndLogs.addLog("Request: " + url);
 	return m.request({ method : "get", url : url});
 };
-var model_ContentModel = function() {
+var model_ContentItemModel = function() {
+	this.contentItem = model_ContentItemType.RoomType({ treeId : "active-tree", roomId : "kak"});
+};
+$hxClasses["model.ContentItemModel"] = model_ContentItemModel;
+model_ContentItemModel.__name__ = true;
+model_ContentItemModel.prototype = {
+	set_contentItem: function(item) {
+		this.contentItem = item;
+		m.redraw();
+		return this.contentItem;
+	}
+	,__class__: model_ContentItemModel
+	,__properties__: {set_contentItem:"set_contentItem"}
+};
+var model_ContentItemType = $hxEnums["model.ContentItemType"] = { __ename__ : true, __constructs__ : ["RoomType","ShelfType","BookType","ChapterType","SubchapterType","HomeType","BlaBla","Loading"]
+	,RoomType: ($_=function(ref) { return {_hx_index:0,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
+	,ShelfType: ($_=function(ref) { return {_hx_index:1,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
+	,BookType: ($_=function(ref) { return {_hx_index:2,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
+	,ChapterType: ($_=function(ref) { return {_hx_index:3,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
+	,SubchapterType: ($_=function(ref) { return {_hx_index:4,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
+	,HomeType: {_hx_index:5,__enum__:"model.ContentItemType",toString:$estr}
+	,BlaBla: {_hx_index:6,__enum__:"model.ContentItemType",toString:$estr}
+	,Loading: {_hx_index:7,__enum__:"model.ContentItemType",toString:$estr}
+};
+var model_ContentTreeModel = function() {
 	this.contentTree = DataModes.Nil;
 };
-$hxClasses["model.ContentModel"] = model_ContentModel;
-model_ContentModel.__name__ = true;
-model_ContentModel.prototype = {
+$hxClasses["model.ContentTreeModel"] = model_ContentTreeModel;
+model_ContentTreeModel.__name__ = true;
+model_ContentTreeModel.defaultData = function() {
+	return { id : "startup", rooms : [{ id : "startup-room", shelves : []}]};
+};
+model_ContentTreeModel.prototype = {
 	init: function() {
+		this.set_contentTree(DataModes.Data(dataclass_JsonConverter.fromJson(model_ContentTree,model_ContentTreeModel.defaultData())));
+	}
+	,load: function() {
 		var _gthis = this;
-		this.set_contentTree(DataModes.Loading);
 		model_ApiCalls.getRequest("/api/content-tree").then(function(item) {
 			model_ErrorsAndLogs.addErrors(item.errors);
 			_gthis.set_contentTree(_$Client_DataMode_$Impl_$.fromData(new model_ContentTree(item.data)));
@@ -968,9 +998,8 @@ model_ContentModel.prototype = {
 			return;
 		});
 	}
-	,initRealtimeUpdate: function() {
+	,loadRealtimeUpdate: function() {
 		var _gthis = this;
-		this.set_contentTree(DataModes.Loading);
 		firebase.database().ref("content-tree").on("value",function(snap,str) {
 			try {
 				model_ErrorsAndLogs.addLog("Realtime content loaded!" + utils_Profile.instance.msString());
@@ -988,19 +1017,69 @@ model_ContentModel.prototype = {
 		m.redraw();
 		return u;
 	}
-	,__class__: model_ContentModel
+	,__class__: model_ContentTreeModel
 	,__properties__: {set_contentTree:"set_contentTree"}
 };
+var model_ContentTreeFilters = function() { };
+$hxClasses["model.ContentTreeFilters"] = model_ContentTreeFilters;
+model_ContentTreeFilters.__name__ = true;
+model_ContentTreeFilters.filterHomeRoom = function(contentTree) {
+	var user = _$Client_DataMode_$Impl_$.getData(model_UserModel.instance.currentUser);
+	var contentTree1 = _$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree);
+	var room = user != null ? model_ContentTreeFilters.filterRoom(contentTree1,user.userConfig.domain) : contentTree1.rooms[0];
+	if(user != null && room == null) {
+		model_ErrorsAndLogs.addError("ContentTreeFilters::filterHomeRoom() - Can not filter to user's domain room " + user.userConfig.domain);
+	}
+	return room;
+};
+model_ContentTreeFilters.filterRoom = function(contentTree,roomId) {
+	return contentTree.rooms.filter(function(room) {
+		return room.id == roomId;
+	})[0];
+};
+model_ContentTreeFilters.filterShelf = function(room,shelfId) {
+	return room.shelves.filter(function(shelf) {
+		return shelf.id == shelfId;
+	})[0];
+};
+model_ContentTreeFilters.filterBook = function(shelf,bookId) {
+	return shelf.books.filter(function(book) {
+		return book.id == bookId;
+	})[0];
+};
+model_ContentTreeFilters.filterChapter = function(book,chapterId) {
+	return book.chapters.filter(function(chapter) {
+		return chapter.id == chapterId;
+	})[0];
+};
+model_ContentTreeFilters.filterSubchapter = function(chapter,subchapterId) {
+	return chapter.chapters.filter(function(chapter1) {
+		return chapter1.id == subchapterId;
+	})[0];
+};
 var model_ContentTree = function(data) {
-	this.children = [];
+	this.rooms = [];
 	this.set_id(data.id);
-	if(Object.prototype.hasOwnProperty.call(data,"children")) {
-		this.set_children(data.children);
+	if(Object.prototype.hasOwnProperty.call(data,"rooms")) {
+		this.set_rooms(data.rooms);
 	}
 };
 $hxClasses["model.ContentTree"] = model_ContentTree;
 model_ContentTree.__name__ = true;
 model_ContentTree.__interfaces__ = [DataClass];
+model_ContentTree.populate = function(id,rms) {
+	id = id == null ? "contentTree" + model_ContentTree.uid++ : id;
+	return new model_ContentTree({ id : id, rooms : rms});
+};
+model_ContentTree.validate = function(data) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data,"id")) {
+		output.push("id");
+	} else if(data.id == null) {
+		output.push("id");
+	}
+	return output;
+};
 model_ContentTree.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -1008,20 +1087,32 @@ model_ContentTree.prototype = {
 		}
 		return this.id = v;
 	}
-	,set_children: function(v) {
+	,set_rooms: function(v) {
 		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.children.");
+			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.rooms.");
 		}
-		return this.children = v;
+		return this.rooms = v;
 	}
 	,__class__: model_ContentTree
-	,__properties__: {set_children:"set_children",set_id:"set_id"}
+	,__properties__: {set_rooms:"set_rooms",set_id:"set_id"}
 };
 var model_Room = function(data) {
-	this.children = [];
+	this.textcolor = "black";
+	this.color = "yellow";
+	this.title = "room-title";
+	this.shelves = [];
 	this.set_id(data.id);
-	if(Object.prototype.hasOwnProperty.call(data,"children")) {
-		this.set_children(data.children);
+	if(Object.prototype.hasOwnProperty.call(data,"shelves")) {
+		this.set_shelves(data.shelves);
+	}
+	if(Object.prototype.hasOwnProperty.call(data,"title")) {
+		this.set_title(data.title);
+	}
+	if(Object.prototype.hasOwnProperty.call(data,"color")) {
+		this.set_color(data.color);
+	}
+	if(Object.prototype.hasOwnProperty.call(data,"textcolor")) {
+		this.set_textcolor(data.textcolor);
 	}
 };
 $hxClasses["model.Room"] = model_Room;
@@ -1034,23 +1125,41 @@ model_Room.prototype = {
 		}
 		return this.id = v;
 	}
-	,set_children: function(v) {
+	,set_shelves: function(v) {
 		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.children.");
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.shelves.");
 		}
-		return this.children = v;
+		return this.shelves = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.title.");
+		}
+		return this.title = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.color.");
+		}
+		return this.color = v;
+	}
+	,set_textcolor: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.textcolor.");
+		}
+		return this.textcolor = v;
 	}
 	,__class__: model_Room
-	,__properties__: {set_children:"set_children",set_id:"set_id"}
+	,__properties__: {set_textcolor:"set_textcolor",set_color:"set_color",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
 };
 var model_Shelf = function(data) {
-	this.children = [];
+	this.books = [];
 	this.set_id(data.id);
 	this.set_title(data.title);
 	this.set_access(data.access);
 	this.set_info(data.info);
-	if(Object.prototype.hasOwnProperty.call(data,"children")) {
-		this.set_children(data.children);
+	if(Object.prototype.hasOwnProperty.call(data,"books")) {
+		this.set_books(data.books);
 	}
 };
 $hxClasses["model.Shelf"] = model_Shelf;
@@ -1081,28 +1190,28 @@ model_Shelf.prototype = {
 		}
 		return this.info = v;
 	}
-	,set_children: function(v) {
+	,set_books: function(v) {
 		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.children.");
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.books.");
 		}
-		return this.children = v;
+		return this.books = v;
 	}
 	,__class__: model_Shelf
-	,__properties__: {set_children:"set_children",set_info:"set_info",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+	,__properties__: {set_books:"set_books",set_info:"set_info",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
 };
 var model_Booktype = $hxEnums["model.Booktype"] = { __ename__ : true, __constructs__ : ["Standard","Lexicon"]
 	,Standard: {_hx_index:0,__enum__:"model.Booktype",toString:$estr}
 	,Lexicon: {_hx_index:1,__enum__:"model.Booktype",toString:$estr}
 };
 var model_Book = function(data) {
-	this.children = [];
+	this.chapters = [];
 	this.set_id(data.id);
 	this.set_title(data.title);
 	this.set_access(data.access);
 	this.set_type(data.type);
 	this.set_info(data.info);
-	if(Object.prototype.hasOwnProperty.call(data,"children")) {
-		this.set_children(data.children);
+	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
+		this.set_chapters(data.chapters);
 	}
 };
 $hxClasses["model.Book"] = model_Book;
@@ -1139,14 +1248,14 @@ model_Book.prototype = {
 		}
 		return this.info = v;
 	}
-	,set_children: function(v) {
+	,set_chapters: function(v) {
 		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.children.");
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.chapters.");
 		}
-		return this.children = v;
+		return this.chapters = v;
 	}
 	,__class__: model_Book
-	,__properties__: {set_children:"set_children",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+	,__properties__: {set_chapters:"set_chapters",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
 };
 var model_Chaptertype = $hxEnums["model.Chaptertype"] = { __ename__ : true, __constructs__ : ["Info","Article","Video","Exercise"]
 	,Info: {_hx_index:0,__enum__:"model.Chaptertype",toString:$estr}
@@ -1155,15 +1264,15 @@ var model_Chaptertype = $hxEnums["model.Chaptertype"] = { __ename__ : true, __co
 	,Exercise: {_hx_index:3,__enum__:"model.Chaptertype",toString:$estr}
 };
 var model_Chapter = function(data) {
-	this.children = [];
+	this.chapters = [];
 	this.set_id(data.id);
 	this.set_title(data.title);
 	this.set_access(data.access);
 	this.set_type(data.type);
 	this.set_info(data.info);
 	this.set_text(data.text);
-	if(Object.prototype.hasOwnProperty.call(data,"children")) {
-		this.set_children(data.children);
+	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
+		this.set_chapters(data.chapters);
 	}
 };
 $hxClasses["model.Chapter"] = model_Chapter;
@@ -1206,14 +1315,14 @@ model_Chapter.prototype = {
 		}
 		return this.text = v;
 	}
-	,set_children: function(v) {
+	,set_chapters: function(v) {
 		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.children.");
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.chapters.");
 		}
-		return this.children = v;
+		return this.chapters = v;
 	}
 	,__class__: model_Chapter
-	,__properties__: {set_children:"set_children",set_text:"set_text",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+	,__properties__: {set_chapters:"set_chapters",set_text:"set_text",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
 };
 var model_ErrorsAndLogs = function() { };
 $hxClasses["model.ErrorsAndLogs"] = model_ErrorsAndLogs;
@@ -1232,97 +1341,84 @@ model_ErrorsAndLogs.addError = function(e) {
 	model_ErrorsAndLogs.errors.unshift(e);
 	m.redraw();
 };
-var model_SiteModel = function() {
+var model_Routes = function() {
+	this.subchapterHandler = { onmatch : function(args,path) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.SubchapterType({ treeId : args["treeId"], roomId : args["roomId"], shelfId : args["shelfId"], bookId : args["bookId"], chapterId : args["chapterId"], subchapterId : args["subachapterId"]}));
+		} catch( e ) {
+			model_ErrorsAndLogs.addError("RouteResolver subchapterHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+		return null;
+	}, render : function(vnode) {
+		return m.m("div","RouteHandler");
+	}};
+	this.chapterHandler = { onmatch : function(args1,path1) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.ChapterType({ treeId : args1["treeId"], roomId : args1["roomId"], shelfId : args1["shelfId"], bookId : args1["bookId"], chapterId : args1["chapterId"]}));
+		} catch( e1 ) {
+			model_ErrorsAndLogs.addError("RouteResolver chapterHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
+		}
+		return null;
+	}, render : function(vnode1) {
+		return m.m("div","RouteHandler");
+	}};
+	this.bookHandler = { onmatch : function(args2,path2) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.BookType({ treeId : args2["treeId"], roomId : args2["roomId"], shelfId : args2["shelfId"], bookId : args2["bookId"]}));
+		} catch( e2 ) {
+			model_ErrorsAndLogs.addError("RouteResolver bookHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
+		}
+		return null;
+	}, render : function(vnode2) {
+		return m.m("div","RouteHandler");
+	}};
+	this.shelfHandler = { onmatch : function(args3,path3) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.ShelfType({ treeId : args3["treeId"], roomId : args3["roomId"], shelfId : args3["shelfId"]}));
+		} catch( e3 ) {
+			model_ErrorsAndLogs.addError("RouteResolver ShelfHandler Error: " + Std.string((e3 instanceof js__$Boot_HaxeError) ? e3.val : e3));
+		}
+		return null;
+	}, render : function(vnode3) {
+		return m.m("div","RouteHandler");
+	}};
+	this.roomHandler = { onmatch : function(args4,path4) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.RoomType({ treeId : args4["treeId"], roomId : args4["roomId"]}));
+		} catch( e4 ) {
+			model_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e4 instanceof js__$Boot_HaxeError) ? e4.val : e4));
+		}
+		return null;
+	}, render : function(vnode4) {
+		return m.m("div","RouteHandler");
+	}};
+	this.homeHandler = { onmatch : function(args5,path5) {
+		try {
+			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.HomeType);
+		} catch( e5 ) {
+			model_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e5 instanceof js__$Boot_HaxeError) ? e5.val : e5));
+		}
+		return null;
+	}, render : function(vnode5) {
+		return m.m("div","RouteHandler");
+	}};
 };
-$hxClasses["model.SiteModel"] = model_SiteModel;
-model_SiteModel.__name__ = true;
-model_SiteModel.prototype = {
+$hxClasses["model.Routes"] = model_Routes;
+model_Routes.__name__ = true;
+model_Routes.prototype = {
 	init: function() {
-		this.set_siteConfig(model_SiteConfig.defaultValues());
+		var routeHandler = { onmatch : function(args,path) {
+			console.log("src/model/Routes.hx:23:",args);
+			console.log("src/model/Routes.hx:24:",path);
+			model_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
+			return null;
+		}, render : function(vnode) {
+			return m.m("div","RouteHandler");
+		}};
+		var routes = { "/" : this.homeHandler, "/yxa" : routeHandler, "/room/:treeId/:roomId" : this.roomHandler, "/shelf/:treeId/:roomId/:shelfId" : this.shelfHandler, "/book/:treeId/:roomId/:shelfId/:bookId" : this.bookHandler, "/chapter/:treeId/:roomId/:shelfId/:bookId/:chapterId" : this.chapterHandler, "/subchapter/:treeId/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.subchapterHandler};
+		m.route(window.document.querySelector("#routes"),"/",routes);
 	}
-	,set_siteConfig: function(d) {
-		this.siteConfig = d;
-		model_ErrorsAndLogs.addLog("SiteConfig:" + Std.string(this.siteConfig));
-		m.redraw();
-		return d;
-	}
-	,__class__: model_SiteModel
-	,__properties__: {set_siteConfig:"set_siteConfig"}
-};
-var model_SiteConfig = function(data) {
-	this.domains = [];
-	this.arr = [];
-	if(data != null) {
-		if(Object.prototype.hasOwnProperty.call(data,"arr")) {
-			this.set_arr(data.arr);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"domains")) {
-			this.set_domains(data.domains);
-		}
-	}
-};
-$hxClasses["model.SiteConfig"] = model_SiteConfig;
-model_SiteConfig.__name__ = true;
-model_SiteConfig.__interfaces__ = [DataClass];
-model_SiteConfig.defaultValues = function() {
-	return new model_SiteConfig({ arr : ["A"], domains : [new model_DomainData({ name : "kak", fullname : "Körakademin", color : "blue"}),new model_DomainData({ name : "kantor", fullname : "Kantorsutbildningen", color : "red"})]});
-};
-model_SiteConfig.prototype = {
-	set_arr: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.arr.");
-		}
-		return this.arr = v;
-	}
-	,set_domains: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for SiteConfig.domains.");
-		}
-		return this.domains = v;
-	}
-	,__class__: model_SiteConfig
-	,__properties__: {set_domains:"set_domains",set_arr:"set_arr"}
-};
-var model_DomainData = function(data) {
-	this.color = "grey";
-	this.fullname = "Fullname";
-	this.name = "shortname";
-	if(data != null) {
-		if(Object.prototype.hasOwnProperty.call(data,"name")) {
-			this.set_name(data.name);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"fullname")) {
-			this.set_fullname(data.fullname);
-		}
-		if(Object.prototype.hasOwnProperty.call(data,"color")) {
-			this.set_color(data.color);
-		}
-	}
-};
-$hxClasses["model.DomainData"] = model_DomainData;
-model_DomainData.__name__ = true;
-model_DomainData.__interfaces__ = [DataClass];
-model_DomainData.prototype = {
-	set_name: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.name.");
-		}
-		return this.name = v;
-	}
-	,set_fullname: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.fullname.");
-		}
-		return this.fullname = v;
-	}
-	,set_color: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomainData.color.");
-		}
-		return this.color = v;
-	}
-	,__class__: model_DomainData
-	,__properties__: {set_color:"set_color",set_fullname:"set_fullname",set_name:"set_name"}
+	,__class__: model_Routes
 };
 var model_UserModel = function() {
 	this.currentUser = DataModes.Nil;
@@ -1341,7 +1437,7 @@ model_UserModel.prototype = {
 		m.redraw();
 		return u;
 	}
-	,init: function(app) {
+	,load: function(app) {
 		model_UserModel.instance.set_currentUser(DataModes.Loading);
 		app.auth().onAuthStateChanged(function(user) {
 			if(user != null) {
@@ -1367,7 +1463,7 @@ model_UserModel.prototype = {
 			return model_UserModel.instance.set_currentUser(DataModes.Nil);
 		});
 	}
-	,initRealtimeUpdate: function() {
+	,loadRealtimeUpdate: function() {
 		var _gthis = this;
 		haxe_Timer.delay(function() {
 			try {
@@ -1577,14 +1673,6 @@ ui_ClientUI.prototype = {
 		var element = ($_=window.document,$bind($_,$_.querySelector));
 		m.mount(element("header"),new ui_UIHeader());
 		m.mount(element("main"),new ui_UIMain());
-		var routeHandler = { onmatch : function(args,path) {
-			console.log("src/ui/ClientUI.hx:37:",args);
-			console.log("src/ui/ClientUI.hx:38:",path);
-			return null;
-		}, render : function(vnode) {
-			return m.m("div","RouteHandler");
-		}};
-		m.route(element("#routes"),"/",{ "/" : routeHandler, "/yxa" : routeHandler});
 	}
 	,__class__: ui_ClientUI
 };
@@ -1602,9 +1690,9 @@ ui_UIMain.prototype = {
 			var currentUser = _g.d;
 			filter = { filterRooms : [currentUser.userConfig.domain], filterAccess : currentUser.userData.access};
 		} else {
-			filter = { filterRooms : [model_SiteModel.instance.siteConfig.domains[0].name], filterAccess : 0};
+			filter = { filterRooms : ["kak"], filterAccess : 0};
 		}
-		return [new ui_UIContentTree(filter).view(),new ui_StateMonitor().view()];
+		return [new ui_content_ContentTreeView(filter).view(),new ui_content_ContentItemView().view(),new ui_StateMonitor().view()];
 	}
 	,__class__: ui_UIMain
 };
@@ -1620,7 +1708,7 @@ ui_StateMonitor.prototype = {
 			return m.m("div.stateitem.statelog","" + e);
 		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",model_ErrorsAndLogs.errors.map(function(e1) {
 			return m.m("div.stateitem.stateerror","" + e1);
-		})),m.m("div.statelabel","content-tree"),m.m("div.stateitems","" + Std.string(model_ContentModel.instance.contentTree))]);
+		})),m.m("div.statelabel","content-tree"),m.m("div.stateitems","" + Std.string(model_ContentTreeModel.instance.contentTree))]);
 	}
 	,__class__: ui_StateMonitor
 };
@@ -1634,7 +1722,7 @@ ui_MInputEmail.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("input[type=input][placeholder='Email']#email",{ style : { backgroundColor : this.state.validEmail ? "" + "white" : "" + "#fcc"}, onkeyup : function(e) {
+		return m.m("input[type=input][placeholder='Email']#email",{ style : { backgroundColor : this.state.validEmail ? "" + "#dfd" : "" + "white"}, onkeyup : function(e) {
 			return _gthis.validate(e);
 		}, onchange : function(e1) {
 			return _gthis.validate(e1);
@@ -1645,7 +1733,7 @@ ui_MInputEmail.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserEmail_UserEmail_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:112:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:114:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
 		this.state.email = str;
 		this.state.validEmail = valid;
 		m.redraw();
@@ -1663,7 +1751,7 @@ ui_MInputPassword.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("input[type=password][placeholder='Password']#password",{ style : { backgroundColor : this.state.validPassword ? "" + "white" : "" + "#fcc"}, onkeyup : function(e) {
+		return m.m("input[type=password][placeholder='Password']#password",{ style : { backgroundColor : this.state.validPassword ? "" + "#dfd" : "" + "white"}, onkeyup : function(e) {
 			return _gthis.validate(e);
 		}, onchange : function(e1) {
 			return _gthis.validate(e1);
@@ -1674,7 +1762,7 @@ ui_MInputPassword.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserPassword_UserPassword_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:129:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/ClientUI.hx:131:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
 		this.state.password = str;
 		this.state.validPassword = valid;
 		m.redraw();
@@ -1684,7 +1772,7 @@ ui_MInputPassword.prototype = {
 };
 var ui_MLoginForm = function() {
 	this.submitCallback = function(email,password) {
-		console.log("src/ui/ClientUI.hx:155:","callback " + email + ", " + password);
+		console.log("src/ui/ClientUI.hx:157:","callback " + email + ", " + password);
 		return;
 	};
 	this.state = null;
@@ -1719,7 +1807,8 @@ ui_MLogoutForm.prototype = {
 			return m.m("div","clientUser == null");
 		}
 		var userData = this.clientUser.userData;
-		return m.m("form",[m.m("div",""),m.m("h2","Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
+		var homeroom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
+		return m.m("form",[m.m("div",""),m.m("h3",{ style : { color : homeroom.textcolor}},"Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
 			model_UserModel.instance.signOut();
 			return;
 		}},"Logout")]);
@@ -1746,6 +1835,10 @@ ui_UIHeader.__interfaces__ = [mithril_Mithril];
 ui_UIHeader.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var homeroom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
+		var element = ($_=window.document,$bind($_,$_.querySelector));
+		var elHeader = element("header");
+		elHeader.style.backgroundColor = homeroom.color;
 		var userView;
 		var _g = model_UserModel.instance.currentUser;
 		switch(_g._hx_index) {
@@ -1760,7 +1853,7 @@ ui_UIHeader.prototype = {
 			userView = this.logoutform.setUser(d).view();
 			break;
 		}
-		return [m.m("h2","Header"),userView];
+		return [m.m("h1",{ style : { color : homeroom.textcolor}},"" + homeroom.title),userView];
 	}
 	,__class__: ui_UIHeader
 };
@@ -1775,30 +1868,30 @@ ui_TestUI.prototype = {
 		return [m.m("button",{ onclick : function(e) {
 			return model_ApiCalls.getAuthRequest("/api/userdata").then(function(data) {
 				model_ErrorsAndLogs.addLog(JSON.stringify(data));
-				console.log("src/ui/ClientUI.hx:218:","userData result: " + JSON.stringify(data));
+				console.log("src/ui/ClientUI.hx:227:","userData result: " + JSON.stringify(data));
 				return;
 			})["catch"](function(error) {
-				console.log("src/ui/ClientUI.hx:220:","userData error: " + error);
+				console.log("src/ui/ClientUI.hx:229:","userData error: " + error);
 				model_ErrorsAndLogs.addError(error);
 				return;
 			});
 		}},"Test /api/userData "),m.m("button",{ onclick : function(e1) {
 			return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-				console.log("src/ui/ClientUI.hx:229:","userconfig result: " + JSON.stringify(data1));
+				console.log("src/ui/ClientUI.hx:238:","userconfig result: " + JSON.stringify(data1));
 				model_ErrorsAndLogs.addLog(JSON.stringify(data1));
 				return;
 			})["catch"](function(error1) {
-				console.log("src/ui/ClientUI.hx:232:","userconfig error: " + error1);
+				console.log("src/ui/ClientUI.hx:241:","userconfig error: " + error1);
 				model_ErrorsAndLogs.addError(error1);
 				return;
 			});
 		}},"Test /api/userConfig "),m.m("button",{ onclick : function(e2) {
 			return model_ApiCalls.getRequest("/api/content-tree").then(function(data2) {
-				console.log("src/ui/ClientUI.hx:240:","content-tree result: " + JSON.stringify(data2));
+				console.log("src/ui/ClientUI.hx:249:","content-tree result: " + JSON.stringify(data2));
 				model_ErrorsAndLogs.addLog(JSON.stringify(data2));
 				return;
 			})["catch"](function(error2) {
-				console.log("src/ui/ClientUI.hx:243:","content-tree error: " + error2);
+				console.log("src/ui/ClientUI.hx:252:","content-tree error: " + error2);
 				model_ErrorsAndLogs.addError(error2);
 				return;
 			});
@@ -1806,17 +1899,128 @@ ui_TestUI.prototype = {
 	}
 	,__class__: ui_TestUI
 };
-var ui_UIContentTree = function(filter) {
+var ui_content_ContentItemView = function() {
+};
+$hxClasses["ui.content.ContentItemView"] = ui_content_ContentItemView;
+ui_content_ContentItemView.__name__ = true;
+ui_content_ContentItemView.__interfaces__ = [mithril_Mithril];
+ui_content_ContentItemView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var _g = model_ContentItemModel.instance.contentItem;
+		switch(_g._hx_index) {
+		case 0:
+			var ref = _g.ref;
+			var item = model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref.roomId);
+			return new ui_content_RoomView(item).view();
+		case 1:
+			var ref1 = _g.ref;
+			var item1 = model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref1.roomId),ref1.shelfId);
+			return new ui_content_ShelfView(item1).view();
+		case 2:
+			var ref2 = _g.ref;
+			var item2 = model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref2.roomId),ref2.shelfId),ref2.bookId);
+			return new ui_content_BookView(item2).view();
+		case 3:
+			var ref3 = _g.ref;
+			var item3 = model_ContentTreeFilters.filterChapter(model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref3.roomId),ref3.shelfId),ref3.bookId),ref3.chapterId);
+			return new ui_content_ChapterView(item3).view();
+		case 4:
+			var ref4 = _g.ref;
+			var item4 = model_ContentTreeFilters.filterSubchapter(model_ContentTreeFilters.filterChapter(model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref4.roomId),ref4.shelfId),ref4.bookId),ref4.chapterId),ref4.shelfId);
+			return new ui_content_ChapterView(item4).view();
+		case 5:
+			var ct = _$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree);
+			var homeRoom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
+			return new ui_content_RoomView(homeRoom).view();
+		case 6:
+			return m.m("h1","BlaBla");
+		case 7:
+			return m.m("h1","Loading content");
+		}
+	}
+	,__class__: ui_content_ContentItemView
+};
+var ui_content_RoomView = function(item) {
+	this.item = item;
+};
+$hxClasses["ui.content.RoomView"] = ui_content_RoomView;
+ui_content_RoomView.__name__ = true;
+ui_content_RoomView.__interfaces__ = [mithril_Mithril];
+ui_content_RoomView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",[m.m("h1","Room"),m.m("div","" + Std.string(this.item))]);
+	}
+	,__class__: ui_content_RoomView
+};
+var ui_content_ShelfView = function(item) {
+	this.item = item;
+};
+$hxClasses["ui.content.ShelfView"] = ui_content_ShelfView;
+ui_content_ShelfView.__name__ = true;
+ui_content_ShelfView.__interfaces__ = [mithril_Mithril];
+ui_content_ShelfView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",[m.m("h1","Shelf"),m.m("div","" + Std.string(this.item))]);
+	}
+	,__class__: ui_content_ShelfView
+};
+var ui_content_BookView = function(item) {
+	this.item = item;
+};
+$hxClasses["ui.content.BookView"] = ui_content_BookView;
+ui_content_BookView.__name__ = true;
+ui_content_BookView.__interfaces__ = [mithril_Mithril];
+ui_content_BookView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",[m.m("h1","Book"),m.m("div","" + Std.string(this.item))]);
+	}
+	,__class__: ui_content_BookView
+};
+var ui_content_ChapterView = function(item) {
+	this.item = item;
+};
+$hxClasses["ui.content.ChapterView"] = ui_content_ChapterView;
+ui_content_ChapterView.__name__ = true;
+ui_content_ChapterView.__interfaces__ = [mithril_Mithril];
+ui_content_ChapterView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",[m.m("h1","Chapter"),m.m("div","" + Std.string(this.item))]);
+	}
+	,__class__: ui_content_ChapterView
+};
+var ui_content_SubchapterView = function(item) {
+	this.item = item;
+};
+$hxClasses["ui.content.SubchapterView"] = ui_content_SubchapterView;
+ui_content_SubchapterView.__name__ = true;
+ui_content_SubchapterView.__interfaces__ = [mithril_Mithril];
+ui_content_SubchapterView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",[m.m("h1","Subchapter"),m.m("div","" + Std.string(this.item))]);
+	}
+	,__class__: ui_content_SubchapterView
+};
+var ui_content_ContentTreeView = function(filter) {
 	this.filter = filter;
 };
-$hxClasses["ui.UIContentTree"] = ui_UIContentTree;
-ui_UIContentTree.__name__ = true;
-ui_UIContentTree.__interfaces__ = [mithril_Mithril];
-ui_UIContentTree.prototype = {
+$hxClasses["ui.content.ContentTreeView"] = ui_content_ContentTreeView;
+ui_content_ContentTreeView.__name__ = true;
+ui_content_ContentTreeView.__interfaces__ = [mithril_Mithril];
+ui_content_ContentTreeView.parsePath = function(p) {
+	var segments = p.split("/");
+	return { treeId : segments == null ? null : 0 > segments.length - 1 ? null : segments[0], roomId : segments == null ? null : 1 > segments.length - 1 ? null : segments[1], shelfId : segments == null ? null : 2 > segments.length - 1 ? null : segments[2], bookId : segments == null ? null : 3 > segments.length - 1 ? null : segments[3], chapterId : segments == null ? null : 4 > segments.length - 1 ? null : segments[4], subchapterId : segments == null ? null : 5 > segments.length - 1 ? null : segments[5]};
+};
+ui_content_ContentTreeView.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var _g = model_ContentModel.instance.contentTree;
+		var _g = model_ContentTreeModel.instance.contentTree;
 		switch(_g._hx_index) {
 		case 0:
 			return m.m("h1","Nil");
@@ -1824,104 +2028,137 @@ ui_UIContentTree.prototype = {
 			return m.m("h1","Loading");
 		case 2:
 			var ct = _g.d;
-			var path = "/tree/" + ct.id;
-			return m.m("details[open]",[m.m("summary","ContentTree " + ct.id)].concat(ct.children.map(function(child) {
-				return new ui_UIRoom(child,path,_gthis.filter).view();
+			var path = ct.id;
+			return m.m("details[open]",[m.m("summary","ContentTree " + ct.id)].concat(ct.rooms.map(function(child) {
+				return new ui_content_UIRoom(child,path,_gthis.filter).view();
 			})));
 		}
 	}
-	,__class__: ui_UIContentTree
+	,__class__: ui_content_ContentTreeView
 };
-var ui_UIRoom = function(item,parentPath,filter) {
+var ui_content_UIRoom = function(item,parentPath,filter) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
 	this.filter = filter;
 };
-$hxClasses["ui.UIRoom"] = ui_UIRoom;
-ui_UIRoom.__name__ = true;
-ui_UIRoom.__interfaces__ = [mithril_Mithril];
-ui_UIRoom.prototype = {
+$hxClasses["ui.content.UIRoom"] = ui_content_UIRoom;
+ui_content_UIRoom.__name__ = true;
+ui_content_UIRoom.__interfaces__ = [mithril_Mithril];
+ui_content_UIRoom.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var showItem = this.filter != null && this.filter.filterRooms.indexOf(this.item.id) != -1;
 		var cssClass = showItem ? ".open" : ".protected";
-		var children = this.item.children != null ? this.item.children : [];
-		var anchor = m.m("a",{ href : this.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room " + this.item.id);
+		var children = this.item.shelves != null ? this.item.shelves : [];
+		var objPath = ui_content_ContentTreeView.parsePath(this.path);
+		var itemPath = "/" + ["room",objPath.treeId,objPath.roomId].join("/");
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.id + ":" + itemPath);
 		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(children.map(function(child) {
-			return new ui_UIShelf(child,_gthis.path,_gthis.filter).view();
+			return new ui_content_UIShelf(child,_gthis.path,_gthis.filter).view();
 		})));
 	}
-	,__class__: ui_UIRoom
+	,__class__: ui_content_UIRoom
 };
-var ui_UIShelf = function(item,parentPath,filter) {
+var ui_content_UIShelf = function(item,parentPath,filter) {
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
 	this.filter = filter;
 };
-$hxClasses["ui.UIShelf"] = ui_UIShelf;
-ui_UIShelf.__name__ = true;
-ui_UIShelf.__interfaces__ = [mithril_Mithril];
-ui_UIShelf.prototype = {
+$hxClasses["ui.content.UIShelf"] = ui_content_UIShelf;
+ui_content_UIShelf.__name__ = true;
+ui_content_UIShelf.__interfaces__ = [mithril_Mithril];
+ui_content_UIShelf.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
 		var cssClass = showItem ? ".open" : ".protected";
-		var children = this.item.children != null ? this.item.children : [];
-		var anchor = m.m("a",{ href : this.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf " + this.item.title + ":" + this.item.id + " access:" + this.item.access);
-		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(children.map(function(child) {
-			return new ui_UIBook(child,_gthis.path,_gthis.filter).view();
+		var books = this.item.books != null ? this.item.books : [];
+		var objPath = ui_content_ContentTreeView.parsePath(this.path);
+		var itemPath = "/" + ["shelf",objPath.treeId,objPath.roomId,objPath.shelfId].join("/");
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + itemPath);
+		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(books.map(function(child) {
+			return new ui_content_UIBook(child,_gthis.path,_gthis.filter).view();
 		})));
 	}
-	,__class__: ui_UIShelf
+	,__class__: ui_content_UIShelf
 };
-var ui_UIBook = function(item,parentPath,filter) {
+var ui_content_UIBook = function(item,parentPath,filter) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
 	this.filter = filter;
 };
-$hxClasses["ui.UIBook"] = ui_UIBook;
-ui_UIBook.__name__ = true;
-ui_UIBook.__interfaces__ = [mithril_Mithril];
-ui_UIBook.prototype = {
+$hxClasses["ui.content.UIBook"] = ui_content_UIBook;
+ui_content_UIBook.__name__ = true;
+ui_content_UIBook.__interfaces__ = [mithril_Mithril];
+ui_content_UIBook.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
 		var cssClass = showItem ? ".open" : ".protected";
-		var children = this.item.children != null ? this.item.children : [];
-		var anchor = m.m("a",{ href : this.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book " + this.item.title + ":" + this.item.id + " access:" + this.item.access);
-		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(children.map(function(child) {
-			return new ui_UIChapter(child,_gthis.path,_gthis.filter).view();
+		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var objPath = ui_content_ContentTreeView.parsePath(this.path);
+		var itemPath = "/" + ["book",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId].join("/");
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + itemPath);
+		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UIChapter(child,_gthis.path,_gthis.filter).view();
 		})));
 	}
-	,__class__: ui_UIBook
+	,__class__: ui_content_UIBook
 };
-var ui_UIChapter = function(item,parentPath,filter) {
+var ui_content_UIChapter = function(item,parentPath,filter) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
 	this.filter = filter;
 };
-$hxClasses["ui.UIChapter"] = ui_UIChapter;
-ui_UIChapter.__name__ = true;
-ui_UIChapter.__interfaces__ = [mithril_Mithril];
-ui_UIChapter.prototype = {
+$hxClasses["ui.content.UIChapter"] = ui_content_UIChapter;
+ui_content_UIChapter.__name__ = true;
+ui_content_UIChapter.__interfaces__ = [mithril_Mithril];
+ui_content_UIChapter.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
 		var cssClass = showItem ? ".open" : ".protected";
-		var children = this.item.children != null ? this.item.children : [];
-		var anchor = m.m("a",{ href : this.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter " + this.item.title + ":" + this.item.id + " access:" + this.item.access);
-		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(children.map(function(child) {
-			return new ui_UIChapter(child,_gthis.path,_gthis.filter).view();
+		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var objPath = ui_content_ContentTreeView.parsePath(this.path);
+		var itemPath = "/" + ["chapter",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId,objPath.chapterId].join("/");
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + itemPath);
+		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UISubchapter(child,_gthis.path,_gthis.filter).view();
 		})));
 	}
-	,__class__: ui_UIChapter
+	,__class__: ui_content_UIChapter
+};
+var ui_content_UISubchapter = function(item,parentPath,filter) {
+	this.item = null;
+	this.item = item;
+	this.path = parentPath + "/" + item.id;
+	this.filter = filter;
+};
+$hxClasses["ui.content.UISubchapter"] = ui_content_UISubchapter;
+ui_content_UISubchapter.__name__ = true;
+ui_content_UISubchapter.__interfaces__ = [mithril_Mithril];
+ui_content_UISubchapter.prototype = {
+	view: function() {
+		var _gthis = this;
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
+		var cssClass = showItem ? ".open" : ".protected";
+		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var objPath = ui_content_ContentTreeView.parsePath(this.path);
+		var itemPath = "/" + ["subchapter",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId,objPath.chapterId,objPath.subchapterId].join("/");
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + itemPath);
+		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UIChapter(child,_gthis.path,_gthis.filter).view();
+		})));
+	}
+	,__class__: ui_content_UISubchapter
 };
 var utils_Profile = function() {
 	this.init();
@@ -2018,17 +2255,17 @@ dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 js_Boot.__toStr = ({ }).toString;
-model_ContentModel.instance = new model_ContentModel();
-model_ContentTree.__meta__ = { obj : { dataClassRtti : [{ id : "String", children : "Array<DataClass<model.Room>>"}]}};
-model_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", children : "Array<DataClass<model.Shelf>>"}]}};
-model_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", children : "Array<DataClass<model.Book>>"}]}};
-model_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Booktype>", info : "String", children : "Array<DataClass<model.Chapter>>"}]}};
-model_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Chaptertype>", info : "String", text : "String", children : "Array<DataClass<model.Chapter>>"}]}};
+model_ContentItemModel.instance = new model_ContentItemModel();
+model_ContentTreeModel.instance = new model_ContentTreeModel();
+model_ContentTree.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<model.Room>>"}]}};
+model_ContentTree.uid = 1;
+model_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<model.Shelf>>", title : "String", color : "String", textcolor : "String"}]}};
+model_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<model.Book>>"}]}};
+model_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Booktype>", info : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
+model_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Chaptertype>", info : "String", text : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
 model_ErrorsAndLogs.logs = [];
 model_ErrorsAndLogs.errors = [];
-model_SiteModel.instance = new model_SiteModel();
-model_SiteConfig.__meta__ = { obj : { dataClassRtti : [{ arr : "Array<String>", domains : "Array<DataClass<model.DomainData>>"}]}};
-model_DomainData.__meta__ = { obj : { dataClassRtti : [{ name : "String", fullname : "String", color : "String"}]}};
+model_Routes.instance = new model_Routes();
 model_UserModel.instance = new model_UserModel();
 model_CurrentUser.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<model.UserData>", userConfig : "DataClass<model.UserConfig>"}]}};
 model_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};

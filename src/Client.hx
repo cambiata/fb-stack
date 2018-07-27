@@ -26,37 +26,20 @@ class Client {
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
         Profile.instance.init();
-        SiteModel.instance.init();
-        ContentModel.instance.init();
-        ContentModel.instance.initRealtimeUpdate();
-        UserModel.instance.init(app);
-        UserModel.instance.initRealtimeUpdate();
+        ContentTreeModel.instance.init();
+        
+        // haxe.Timer.delay(()->{
+            ContentTreeModel.instance.load();
+            ContentTreeModel.instance.loadRealtimeUpdate();
+            // haxe.Timer.delay(()->{
+                UserModel.instance.load(app);
+                UserModel.instance.loadRealtimeUpdate();
+        //     }, 3000);
+        // }, 3000);
 
         ClientUI.instance.init();
-
-        // var element = js.Browser.document.querySelector;       
-        // M.mount(element('header'), new UIHeader());
-        // M.mount(element('main'), new UIMain());
-
-        // var routeHandler:SimpleRouteResolver = { 
-        //     onmatch: function(args, path) {
-        //         trace(args);
-        //         trace(path);
-        //         return null;
-        //     },
-        //     render:function(vnode) {
-        //         return m('div', 'Hehe');
-        //     }
-        // }
-        // $type(routeHandler);
-
-        // var routes = {
-        //     "/": routeHandler,
-        // }       
-        
-        // M.route(element('#routes'), '/', routes); 
-      }
-
+        Routes.instance.init();
+    }
 }
 
 enum DataModes<T> {

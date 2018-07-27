@@ -1,6 +1,6 @@
 package ui;
 
-import model.SiteModel;
+// import model.SiteModel;
 import js.Browser;
 import firebase.Firebase;
 import utils.*;
@@ -9,18 +9,20 @@ import mithril.M;
 import mithril.M.m;
 import Client;
 import model.UserModel;
-import model.ContentModel;
+import model.ContentTreeModel;
 import model.ErrorsAndLogs;
 import model.ApiCalls;
+import ui.content.ContentTreeView;
+import ui.content.ContentItemView;
 
 using StringTools;
-using model.ContentModel;
+using model.ContentTreeModel;
 using cx.ArrayTools;
 
 class ClientUI {
     
-    static public var VALID_COLOR='white';
-    static public var INVALID_COLOR='#faa';    
+    // static public var VALID_COLOR='#dfd';
+    // static public var INVALID_COLOR='white';    
     
     public static var instance(default, null):ClientUI = new ClientUI();
     
@@ -32,36 +34,36 @@ class ClientUI {
         M.mount(element('header'), new UIHeader());
         M.mount(element('main'), new UIMain());
 
-        var routeHandler:SimpleRouteResolver = { 
-            onmatch: function(args, path) {
-                trace(args);
-                trace(path);
-                return null;
-            },
-            render:function(vnode) {
-                return m('div', 'RouteHandler');
-            }
-        }
 
-        var routes = {
-            "/": routeHandler,
-            "/yxa": routeHandler,
-        }       
+
+        // var routeHandler:SimpleRouteResolver = { 
+        //     onmatch: function(args, path) {
+        //         trace(args);
+        //         trace(path);
+        //         ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
+        //         return null;
+        //     },
+        //     render:function(vnode) {
+        //         return m('div', 'RouteHandler');
+        //     }
+        // }
+
+        // var routes = {
+        //     "/": routeHandler,
+        //     "/yxa": routeHandler,
+        //     "/shelf/:tree/:room/:shelf": routeHandler,
+        // }       
         
-        M.route(element('#routes'), '/', routes); 
+        // M.route(element('#routes'), '/', routes); 
     }
 
 }
 
-typedef SimpleRouteResolver = {
-	function onmatch(args : haxe.DynamicAccess<String>, requestedPath : String) : Dynamic;
-	function render(vnode : Null<Vnode<Dynamic>>) : Vnodes;
-}
 
 
 enum abstract Colors(String) to String {
-    var Valid = 'white';
-    var Invalid = '#fcc';
+    var Valid = '#dfd';
+    var Invalid = 'white';
 }
 
 class UIMain implements Mithril {
@@ -69,16 +71,16 @@ class UIMain implements Mithril {
     }
     
     public function view() {
-
         var filter = switch UserModel.instance.currentUser {
             case Data(currentUser):
                 {filterRooms: [currentUser.userConfig.domain], filterAccess: currentUser.userData.access};
             case _:
-                {filterRooms: [SiteModel.instance.siteConfig.domains.first().name] , filterAccess: 0};
+                {filterRooms: ['kak'] , filterAccess: 0};
         }
 
         return [
-            new UIContentTree(filter).view(),
+            new ContentTreeView(filter).view(),
+            new ContentItemView().view(),
             new StateMonitor().view(),
         ];
     }
@@ -94,7 +96,7 @@ class StateMonitor implements Mithril {
             m('div.statelabel', 'errors:'),
             m('div.stateitems', ErrorsAndLogs.errors.map(e->m('div.stateitem.stateerror', ''+e))),
             m('div.statelabel', 'content-tree'),
-            m('div.stateitems', '' + ContentModel.instance.contentTree),
+            m('div.stateitems', '' + ContentTreeModel.instance.contentTree),
             // new UIContentTree().view(),
         ]);
     }
@@ -166,9 +168,10 @@ class MLogoutForm implements Mithril {
     public function view() {
         if (this.clientUser == null) return m('div', 'clientUser == null');
         var userData:UserData = this.clientUser.userData;
+        var homeroom:Room = ContentTreeModel.instance.contentTree.getData().filterHomeRoom();
         return m('form', [
             m('div', ''),
-            m('h2', 'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
+            m('h3', {style:{color:homeroom.textcolor}},'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
 			m("button[type=button]", { onclick: e -> {
 				UserModel.instance.signOut();
 			}}, 'Logout'), 
@@ -193,13 +196,19 @@ class UIHeader implements Mithril {
     }
 
     public function view() {
+
+        var homeroom:Room = ContentTreeModel.instance.contentTree.getData().filterHomeRoom();
+        var element = js.Browser.document.querySelector; 
+        var elHeader:js.html.Element = element('header');
+        elHeader.style.backgroundColor = homeroom.color;
+
         var userView = switch UserModel.instance.currentUser {
                 case Data(d): cast this.logoutform.setUser(d).view() ;
                 case Loading: m('h2', {style:{textAlign:'right', paddingRight:'1em'}}, 'Loading user data...');
                 case Nil: cast this.loginform.view();
             };
         return [
-            m('h2', 'Header'),
+            m('h1', {style:{color:homeroom.textcolor}}, '' + homeroom.title),
             userView,
         ];
     }
@@ -250,107 +259,3 @@ class TestUI implements Mithril {
 
 }
 
-typedef ContentTreeFilter = {
-    filterRooms:Array<String>, 
-    filterAccess:Int,
-}
-
-class UIContentTree implements Mithril {
-
-    public function new(filter:ContentTreeFilter=null) {
-        this.filter = filter;
-    }
-
-    var filter:ContentTreeFilter;
-
-    public function view() {
-        return switch ContentModel.instance.contentTree {
-            case Nil: m('h1', 'Nil');
-            case Loading: m('h1', 'Loading');
-            case Data(ct): 
-                //var ct = (this.filter != null && this.filter.filterRooms != null) ? contentTree.filterContentTree(this.filter.filterRooms) : contentTree;
-                var path = '/tree/' + ct.id;
-                m('details[open]', [m('summary', 'ContentTree ' + ct.id)].concat(ct.children.map(child-> cast new UIRoom(child, path, filter).view() )) );
-        }
-    }
-}
-
-class UIRoom implements Mithril {
-    public function new(item:Room, parentPath:String, filter:ContentTreeFilter) {
-        this.item = item;
-        this.path = parentPath + '/' + item.id;
-        this.filter = filter;
-    }
-    var filter:ContentTreeFilter;
-    var path:String;
-    var item:Room = null;
-    public function view() {
-
-        var showItem = (filter != null && filter.filterRooms.has(item.id));
-        var cssClass = showItem ? '.open' : '.protected';
-
-        var children = (this.item.children != null) ? this.item.children : [];
-        var anchor = m('a', {href:this.path, oncreate: M.routeLink }, 'Room ' + item.id );
-        return m('details[open]$cssClass', [m('summary', [anchor])].concat(children.map(child-> cast new UIShelf(child, this.path, this.filter).view() )) );
-    }
-}
-
-class UIShelf implements Mithril {
-    public function new(item:Shelf, parentPath:String, filter:ContentTreeFilter) {
-        this.item = item;
-        this.path = parentPath + '/' + item.id;
-        this.filter = filter;
-    }
-    var  filter:ContentTreeFilter;
-    var path:String;
-    var item:Shelf;
-    public function view() {
-
-        var showItem = (filter != null && filter.filterAccess >= item.access);
-        var cssClass = showItem ? '.open' : '.protected';
-
-        var children = (this.item.children != null) ? this.item.children : [];
-        var anchor = m('a', {href:this.path, oncreate: M.routeLink }, 'Shelf ' + item.title + ':'  + item.id + ' access:' + item.access);
-        return m('details[open].$cssClass', [m('summary',[anchor])].concat(children.map(child-> cast new UIBook(child, this.path, this.filter).view() )) );
-    }
-}
-
-class UIBook implements Mithril {
-    public function new(item:Book, parentPath:String, filter:ContentTreeFilter) {
-        this.item = item;
-        this.path = parentPath + '/' + item.id;
-        this.filter = filter;
-    }
-    var filter:ContentTreeFilter;
-    var path:String;
-    var item:Book = null;
-    public function view() {
-
-        var showItem = (filter != null && filter.filterAccess >= item.access);
-        var cssClass = showItem ? '.open' : '.protected';
-
-        var children = (this.item.children != null) ? this.item.children : [];
-        var anchor = m('a', {href:this.path, oncreate: M.routeLink }, 'Book ' + item.title + ':'  + item.id + ' access:' + item.access);
-        return m('details[open].$cssClass', [m('summary', [anchor])].concat(children.map(child-> cast new UIChapter(child, this.path, this.filter).view() )) );
-    }
-}
-
-class UIChapter implements Mithril {
-    public function new(item:Chapter, parentPath:String, filter:ContentTreeFilter) {
-        this.item = item;
-        this.path = parentPath + '/' + item.id;
-        this.filter = filter;
-    }
-    var filter:ContentTreeFilter;
-    var path:String;
-    var item:Chapter = null;
-    public function view() {
-
-        var showItem = (filter != null && filter.filterAccess >= item.access);
-        var cssClass = showItem ? '.open' : '.protected';
-
-        var children = (this.item.children != null) ? this.item.children : [];
-        var anchor = m('a', {href:this.path, oncreate: M.routeLink }, 'Chapter ' + item.title + ':'  + item.id + ' access:' + item.access);
-        return m('details[open]$cssClass', [m('summary', [anchor])].concat(children.map(child-> cast new UIChapter(child, this.path, this.filter).view() )) );
-    }
-}

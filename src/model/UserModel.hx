@@ -29,7 +29,7 @@ class UserModel {
     }
 
 
-    public function init(app:firebase.app.App) {
+    public function load(app:firebase.app.App) {
         UserModel.instance.currentUser = Loading;
         app.auth().onAuthStateChanged(user -> {
             if (user != null) {
@@ -57,7 +57,7 @@ class UserModel {
         
     }
 
-    public function initRealtimeUpdate() {
+    public function loadRealtimeUpdate() {
 
         haxe.Timer.delay(()->{
             
