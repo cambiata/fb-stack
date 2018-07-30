@@ -105,7 +105,7 @@ AppMiddlewares.mwUserData = function(req,res,next) {
 	console.log("src/Server.hx:103:","Middleware mwUserData ***************************");
 	try {
 		var userEmail = res.locals.userEmail;
-		var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
+		var dbpath = "user/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
 		console.log("src/Server.hx:108:","dbpath: " + dbpath);
 		admin.database().ref(dbpath).once("value",function(snap) {
 			res.locals.userData = snap.val();

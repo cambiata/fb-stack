@@ -3,9 +3,8 @@
 
 -cp src
 
--lib mithril
--lib dataclass
+-lib json2object
 
 -main utils.Dev
 
--js public/dev.js 
+--interp

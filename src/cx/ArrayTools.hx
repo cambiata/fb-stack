@@ -37,4 +37,9 @@ class ArrayTools {
 		return (a == null) ? null : (idx < 0 || idx > a.length-1) ? null : a[idx];
 	} 
 
+	inline static public function sortA<T>(a:Array<T>, fn: T->T->Int):Array<T> {
+		a.sort(fn);
+		return a;
+	}
+
 }

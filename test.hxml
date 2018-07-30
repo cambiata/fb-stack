@@ -1,0 +1,4 @@
+-cp test
+
+-x test.Main
+-lib buddy

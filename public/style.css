@@ -6,7 +6,7 @@
 
 body {
     background-color: white;
-    font-family: "Open sans";
+    font-family: "Roboto", sans-serif;
 }
 
 header {
@@ -17,7 +17,6 @@ header {
     display: inline-grid;
     grid-template-columns: 1fr 2fr ;
     grid-column-gap: 1em;
-
 }
 
 main {
@@ -29,10 +28,32 @@ main {
 
 form {
     display: inline-grid;
-    grid-template-columns: auto auto auto ;
-    grid-column-gap: 1em;
+    grid-template-columns: repeat(4, 200px); ;
+    grid-column-gap: 1em; 
     text-align: right;
 }
+
+#logs {
+    background-color: #ccf; 
+}
+
+#logs div {
+    background-color: white;
+    padding-left: 1em;
+    margin-bottom: 2px;
+}
+
+#errors {
+    background-color: #fcc; 
+}
+
+#errors div {
+    background-color: white;
+    padding-left: 1em;
+    margin-bottom: 2px;
+}
+
+
 
 .statelabel {
     font-weight: bold;
@@ -89,4 +110,148 @@ summary {
 
 .open {
     background-color: #cfc;
+}
+
+
+
+
+/*--------------------------------------------------*/
+
+section.shelf > header {    
+    grid-area: header;
+    padding: 0;
+    padding-bottom: 0.3em;
+    background-color:inherit;
+    font-weight: bold;
+    font-size: 110%;
+}
+
+section.shelf > footer {
+    padding-top: 0.3em;
+    grid-area: footer;
+    background-color: inherit;
+}
+
+section.shelf > article {
+    /* background-color: white; */
+    min-height: 5em;
+    border-bottom-left-radius: 0.5em;
+    border-bottom-right-radius: 0.5em; 
+    border-left: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    border-right: 1px solid #aaa;  
+    display: inline-grid;
+    grid-template-columns: 1fr;     
+} 
+
+section.shelf > article > figure {
+    background-color: rgb(98, 165, 89);
+    min-height: 7em;
+}
+
+section.shelf > article > summary {
+    background-color: white;
+    padding: 1em;
+    min-height: 7em;
+}
+
+section.shelf > article > summary > h3 {
+    margin-bottom: 0.5em;
+}
+section.shelf > article > summary > p {
+    font-size: 80%;    
+    color: gray;
+}
+
+
+section.shelf > article > footer {
+    padding: 1em;
+   background-color: white; 
+   color: #039be5;
+   font-size: 90%;   
+   border-bottom-left-radius: 0.5em;
+   border-bottom-right-radius: 0.5em;   
+   text-align: right; 
+}
+
+
+
+main.content {
+    display: block
+
+}
+
+section.shelf {    
+    background-color: #dedede;
+    padding: 0.8em;
+    display: grid;
+    grid-column-gap: 1em;
+    grid-row-gap: 0em;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-areas: 
+    "header header header header"
+    "article article article article"
+    "footer footer footer footer"; 
+}
+
+section a {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    border-radius: 6px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    text-decoration: none;
+    /* text-transform: uppercase; */
+    border: 2px transparent #039be5;
+    background: transparent;
+    color: #0099CC; 
+
+}
+
+section a:hover {
+    background-color: #039be5;
+    color: white;
+}
+
+button {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    border-radius: 0.2em;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    text-decoration: none;
+    /* text-transform: uppercase; */
+    border: 2px solid #24739b;
+    background: transparent;
+    color: white; 
+    font-size: 100%;
+
+}
+
+button:hover {
+    background-color: white;
+    color: #24739b;
+}
+
+input {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    border-radius: 0.2em;
+    transition-duration: 0.4s;
+    text-decoration: none;
+    /* text-transform: uppercase; */
+    border: 1px solid #24739b;
+    font-size: 100%;
+}
+
+.access0 {
+    background-color: #cfc;
+}
+
+.access1 {
+    background-color: #ccf;
+}
+
+.access2 {
+    background-color: #fcc;
 }

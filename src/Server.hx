@@ -104,7 +104,7 @@ class AppMiddlewares {
         try {
             var userEmail:utils.UserEmail = res.locals.userEmail;
             // trace('mw userdata' + userEmail);
-            var dbpath = 'users/' + userEmail.toPiped();
+            var dbpath = 'user/' + userEmail.toPiped();
             trace('dbpath: ' + dbpath);
             Admin.database().ref(dbpath).once(firebase.EventType.Value, (snap)->{
                 // trace('mw snap: ----------------');

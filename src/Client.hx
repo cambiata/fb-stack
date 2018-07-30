@@ -1,10 +1,9 @@
-import firebase.app.App;
-import firebase.Firebase;
-import mithril.M;
-import mithril.M.m;
-import ui.ClientUI;
-import model.*;
-import utils.*;
+
+// import mithril.M;
+// import mithril.M.m;
+import ui.*;
+import data.*;
+// import utils.*;
 
 class Client {
     
@@ -25,21 +24,23 @@ class Client {
 
         var app:firebase.app.App = firebase.Firebase.initializeApp(config);
 
-        Profile.instance.init();
-        ContentTreeModel.instance.init();
+        ContentModel.instance.init();
+        UserModel.instance.init();
         
         // haxe.Timer.delay(()->{
-            ContentTreeModel.instance.load();
-            ContentTreeModel.instance.loadRealtimeUpdate();
-            // haxe.Timer.delay(()->{
-                UserModel.instance.load(app);
-                UserModel.instance.loadRealtimeUpdate();
+        //     ContentLoader.instance.load();
+        //     UserLoader.instance.load(app);
+        //     haxe.Timer.delay(()->{  
+        //         UserLoader.instance.loadRealtimeUpdate();
+        //         ContentLoader.instance.loadRealtimeUpdate();
         //     }, 3000);
         // }, 3000);
 
         ClientUI.instance.init();
-        Routes.instance.init();
+        // Routes.instance.init();
     }
+
+
 }
 
 enum DataModes<T> {

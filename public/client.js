@@ -8,15 +8,10 @@ function $extend(from, fields) {
 	return proto;
 }
 var Client = function() {
-	var app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
-	utils_Profile.instance.init();
-	model_ContentTreeModel.instance.init();
-	model_ContentTreeModel.instance.load();
-	model_ContentTreeModel.instance.loadRealtimeUpdate();
-	model_UserModel.instance.load(app);
-	model_UserModel.instance.loadRealtimeUpdate();
+	firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
+	data_ContentModel.instance.init();
+	data_UserModel.instance.init();
 	ui_ClientUI.instance.init();
-	model_Routes.instance.init();
 };
 $hxClasses["Client"] = Client;
 Client.__name__ = true;
@@ -25,28 +20,6 @@ Client.main = function() {
 };
 Client.prototype = {
 	__class__: Client
-};
-var DataModes = $hxEnums["DataModes"] = { __ename__ : true, __constructs__ : ["Nil","Loading","Data"]
-	,Nil: {_hx_index:0,__enum__:"DataModes",toString:$estr}
-	,Loading: {_hx_index:1,__enum__:"DataModes",toString:$estr}
-	,Data: ($_=function(d) { return {_hx_index:2,d:d,__enum__:"DataModes",toString:$estr}; },$_.__params__ = ["d"],$_)
-};
-var _$Client_DataMode_$Impl_$ = {};
-$hxClasses["_Client.DataMode_Impl_"] = _$Client_DataMode_$Impl_$;
-_$Client_DataMode_$Impl_$.__name__ = true;
-_$Client_DataMode_$Impl_$.getData = function(this1) {
-	if(this1._hx_index == 2) {
-		return this1.d;
-	} else {
-		return null;
-	}
-};
-_$Client_DataMode_$Impl_$.fromData = function(data) {
-	if(data != null) {
-		return DataModes.Data(data);
-	} else {
-		return DataModes.Nil;
-	}
 };
 var DataClass = function() { };
 $hxClasses["DataClass"] = DataClass;
@@ -345,9 +318,6 @@ StringTools.lpad = function(s,c,l) {
 	while(s.length < l) s = c + s;
 	return s;
 };
-StringTools.replace = function(s,sub,by) {
-	return s.split(sub).join(by);
-};
 var Type = function() { };
 $hxClasses["Type"] = Type;
 Type.__name__ = true;
@@ -369,6 +339,618 @@ Type.createEnum = function(e,constr,params) {
 		throw new js__$Boot_HaxeError("Constructor " + constr + " does not need parameters");
 	}
 	return f;
+};
+var data_UserData = function(data1) {
+	this.access = 1;
+	this.domains = ["kak"];
+	this.set_firstname(data1.firstname);
+	this.set_lastname(data1.lastname);
+	this.set_email(data1.email);
+	if(Object.prototype.hasOwnProperty.call(data1,"domains")) {
+		this.set_domains(data1.domains);
+	}
+	if(Object.prototype.hasOwnProperty.call(data1,"access")) {
+		this.set_access(data1.access);
+	}
+};
+$hxClasses["data.UserData"] = data_UserData;
+data_UserData.__name__ = true;
+data_UserData.__interfaces__ = [DataClass];
+data_UserData.validate = function(data1) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data1,"firstname")) {
+		output.push("firstname");
+	} else if(data1.firstname == null) {
+		output.push("firstname");
+	}
+	if(!Object.prototype.hasOwnProperty.call(data1,"lastname")) {
+		output.push("lastname");
+	} else if(data1.lastname == null) {
+		output.push("lastname");
+	}
+	if(!Object.prototype.hasOwnProperty.call(data1,"email")) {
+		output.push("email");
+	} else if(data1.email == null) {
+		output.push("email");
+	}
+	return output;
+};
+data_UserData.prototype = {
+	set_firstname: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.firstname.");
+		}
+		return this.firstname = v;
+	}
+	,set_lastname: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.lastname.");
+		}
+		return this.lastname = v;
+	}
+	,set_email: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.email.");
+		}
+		return this.email = v;
+	}
+	,set_domains: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.domains.");
+		}
+		return this.domains = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.access.");
+		}
+		return this.access = v;
+	}
+	,__class__: data_UserData
+	,__properties__: {set_access:"set_access",set_domains:"set_domains",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
+};
+var data_UserConfig = function(data1) {
+	this.set_domain(data1.domain);
+};
+$hxClasses["data.UserConfig"] = data_UserConfig;
+data_UserConfig.__name__ = true;
+data_UserConfig.__interfaces__ = [DataClass];
+data_UserConfig.validate = function(data1) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data1,"domain")) {
+		output.push("domain");
+	} else if(data1.domain == null) {
+		output.push("domain");
+	}
+	return output;
+};
+data_UserConfig.prototype = {
+	set_domain: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserConfig.domain.");
+		}
+		return this.domain = v;
+	}
+	,__class__: data_UserConfig
+	,__properties__: {set_domain:"set_domain"}
+};
+var data_ClientUser = function(data1) {
+	this.set_userData(data1.userData);
+	this.set_userConfig(data1.userConfig);
+};
+$hxClasses["data.ClientUser"] = data_ClientUser;
+data_ClientUser.__name__ = true;
+data_ClientUser.__interfaces__ = [DataClass];
+data_ClientUser.prototype = {
+	set_userData: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for ClientUser.userData.");
+		}
+		return this.userData = v;
+	}
+	,set_userConfig: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for ClientUser.userConfig.");
+		}
+		return this.userConfig = v;
+	}
+	,__class__: data_ClientUser
+	,__properties__: {set_userConfig:"set_userConfig",set_userData:"set_userData"}
+};
+var data_Content = function(data1) {
+	this.rooms = [];
+	this.set_id(data1.id);
+	if(Object.prototype.hasOwnProperty.call(data1,"rooms")) {
+		this.set_rooms(data1.rooms);
+	}
+};
+$hxClasses["data.Content"] = data_Content;
+data_Content.__name__ = true;
+data_Content.__interfaces__ = [DataClass];
+data_Content.populate = function(id,rms) {
+	id = id == null ? "content" + data_Content.uid++ : id;
+	return new data_Content({ id : id, rooms : rms});
+};
+data_Content.validate = function(data1) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data1,"id")) {
+		output.push("id");
+	} else if(data1.id == null) {
+		output.push("id");
+	}
+	return output;
+};
+data_Content.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Content.id.");
+		}
+		return this.id = v;
+	}
+	,set_rooms: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Content.rooms.");
+		}
+		return this.rooms = v;
+	}
+	,__class__: data_Content
+	,__properties__: {set_rooms:"set_rooms",set_id:"set_id"}
+};
+var data_Room = function(data1) {
+	this.sort = 0;
+	this.textcolor = "black";
+	this.color = "yellow";
+	this.title = "defaultRoomTitle";
+	this.shelves = [];
+	this.id = "defaultRoomId";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
+			this.set_id(data1.id);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"shelves")) {
+			this.set_shelves(data1.shelves);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"color")) {
+			this.set_color(data1.color);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"textcolor")) {
+			this.set_textcolor(data1.textcolor);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+	}
+};
+$hxClasses["data.Room"] = data_Room;
+data_Room.__name__ = true;
+data_Room.__interfaces__ = [DataClass];
+data_Room.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.id.");
+		}
+		return this.id = v;
+	}
+	,set_shelves: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.shelves.");
+		}
+		return this.shelves = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.title.");
+		}
+		return this.title = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.color.");
+		}
+		return this.color = v;
+	}
+	,set_textcolor: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.textcolor.");
+		}
+		return this.textcolor = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.sort.");
+		}
+		return this.sort = v;
+	}
+	,__class__: data_Room
+	,__properties__: {set_sort:"set_sort",set_textcolor:"set_textcolor",set_color:"set_color",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
+};
+var data_Shelf = function(data1) {
+	this.sort = 0;
+	this.books = [];
+	this.info = "defaultShelfInfo";
+	this.access = 0;
+	this.title = "defaultShelfTitle";
+	this.id = "defaultShelfId";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
+			this.set_id(data1.id);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"access")) {
+			this.set_access(data1.access);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"info")) {
+			this.set_info(data1.info);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"books")) {
+			this.set_books(data1.books);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+	}
+};
+$hxClasses["data.Shelf"] = data_Shelf;
+data_Shelf.__name__ = true;
+data_Shelf.__interfaces__ = [DataClass];
+data_Shelf.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.access.");
+		}
+		return this.access = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.info.");
+		}
+		return this.info = v;
+	}
+	,set_books: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.books.");
+		}
+		return this.books = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.sort.");
+		}
+		return this.sort = v;
+	}
+	,__class__: data_Shelf
+	,__properties__: {set_sort:"set_sort",set_books:"set_books",set_info:"set_info",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+};
+var data_Book = function(data1) {
+	this.sort = 0;
+	this.chapters = [];
+	this.info = "defaultBookInfo";
+	this.type = "standard";
+	this.access = 0;
+	this.title = "defaultBookTitle";
+	this.id = "defaultBookId";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
+			this.set_id(data1.id);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"access")) {
+			this.set_access(data1.access);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"type")) {
+			this.set_type(data1.type);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"info")) {
+			this.set_info(data1.info);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"chapters")) {
+			this.set_chapters(data1.chapters);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+	}
+};
+$hxClasses["data.Book"] = data_Book;
+data_Book.__name__ = true;
+data_Book.__interfaces__ = [DataClass];
+data_Book.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.access.");
+		}
+		return this.access = v;
+	}
+	,set_type: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.type.");
+		}
+		return this.type = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.info.");
+		}
+		return this.info = v;
+	}
+	,set_chapters: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.chapters.");
+		}
+		return this.chapters = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Book.sort.");
+		}
+		return this.sort = v;
+	}
+	,__class__: data_Book
+	,__properties__: {set_sort:"set_sort",set_chapters:"set_chapters",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+};
+var data_Chapter = function(data1) {
+	this.sort = 0;
+	this.subchapters = [];
+	this.text = "defaultChapterText";
+	this.info = "defaultChapterInfo";
+	this.type = "article";
+	this.access = 0;
+	this.title = "defaultChapterTitle";
+	this.id = "defaultChapterId";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
+			this.set_id(data1.id);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"access")) {
+			this.set_access(data1.access);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"type")) {
+			this.set_type(data1.type);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"info")) {
+			this.set_info(data1.info);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
+			this.set_text(data1.text);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"subchapters")) {
+			this.set_subchapters(data1.subchapters);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+	}
+};
+$hxClasses["data.Chapter"] = data_Chapter;
+data_Chapter.__name__ = true;
+data_Chapter.__interfaces__ = [DataClass];
+data_Chapter.prototype = {
+	set_id: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.id.");
+		}
+		return this.id = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.title.");
+		}
+		return this.title = v;
+	}
+	,set_access: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.access.");
+		}
+		return this.access = v;
+	}
+	,set_type: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.type.");
+		}
+		return this.type = v;
+	}
+	,set_info: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.info.");
+		}
+		return this.info = v;
+	}
+	,set_text: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.text.");
+		}
+		return this.text = v;
+	}
+	,set_subchapters: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.subchapters.");
+		}
+		return this.subchapters = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.sort.");
+		}
+		return this.sort = v;
+	}
+	,__class__: data_Chapter
+	,__properties__: {set_sort:"set_sort",set_subchapters:"set_subchapters",set_text:"set_text",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+};
+var data_ContentFilters = function() { };
+$hxClasses["data.ContentFilters"] = data_ContentFilters;
+data_ContentFilters.__name__ = true;
+data_ContentFilters.fiterRoomAndShelfHome = function(ct) {
+	return new data_Content({ id : ct.id, rooms : ct.rooms.filter(function(room) {
+		return room.id == "home";
+	}).map(function(room1) {
+		return new data_Room({ id : room1.id, title : room1.title, shelves : room1.shelves.filter(function(shelf) {
+			console.log("src/data/Content.hx:87:",shelf.id);
+			return shelf.id == "home";
+		})});
+	})});
+};
+data_ContentFilters.sort = function(ct) {
+	var a = ct.rooms;
+	a.sort(function(a1,b) {
+		return a1.sort - b.sort;
+	});
+	Lambda.iter(a,function(room) {
+		var a2 = room.shelves;
+		a2.sort(function(a3,b1) {
+			return a3.sort - b1.sort;
+		});
+		Lambda.iter(a2,function(shelf) {
+			var a4 = shelf.books;
+			a4.sort(function(a5,b2) {
+				return a5.sort - b2.sort;
+			});
+			return a4;
+		});
+		return;
+	});
+	return ct;
+};
+var data_ErrorsAndLogs = function() { };
+$hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
+data_ErrorsAndLogs.__name__ = true;
+data_ErrorsAndLogs.addLog = function(log) {
+	data_ErrorsAndLogs.logs.unshift(log);
+	console.log("src/data/ErrorsAndLogs.hx:14:",log);
+	var el = window.document.createElement("div");
+	el.textContent = log;
+	data_ErrorsAndLogs.element("#logs").appendChild(el);
+};
+data_ErrorsAndLogs.addError = function(e) {
+	data_ErrorsAndLogs.errors.unshift(e);
+	var el = window.document.createElement("div");
+	el.textContent = e;
+	data_ErrorsAndLogs.element("#errors").appendChild(el);
+};
+var data_ContentModel = function() {
+	data_ErrorsAndLogs.addLog("new content");
+};
+$hxClasses["data.ContentModel"] = data_ContentModel;
+data_ContentModel.__name__ = true;
+data_ContentModel.prototype = {
+	set_content: function(u) {
+		this.content = u;
+		data_ErrorsAndLogs.addLog("Content:" + Std.string(this.content));
+		m.redraw();
+		return u;
+	}
+	,init: function() {
+		this.set_content(dataclass_JsonConverter.fromJson(data_Content,data_ContentModel.defaultData));
+	}
+	,__class__: data_ContentModel
+	,__properties__: {set_content:"set_content"}
+};
+var data_UserLoader = function() {
+};
+$hxClasses["data.UserLoader"] = data_UserLoader;
+data_UserLoader.__name__ = true;
+data_UserLoader.prototype = {
+	signIn: function(email,password) {
+		this.validate(email,password).then(function(valid) {
+			data_UserModel.instance.setLoadingUser();
+			return firebase.auth().signInWithEmailAndPassword(email,password);
+		}).then(function(user) {
+			console.log("src/data/UserLoader.hx:81:","USER " + user);
+			return null;
+		})["catch"](function(error) {
+			console.log("src/data/UserLoader.hx:85:","ERROR" + error);
+			data_ErrorsAndLogs.addError("error:" + error);
+			data_UserModel.instance.setAnonymousUser();
+			return;
+		});
+	}
+	,signOut: function() {
+		firebase.auth().signOut();
+	}
+	,validate: function(email,password) {
+		return new Promise(function(res,rej) {
+			try {
+				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(email)) {
+					throw new js__$Boot_HaxeError("User email is not valid: " + email);
+				}
+				if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(password)) {
+					throw new js__$Boot_HaxeError("User password is not valid: " + password);
+				}
+				res(true);
+			} catch( e ) {
+				rej((e instanceof js__$Boot_HaxeError) ? e.val : e);
+			}
+			return;
+		});
+	}
+	,__class__: data_UserLoader
+};
+var data_UserModel = function() {
+};
+$hxClasses["data.UserModel"] = data_UserModel;
+data_UserModel.__name__ = true;
+data_UserModel.prototype = {
+	set_clientUser: function(val) {
+		this.clientUser = val;
+		data_ErrorsAndLogs.addLog("ClientUser:" + Std.string(this.clientUser));
+		m.redraw();
+		return this.clientUser;
+	}
+	,init: function() {
+		data_ErrorsAndLogs.addLog("UserModel.instance.init()");
+		this.setAnonymousUser();
+	}
+	,setAnonymousUser: function() {
+		this.set_clientUser(new data_ClientUser(this.anonymousUser()));
+		this.clientUserState = data_ClientUserState.Anonymous;
+	}
+	,setLoadingUser: function() {
+		this.clientUserState = data_ClientUserState.Loading;
+		m.redraw();
+	}
+	,anonymousUser: function() {
+		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+	}
+	,__class__: data_UserModel
+	,__properties__: {set_clientUser:"set_clientUser"}
+};
+var data_ClientUserState = $hxEnums["data.ClientUserState"] = { __ename__ : true, __constructs__ : ["Anonymous","Loading","User"]
+	,Anonymous: {_hx_index:0,__enum__:"data.ClientUserState",toString:$estr}
+	,Loading: {_hx_index:1,__enum__:"data.ClientUserState",toString:$estr}
+	,User: {_hx_index:2,__enum__:"data.ClientUserState",toString:$estr}
 };
 var dataclass_CircularReferenceHandling = $hxEnums["dataclass.CircularReferenceHandling"] = { __ename__ : true, __constructs__ : ["ThrowException","SetToNull","TrackReferences"]
 	,ThrowException: {_hx_index:0,__enum__:"dataclass.CircularReferenceHandling",toString:$estr}
@@ -647,34 +1229,6 @@ dataclass_JsonConverter.__super__ = dataclass_Converter;
 dataclass_JsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_JsonConverter
 });
-var haxe_Timer = function(time_ms) {
-	var me = this;
-	this.id = setInterval(function() {
-		me.run();
-	},time_ms);
-};
-$hxClasses["haxe.Timer"] = haxe_Timer;
-haxe_Timer.__name__ = true;
-haxe_Timer.delay = function(f,time_ms) {
-	var t = new haxe_Timer(time_ms);
-	t.run = function() {
-		t.stop();
-		f();
-	};
-	return t;
-};
-haxe_Timer.prototype = {
-	stop: function() {
-		if(this.id == null) {
-			return;
-		}
-		clearInterval(this.id);
-		this.id = null;
-	}
-	,run: function() {
-	}
-	,__class__: haxe_Timer
-};
 var haxe_ds_IntMap = function() {
 	this.h = { };
 };
@@ -936,738 +1490,11 @@ mithril__$M_M_$Impl_$.routeLink = function(vnode) {
 var mithril_Mithril = function() { };
 $hxClasses["mithril.Mithril"] = mithril_Mithril;
 mithril_Mithril.__name__ = true;
-var model_ApiCalls = function() { };
-$hxClasses["model.ApiCalls"] = model_ApiCalls;
-model_ApiCalls.__name__ = true;
-model_ApiCalls.getAuthRequest = function(url) {
-	return model_UserModel.instance.getFBUserToken().then(function(token) {
-		var request = { method : "get", url : url, headers : { authorization : "Bearer " + token}};
-		model_ErrorsAndLogs.addLog("AuthRequest: " + url);
-		return m.request(request);
-	});
-};
-model_ApiCalls.getRequest = function(url) {
-	model_ErrorsAndLogs.addLog("Request: " + url);
-	return m.request({ method : "get", url : url});
-};
-var model_ContentItemModel = function() {
-	this.contentItem = model_ContentItemType.RoomType({ treeId : "active-tree", roomId : "kak"});
-};
-$hxClasses["model.ContentItemModel"] = model_ContentItemModel;
-model_ContentItemModel.__name__ = true;
-model_ContentItemModel.prototype = {
-	set_contentItem: function(item) {
-		this.contentItem = item;
-		m.redraw();
-		return this.contentItem;
-	}
-	,__class__: model_ContentItemModel
-	,__properties__: {set_contentItem:"set_contentItem"}
-};
-var model_ContentItemType = $hxEnums["model.ContentItemType"] = { __ename__ : true, __constructs__ : ["RoomType","ShelfType","BookType","ChapterType","SubchapterType","HomeType","BlaBla","Loading"]
-	,RoomType: ($_=function(ref) { return {_hx_index:0,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
-	,ShelfType: ($_=function(ref) { return {_hx_index:1,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
-	,BookType: ($_=function(ref) { return {_hx_index:2,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
-	,ChapterType: ($_=function(ref) { return {_hx_index:3,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
-	,SubchapterType: ($_=function(ref) { return {_hx_index:4,ref:ref,__enum__:"model.ContentItemType",toString:$estr}; },$_.__params__ = ["ref"],$_)
-	,HomeType: {_hx_index:5,__enum__:"model.ContentItemType",toString:$estr}
-	,BlaBla: {_hx_index:6,__enum__:"model.ContentItemType",toString:$estr}
-	,Loading: {_hx_index:7,__enum__:"model.ContentItemType",toString:$estr}
-};
-var model_ContentTreeModel = function() {
-	this.contentTree = DataModes.Nil;
-};
-$hxClasses["model.ContentTreeModel"] = model_ContentTreeModel;
-model_ContentTreeModel.__name__ = true;
-model_ContentTreeModel.defaultData = function() {
-	return { id : "startup", rooms : [{ id : "startup-room", shelves : []}]};
-};
-model_ContentTreeModel.prototype = {
-	init: function() {
-		this.set_contentTree(DataModes.Data(dataclass_JsonConverter.fromJson(model_ContentTree,model_ContentTreeModel.defaultData())));
-	}
-	,load: function() {
-		var _gthis = this;
-		model_ApiCalls.getRequest("/api/content-tree").then(function(item) {
-			model_ErrorsAndLogs.addErrors(item.errors);
-			_gthis.set_contentTree(_$Client_DataMode_$Impl_$.fromData(new model_ContentTree(item.data)));
-			model_ErrorsAndLogs.addLog("Content-tree loaded " + utils_Profile.instance.msString());
-			return;
-		})["catch"](function(error) {
-			model_ErrorsAndLogs.addError("Content-tree error: " + error);
-			return;
-		});
-	}
-	,loadRealtimeUpdate: function() {
-		var _gthis = this;
-		firebase.database().ref("content-tree").on("value",function(snap,str) {
-			try {
-				model_ErrorsAndLogs.addLog("Realtime content loaded!" + utils_Profile.instance.msString());
-				var tmp = snap.val();
-				return _gthis.set_contentTree(_$Client_DataMode_$Impl_$.fromData(new model_ContentTree(tmp)));
-			} catch( e ) {
-				(e instanceof js__$Boot_HaxeError);
-				model_ErrorsAndLogs.addError("Could not insantiate contentTree from loaded Realtime data");
-				return null;
-			}
-		});
-	}
-	,set_contentTree: function(u) {
-		this.contentTree = u;
-		m.redraw();
-		return u;
-	}
-	,__class__: model_ContentTreeModel
-	,__properties__: {set_contentTree:"set_contentTree"}
-};
-var model_ContentTreeFilters = function() { };
-$hxClasses["model.ContentTreeFilters"] = model_ContentTreeFilters;
-model_ContentTreeFilters.__name__ = true;
-model_ContentTreeFilters.filterHomeRoom = function(contentTree) {
-	var user = _$Client_DataMode_$Impl_$.getData(model_UserModel.instance.currentUser);
-	var contentTree1 = _$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree);
-	var room = user != null ? model_ContentTreeFilters.filterRoom(contentTree1,user.userConfig.domain) : contentTree1.rooms[0];
-	if(user != null && room == null) {
-		model_ErrorsAndLogs.addError("ContentTreeFilters::filterHomeRoom() - Can not filter to user's domain room " + user.userConfig.domain);
-	}
-	return room;
-};
-model_ContentTreeFilters.filterRoom = function(contentTree,roomId) {
-	return contentTree.rooms.filter(function(room) {
-		return room.id == roomId;
-	})[0];
-};
-model_ContentTreeFilters.filterShelf = function(room,shelfId) {
-	return room.shelves.filter(function(shelf) {
-		return shelf.id == shelfId;
-	})[0];
-};
-model_ContentTreeFilters.filterBook = function(shelf,bookId) {
-	return shelf.books.filter(function(book) {
-		return book.id == bookId;
-	})[0];
-};
-model_ContentTreeFilters.filterChapter = function(book,chapterId) {
-	return book.chapters.filter(function(chapter) {
-		return chapter.id == chapterId;
-	})[0];
-};
-model_ContentTreeFilters.filterSubchapter = function(chapter,subchapterId) {
-	return chapter.chapters.filter(function(chapter1) {
-		return chapter1.id == subchapterId;
-	})[0];
-};
-var model_ContentTree = function(data) {
-	this.rooms = [];
-	this.set_id(data.id);
-	if(Object.prototype.hasOwnProperty.call(data,"rooms")) {
-		this.set_rooms(data.rooms);
-	}
-};
-$hxClasses["model.ContentTree"] = model_ContentTree;
-model_ContentTree.__name__ = true;
-model_ContentTree.__interfaces__ = [DataClass];
-model_ContentTree.populate = function(id,rms) {
-	id = id == null ? "contentTree" + model_ContentTree.uid++ : id;
-	return new model_ContentTree({ id : id, rooms : rms});
-};
-model_ContentTree.validate = function(data) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data,"id")) {
-		output.push("id");
-	} else if(data.id == null) {
-		output.push("id");
-	}
-	return output;
-};
-model_ContentTree.prototype = {
-	set_id: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.id.");
-		}
-		return this.id = v;
-	}
-	,set_rooms: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for ContentTree.rooms.");
-		}
-		return this.rooms = v;
-	}
-	,__class__: model_ContentTree
-	,__properties__: {set_rooms:"set_rooms",set_id:"set_id"}
-};
-var model_Room = function(data) {
-	this.textcolor = "black";
-	this.color = "yellow";
-	this.title = "room-title";
-	this.shelves = [];
-	this.set_id(data.id);
-	if(Object.prototype.hasOwnProperty.call(data,"shelves")) {
-		this.set_shelves(data.shelves);
-	}
-	if(Object.prototype.hasOwnProperty.call(data,"title")) {
-		this.set_title(data.title);
-	}
-	if(Object.prototype.hasOwnProperty.call(data,"color")) {
-		this.set_color(data.color);
-	}
-	if(Object.prototype.hasOwnProperty.call(data,"textcolor")) {
-		this.set_textcolor(data.textcolor);
-	}
-};
-$hxClasses["model.Room"] = model_Room;
-model_Room.__name__ = true;
-model_Room.__interfaces__ = [DataClass];
-model_Room.prototype = {
-	set_id: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.id.");
-		}
-		return this.id = v;
-	}
-	,set_shelves: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.shelves.");
-		}
-		return this.shelves = v;
-	}
-	,set_title: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.title.");
-		}
-		return this.title = v;
-	}
-	,set_color: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.color.");
-		}
-		return this.color = v;
-	}
-	,set_textcolor: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Room.textcolor.");
-		}
-		return this.textcolor = v;
-	}
-	,__class__: model_Room
-	,__properties__: {set_textcolor:"set_textcolor",set_color:"set_color",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
-};
-var model_Shelf = function(data) {
-	this.books = [];
-	this.set_id(data.id);
-	this.set_title(data.title);
-	this.set_access(data.access);
-	this.set_info(data.info);
-	if(Object.prototype.hasOwnProperty.call(data,"books")) {
-		this.set_books(data.books);
-	}
-};
-$hxClasses["model.Shelf"] = model_Shelf;
-model_Shelf.__name__ = true;
-model_Shelf.__interfaces__ = [DataClass];
-model_Shelf.prototype = {
-	set_id: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.id.");
-		}
-		return this.id = v;
-	}
-	,set_title: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.title.");
-		}
-		return this.title = v;
-	}
-	,set_access: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.access.");
-		}
-		return this.access = v;
-	}
-	,set_info: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.info.");
-		}
-		return this.info = v;
-	}
-	,set_books: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Shelf.books.");
-		}
-		return this.books = v;
-	}
-	,__class__: model_Shelf
-	,__properties__: {set_books:"set_books",set_info:"set_info",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
-};
-var model_Booktype = $hxEnums["model.Booktype"] = { __ename__ : true, __constructs__ : ["Standard","Lexicon"]
-	,Standard: {_hx_index:0,__enum__:"model.Booktype",toString:$estr}
-	,Lexicon: {_hx_index:1,__enum__:"model.Booktype",toString:$estr}
-};
-var model_Book = function(data) {
-	this.chapters = [];
-	this.set_id(data.id);
-	this.set_title(data.title);
-	this.set_access(data.access);
-	this.set_type(data.type);
-	this.set_info(data.info);
-	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
-		this.set_chapters(data.chapters);
-	}
-};
-$hxClasses["model.Book"] = model_Book;
-model_Book.__name__ = true;
-model_Book.__interfaces__ = [DataClass];
-model_Book.prototype = {
-	set_id: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.id.");
-		}
-		return this.id = v;
-	}
-	,set_title: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.title.");
-		}
-		return this.title = v;
-	}
-	,set_access: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.access.");
-		}
-		return this.access = v;
-	}
-	,set_type: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.type.");
-		}
-		return this.type = v;
-	}
-	,set_info: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.info.");
-		}
-		return this.info = v;
-	}
-	,set_chapters: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Book.chapters.");
-		}
-		return this.chapters = v;
-	}
-	,__class__: model_Book
-	,__properties__: {set_chapters:"set_chapters",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
-};
-var model_Chaptertype = $hxEnums["model.Chaptertype"] = { __ename__ : true, __constructs__ : ["Info","Article","Video","Exercise"]
-	,Info: {_hx_index:0,__enum__:"model.Chaptertype",toString:$estr}
-	,Article: {_hx_index:1,__enum__:"model.Chaptertype",toString:$estr}
-	,Video: {_hx_index:2,__enum__:"model.Chaptertype",toString:$estr}
-	,Exercise: {_hx_index:3,__enum__:"model.Chaptertype",toString:$estr}
-};
-var model_Chapter = function(data) {
-	this.chapters = [];
-	this.set_id(data.id);
-	this.set_title(data.title);
-	this.set_access(data.access);
-	this.set_type(data.type);
-	this.set_info(data.info);
-	this.set_text(data.text);
-	if(Object.prototype.hasOwnProperty.call(data,"chapters")) {
-		this.set_chapters(data.chapters);
-	}
-};
-$hxClasses["model.Chapter"] = model_Chapter;
-model_Chapter.__name__ = true;
-model_Chapter.__interfaces__ = [DataClass];
-model_Chapter.prototype = {
-	set_id: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.id.");
-		}
-		return this.id = v;
-	}
-	,set_title: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.title.");
-		}
-		return this.title = v;
-	}
-	,set_access: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.access.");
-		}
-		return this.access = v;
-	}
-	,set_type: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.type.");
-		}
-		return this.type = v;
-	}
-	,set_info: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.info.");
-		}
-		return this.info = v;
-	}
-	,set_text: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.text.");
-		}
-		return this.text = v;
-	}
-	,set_chapters: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.chapters.");
-		}
-		return this.chapters = v;
-	}
-	,__class__: model_Chapter
-	,__properties__: {set_chapters:"set_chapters",set_text:"set_text",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
-};
-var model_ErrorsAndLogs = function() { };
-$hxClasses["model.ErrorsAndLogs"] = model_ErrorsAndLogs;
-model_ErrorsAndLogs.__name__ = true;
-model_ErrorsAndLogs.addLog = function(log) {
-	model_ErrorsAndLogs.logs.unshift(log);
-	m.redraw();
-};
-model_ErrorsAndLogs.addErrors = function(err) {
-	Lambda.iter(err,function(e) {
-		model_ErrorsAndLogs.addError(e);
-		return;
-	});
-};
-model_ErrorsAndLogs.addError = function(e) {
-	model_ErrorsAndLogs.errors.unshift(e);
-	m.redraw();
-};
-var model_Routes = function() {
-	this.subchapterHandler = { onmatch : function(args,path) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.SubchapterType({ treeId : args["treeId"], roomId : args["roomId"], shelfId : args["shelfId"], bookId : args["bookId"], chapterId : args["chapterId"], subchapterId : args["subachapterId"]}));
-		} catch( e ) {
-			model_ErrorsAndLogs.addError("RouteResolver subchapterHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-		}
-		return null;
-	}, render : function(vnode) {
-		return m.m("div","RouteHandler");
-	}};
-	this.chapterHandler = { onmatch : function(args1,path1) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.ChapterType({ treeId : args1["treeId"], roomId : args1["roomId"], shelfId : args1["shelfId"], bookId : args1["bookId"], chapterId : args1["chapterId"]}));
-		} catch( e1 ) {
-			model_ErrorsAndLogs.addError("RouteResolver chapterHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
-		}
-		return null;
-	}, render : function(vnode1) {
-		return m.m("div","RouteHandler");
-	}};
-	this.bookHandler = { onmatch : function(args2,path2) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.BookType({ treeId : args2["treeId"], roomId : args2["roomId"], shelfId : args2["shelfId"], bookId : args2["bookId"]}));
-		} catch( e2 ) {
-			model_ErrorsAndLogs.addError("RouteResolver bookHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
-		}
-		return null;
-	}, render : function(vnode2) {
-		return m.m("div","RouteHandler");
-	}};
-	this.shelfHandler = { onmatch : function(args3,path3) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.ShelfType({ treeId : args3["treeId"], roomId : args3["roomId"], shelfId : args3["shelfId"]}));
-		} catch( e3 ) {
-			model_ErrorsAndLogs.addError("RouteResolver ShelfHandler Error: " + Std.string((e3 instanceof js__$Boot_HaxeError) ? e3.val : e3));
-		}
-		return null;
-	}, render : function(vnode3) {
-		return m.m("div","RouteHandler");
-	}};
-	this.roomHandler = { onmatch : function(args4,path4) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.RoomType({ treeId : args4["treeId"], roomId : args4["roomId"]}));
-		} catch( e4 ) {
-			model_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e4 instanceof js__$Boot_HaxeError) ? e4.val : e4));
-		}
-		return null;
-	}, render : function(vnode4) {
-		return m.m("div","RouteHandler");
-	}};
-	this.homeHandler = { onmatch : function(args5,path5) {
-		try {
-			model_ContentItemModel.instance.set_contentItem(model_ContentItemType.HomeType);
-		} catch( e5 ) {
-			model_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e5 instanceof js__$Boot_HaxeError) ? e5.val : e5));
-		}
-		return null;
-	}, render : function(vnode5) {
-		return m.m("div","RouteHandler");
-	}};
-};
-$hxClasses["model.Routes"] = model_Routes;
-model_Routes.__name__ = true;
-model_Routes.prototype = {
-	init: function() {
-		var routeHandler = { onmatch : function(args,path) {
-			console.log("src/model/Routes.hx:23:",args);
-			console.log("src/model/Routes.hx:24:",path);
-			model_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
-			return null;
-		}, render : function(vnode) {
-			return m.m("div","RouteHandler");
-		}};
-		var routes = { "/" : this.homeHandler, "/yxa" : routeHandler, "/room/:treeId/:roomId" : this.roomHandler, "/shelf/:treeId/:roomId/:shelfId" : this.shelfHandler, "/book/:treeId/:roomId/:shelfId/:bookId" : this.bookHandler, "/chapter/:treeId/:roomId/:shelfId/:bookId/:chapterId" : this.chapterHandler, "/subchapter/:treeId/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.subchapterHandler};
-		m.route(window.document.querySelector("#routes"),"/",routes);
-	}
-	,__class__: model_Routes
-};
-var model_UserModel = function() {
-	this.currentUser = DataModes.Nil;
-};
-$hxClasses["model.UserModel"] = model_UserModel;
-model_UserModel.__name__ = true;
-model_UserModel.prototype = {
-	set_currentUser: function(u) {
-		if(this.currentUser == DataModes.Nil && u == DataModes.Nil) {
-			return null;
-		}
-		if(this.currentUser == DataModes.Loading && u == DataModes.Loading) {
-			return null;
-		}
-		this.currentUser = u;
-		m.redraw();
-		return u;
-	}
-	,load: function(app) {
-		model_UserModel.instance.set_currentUser(DataModes.Loading);
-		app.auth().onAuthStateChanged(function(user) {
-			if(user != null) {
-				model_ErrorsAndLogs.addLog("Browser session user found.");
-				model_UserModel.instance.set_currentUser(DataModes.Loading);
-				return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data) {
-					model_UserModel.instance.set_currentUser(DataModes.Data(new model_CurrentUser(data)));
-					model_ErrorsAndLogs.addLog("UserModel loaded" + utils_Profile.instance.msString());
-					model_ErrorsAndLogs.addErrors(data.errors);
-					return;
-				})["catch"](function(error) {
-					model_ErrorsAndLogs.addError("Could not load userconfig for browser session user");
-					model_ErrorsAndLogs.addError(error);
-					return;
-				});
-			} else {
-				model_ErrorsAndLogs.addLog("No browser session user found.");
-				model_UserModel.instance.set_currentUser(DataModes.Nil);
-				return null;
-			}
-		},function(error1) {
-			model_ErrorsAndLogs.addLog("Error: " + Std.string(error1));
-			return model_UserModel.instance.set_currentUser(DataModes.Nil);
-		});
-	}
-	,loadRealtimeUpdate: function() {
-		var _gthis = this;
-		haxe_Timer.delay(function() {
-			try {
-				if(_$Client_DataMode_$Impl_$.getData(_gthis.currentUser) != null) {
-					var userEmail = _$Client_DataMode_$Impl_$.getData(_gthis.currentUser).userData.email;
-					console.log("src/model/UserModel.hx:67:",userEmail);
-					var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-					console.log("src/model/UserModel.hx:70:","dbpath: " + dbpath);
-					firebase.database().ref(dbpath).on("value",function(snap,str) {
-						var userCopy = _$Client_DataMode_$Impl_$.getData(_gthis.currentUser);
-						var data = snap.val();
-						data.email = userEmail;
-						model_ErrorsAndLogs.addLog("UserModel UserData realtime update active");
-						userCopy.set_userData(dataclass_JsonConverter.fromJson(model_UserData,data));
-						return _gthis.set_currentUser(DataModes.Data(userCopy));
-					});
-					var dbpath1 = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-					return firebase.database().ref(dbpath1).on("value",function(snap1,str1) {
-						model_ErrorsAndLogs.addLog("UserModel User Config realtime update active");
-						var data1 = snap1.val();
-						var userCopy1 = _$Client_DataMode_$Impl_$.getData(_gthis.currentUser);
-						userCopy1.set_userConfig(dataclass_JsonConverter.fromJson(model_UserConfig,data1));
-						return _gthis.set_currentUser(DataModes.Data(userCopy1));
-					});
-				} else {
-					model_ErrorsAndLogs.addLog("Can not use Realtime data for anonymous user.");
-					return null;
-				}
-			} catch( e ) {
-				model_ErrorsAndLogs.addError("initRealtimeDatabase error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-				return null;
-			}
-		},3000);
-	}
-	,signIn: function(email,password) {
-		this.validate(email,password).then(function(valid) {
-			model_UserModel.instance.set_currentUser(DataModes.Loading);
-			return firebase.auth().signInWithEmailAndPassword(email,password);
-		}).then(function(user) {
-			console.log("src/model/UserModel.hx:108:","USER " + user);
-			return null;
-		})["catch"](function(error) {
-			console.log("src/model/UserModel.hx:112:","ERROR" + error);
-			model_ErrorsAndLogs.addError("error:" + error);
-			model_UserModel.instance.set_currentUser(DataModes.Nil);
-			return;
-		});
-	}
-	,signOut: function() {
-		firebase.auth().signOut();
-	}
-	,validate: function(email,password) {
-		return new Promise(function(res,rej) {
-			try {
-				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(email)) {
-					throw new js__$Boot_HaxeError("User email is not valid: " + email);
-				}
-				if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(password)) {
-					throw new js__$Boot_HaxeError("User password is not valid: " + password);
-				}
-				res(true);
-			} catch( e ) {
-				rej((e instanceof js__$Boot_HaxeError) ? e.val : e);
-			}
-			return;
-		});
-	}
-	,getFBCurrentUser: function() {
-		return firebase.auth().currentUser;
-	}
-	,getFBUserToken: function() {
-		if(this.getFBCurrentUser() != null) {
-			return this.getFBCurrentUser().getIdToken();
-		} else {
-			return new Promise(function(res,rej) {
-				rej("Firebase.auth().currentUser == null");
-				return;
-			});
-		}
-	}
-	,__class__: model_UserModel
-	,__properties__: {set_currentUser:"set_currentUser"}
-};
-var model_CurrentUser = function(data) {
-	this.set_userData(data.userData);
-	this.set_userConfig(data.userConfig);
-};
-$hxClasses["model.CurrentUser"] = model_CurrentUser;
-model_CurrentUser.__name__ = true;
-model_CurrentUser.__interfaces__ = [DataClass];
-model_CurrentUser.prototype = {
-	set_userData: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for CurrentUser.userData.");
-		}
-		return this.userData = v;
-	}
-	,set_userConfig: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for CurrentUser.userConfig.");
-		}
-		return this.userConfig = v;
-	}
-	,__class__: model_CurrentUser
-	,__properties__: {set_userConfig:"set_userConfig",set_userData:"set_userData"}
-};
-var model_UserData = function(data) {
-	this.access = 1;
-	this.domains = ["kak"];
-	this.set_firstname(data.firstname);
-	this.set_lastname(data.lastname);
-	this.set_email(data.email);
-	if(Object.prototype.hasOwnProperty.call(data,"domains")) {
-		this.set_domains(data.domains);
-	}
-	if(Object.prototype.hasOwnProperty.call(data,"access")) {
-		this.set_access(data.access);
-	}
-};
-$hxClasses["model.UserData"] = model_UserData;
-model_UserData.__name__ = true;
-model_UserData.__interfaces__ = [DataClass];
-model_UserData.validate = function(data) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data,"firstname")) {
-		output.push("firstname");
-	} else if(data.firstname == null) {
-		output.push("firstname");
-	}
-	if(!Object.prototype.hasOwnProperty.call(data,"lastname")) {
-		output.push("lastname");
-	} else if(data.lastname == null) {
-		output.push("lastname");
-	}
-	if(!Object.prototype.hasOwnProperty.call(data,"email")) {
-		output.push("email");
-	} else if(data.email == null) {
-		output.push("email");
-	}
-	return output;
-};
-model_UserData.prototype = {
-	set_firstname: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.firstname.");
-		}
-		return this.firstname = v;
-	}
-	,set_lastname: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.lastname.");
-		}
-		return this.lastname = v;
-	}
-	,set_email: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.email.");
-		}
-		return this.email = v;
-	}
-	,set_domains: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.domains.");
-		}
-		return this.domains = v;
-	}
-	,set_access: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserData.access.");
-		}
-		return this.access = v;
-	}
-	,__class__: model_UserData
-	,__properties__: {set_access:"set_access",set_domains:"set_domains",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
-};
-var model_UserConfig = function(data) {
-	this.set_domain(data.domain);
-};
-$hxClasses["model.UserConfig"] = model_UserConfig;
-model_UserConfig.__name__ = true;
-model_UserConfig.__interfaces__ = [DataClass];
-model_UserConfig.validate = function(data) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data,"domain")) {
-		output.push("domain");
-	} else if(data.domain == null) {
-		output.push("domain");
-	}
-	return output;
-};
-model_UserConfig.prototype = {
-	set_domain: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserConfig.domain.");
-		}
-		return this.domain = v;
-	}
-	,__class__: model_UserConfig
-	,__properties__: {set_domain:"set_domain"}
-};
 var ui_ClientUI = function() {
 };
 $hxClasses["ui.ClientUI"] = ui_ClientUI;
 ui_ClientUI.__name__ = true;
+ui_ClientUI.__interfaces__ = [mithril_Mithril];
 ui_ClientUI.prototype = {
 	init: function() {
 		var element = ($_=window.document,$bind($_,$_.querySelector));
@@ -1684,15 +1511,7 @@ ui_UIMain.__interfaces__ = [mithril_Mithril];
 ui_UIMain.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var filter;
-		var _g = model_UserModel.instance.currentUser;
-		if(_g._hx_index == 2) {
-			var currentUser = _g.d;
-			filter = { filterRooms : [currentUser.userConfig.domain], filterAccess : currentUser.userData.access};
-		} else {
-			filter = { filterRooms : ["kak"], filterAccess : 0};
-		}
-		return [new ui_content_ContentTreeView(filter).view(),new ui_content_ContentItemView().view(),new ui_StateMonitor().view()];
+		return [new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_content_ContentTreeView(data_ContentFilters.sort(data_ContentModel.instance.content)).view(),new ui_content_ContentTreeView(data_ContentFilters.fiterRoomAndShelfHome(data_ContentModel.instance.content)).view()];
 	}
 	,__class__: ui_UIMain
 };
@@ -1704,11 +1523,7 @@ ui_StateMonitor.__interfaces__ = [mithril_Mithril];
 ui_StateMonitor.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("div.statelabel","logs:"),m.m("div.stateitems",model_ErrorsAndLogs.logs.map(function(e) {
-			return m.m("div.stateitem.statelog","" + e);
-		})),m.m("div.statelabel","errors:"),m.m("div.stateitems",model_ErrorsAndLogs.errors.map(function(e1) {
-			return m.m("div.stateitem.stateerror","" + e1);
-		})),m.m("div.statelabel","content-tree"),m.m("div.stateitems","" + Std.string(model_ContentTreeModel.instance.contentTree))]);
+		return m.m("div",[m.m("div","Statemonitor")]);
 	}
 	,__class__: ui_StateMonitor
 };
@@ -1733,7 +1548,7 @@ ui_MInputEmail.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserEmail_UserEmail_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:114:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
+		console.log("src/ui/UIHeader.hx:17:","" + str + " Is valid email: " + (valid == null ? "null" : "" + valid));
 		this.state.email = str;
 		this.state.validEmail = valid;
 		m.redraw();
@@ -1762,7 +1577,6 @@ ui_MInputPassword.prototype = {
 	,validate: function(e) {
 		var str = e.target.value;
 		var valid = utils__$UserPassword_UserPassword_$Impl_$.isValid(str);
-		console.log("src/ui/ClientUI.hx:131:","" + str + " Is valid password: " + (valid == null ? "null" : "" + valid));
 		this.state.password = str;
 		this.state.validPassword = valid;
 		m.redraw();
@@ -1772,7 +1586,7 @@ ui_MInputPassword.prototype = {
 };
 var ui_MLoginForm = function() {
 	this.submitCallback = function(email,password) {
-		console.log("src/ui/ClientUI.hx:157:","callback " + email + ", " + password);
+		console.log("src/ui/UIHeader.hx:64:","callback " + email + ", " + password);
 		return;
 	};
 	this.state = null;
@@ -1787,7 +1601,10 @@ ui_MLoginForm.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var enabled = this.state.validEmail && this.state.validPassword;
 		var disabledString = enabled ? "" : "[disabled]";
-		return m.m("form",[new ui_MInputEmail(this.state).view(),new ui_MInputPassword(this.state).view(),m.m("button[type=button]" + disabledString,{ onclick : function(e) {
+		return m.m("form",[m.m("button[type=button]",{ onclick : function(e) {
+			_gthis.submitCallback("jonasnys@gmail.com","123456");
+			return;
+		}},"J"),new ui_MInputEmail(this.state).view(),new ui_MInputPassword(this.state).view(),m.m("button[type=button]" + disabledString,{ onclick : function(e1) {
 			_gthis.submitCallback(_gthis.state.email,_gthis.state.password);
 			return;
 		}},"Logga in")]);
@@ -1807,9 +1624,8 @@ ui_MLogoutForm.prototype = {
 			return m.m("div","clientUser == null");
 		}
 		var userData = this.clientUser.userData;
-		var homeroom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
-		return m.m("form",[m.m("div",""),m.m("h3",{ style : { color : homeroom.textcolor}},"Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
-			model_UserModel.instance.signOut();
+		return m.m("form",[m.m("div",""),m.m("h3","Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
+			data_UserLoader.instance.signOut();
 			return;
 		}},"Logout")]);
 	}
@@ -1825,7 +1641,7 @@ var ui_UIHeader = function() {
 	this.loginform = new ui_MLoginForm();
 	this.logoutform = new ui_MLogoutForm();
 	this.loginform.submitCallback = function(email,password) {
-		model_UserModel.instance.signIn(email,password);
+		data_UserLoader.instance.signIn(email,password);
 		return;
 	};
 };
@@ -1835,12 +1651,8 @@ ui_UIHeader.__interfaces__ = [mithril_Mithril];
 ui_UIHeader.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var homeroom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
-		var element = ($_=window.document,$bind($_,$_.querySelector));
-		var elHeader = element("header");
-		elHeader.style.backgroundColor = homeroom.color;
 		var userView;
-		var _g = model_UserModel.instance.currentUser;
+		var _g = data_UserModel.instance.clientUserState;
 		switch(_g._hx_index) {
 		case 0:
 			userView = this.loginform.view();
@@ -1849,165 +1661,16 @@ ui_UIHeader.prototype = {
 			userView = m.m("h2",{ style : { textAlign : "right", paddingRight : "1em"}},"Loading user data...");
 			break;
 		case 2:
-			var d = _g.d;
-			userView = this.logoutform.setUser(d).view();
+			var user = data_UserModel.instance.clientUser;
+			userView = this.logoutform.setUser(user).view();
 			break;
 		}
-		return [m.m("h1",{ style : { color : homeroom.textcolor}},"" + homeroom.title),userView];
+		return [m.m("h1","Headertext"),userView];
 	}
 	,__class__: ui_UIHeader
 };
-var ui_TestUI = function() {
-};
-$hxClasses["ui.TestUI"] = ui_TestUI;
-ui_TestUI.__name__ = true;
-ui_TestUI.__interfaces__ = [mithril_Mithril];
-ui_TestUI.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("button",{ onclick : function(e) {
-			return model_ApiCalls.getAuthRequest("/api/userdata").then(function(data) {
-				model_ErrorsAndLogs.addLog(JSON.stringify(data));
-				console.log("src/ui/ClientUI.hx:227:","userData result: " + JSON.stringify(data));
-				return;
-			})["catch"](function(error) {
-				console.log("src/ui/ClientUI.hx:229:","userData error: " + error);
-				model_ErrorsAndLogs.addError(error);
-				return;
-			});
-		}},"Test /api/userData "),m.m("button",{ onclick : function(e1) {
-			return model_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-				console.log("src/ui/ClientUI.hx:238:","userconfig result: " + JSON.stringify(data1));
-				model_ErrorsAndLogs.addLog(JSON.stringify(data1));
-				return;
-			})["catch"](function(error1) {
-				console.log("src/ui/ClientUI.hx:241:","userconfig error: " + error1);
-				model_ErrorsAndLogs.addError(error1);
-				return;
-			});
-		}},"Test /api/userConfig "),m.m("button",{ onclick : function(e2) {
-			return model_ApiCalls.getRequest("/api/content-tree").then(function(data2) {
-				console.log("src/ui/ClientUI.hx:249:","content-tree result: " + JSON.stringify(data2));
-				model_ErrorsAndLogs.addLog(JSON.stringify(data2));
-				return;
-			})["catch"](function(error2) {
-				console.log("src/ui/ClientUI.hx:252:","content-tree error: " + error2);
-				model_ErrorsAndLogs.addError(error2);
-				return;
-			});
-		}},"Test /api/content-treeB ")];
-	}
-	,__class__: ui_TestUI
-};
-var ui_content_ContentItemView = function() {
-};
-$hxClasses["ui.content.ContentItemView"] = ui_content_ContentItemView;
-ui_content_ContentItemView.__name__ = true;
-ui_content_ContentItemView.__interfaces__ = [mithril_Mithril];
-ui_content_ContentItemView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var _g = model_ContentItemModel.instance.contentItem;
-		switch(_g._hx_index) {
-		case 0:
-			var ref = _g.ref;
-			var item = model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref.roomId);
-			return new ui_content_RoomView(item).view();
-		case 1:
-			var ref1 = _g.ref;
-			var item1 = model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref1.roomId),ref1.shelfId);
-			return new ui_content_ShelfView(item1).view();
-		case 2:
-			var ref2 = _g.ref;
-			var item2 = model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref2.roomId),ref2.shelfId),ref2.bookId);
-			return new ui_content_BookView(item2).view();
-		case 3:
-			var ref3 = _g.ref;
-			var item3 = model_ContentTreeFilters.filterChapter(model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref3.roomId),ref3.shelfId),ref3.bookId),ref3.chapterId);
-			return new ui_content_ChapterView(item3).view();
-		case 4:
-			var ref4 = _g.ref;
-			var item4 = model_ContentTreeFilters.filterSubchapter(model_ContentTreeFilters.filterChapter(model_ContentTreeFilters.filterBook(model_ContentTreeFilters.filterShelf(model_ContentTreeFilters.filterRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree),ref4.roomId),ref4.shelfId),ref4.bookId),ref4.chapterId),ref4.shelfId);
-			return new ui_content_ChapterView(item4).view();
-		case 5:
-			var ct = _$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree);
-			var homeRoom = model_ContentTreeFilters.filterHomeRoom(_$Client_DataMode_$Impl_$.getData(model_ContentTreeModel.instance.contentTree));
-			return new ui_content_RoomView(homeRoom).view();
-		case 6:
-			return m.m("h1","BlaBla");
-		case 7:
-			return m.m("h1","Loading content");
-		}
-	}
-	,__class__: ui_content_ContentItemView
-};
-var ui_content_RoomView = function(item) {
-	this.item = item;
-};
-$hxClasses["ui.content.RoomView"] = ui_content_RoomView;
-ui_content_RoomView.__name__ = true;
-ui_content_RoomView.__interfaces__ = [mithril_Mithril];
-ui_content_RoomView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("h1","Room"),m.m("div","" + Std.string(this.item))]);
-	}
-	,__class__: ui_content_RoomView
-};
-var ui_content_ShelfView = function(item) {
-	this.item = item;
-};
-$hxClasses["ui.content.ShelfView"] = ui_content_ShelfView;
-ui_content_ShelfView.__name__ = true;
-ui_content_ShelfView.__interfaces__ = [mithril_Mithril];
-ui_content_ShelfView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("h1","Shelf"),m.m("div","" + Std.string(this.item))]);
-	}
-	,__class__: ui_content_ShelfView
-};
-var ui_content_BookView = function(item) {
-	this.item = item;
-};
-$hxClasses["ui.content.BookView"] = ui_content_BookView;
-ui_content_BookView.__name__ = true;
-ui_content_BookView.__interfaces__ = [mithril_Mithril];
-ui_content_BookView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("h1","Book"),m.m("div","" + Std.string(this.item))]);
-	}
-	,__class__: ui_content_BookView
-};
-var ui_content_ChapterView = function(item) {
-	this.item = item;
-};
-$hxClasses["ui.content.ChapterView"] = ui_content_ChapterView;
-ui_content_ChapterView.__name__ = true;
-ui_content_ChapterView.__interfaces__ = [mithril_Mithril];
-ui_content_ChapterView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("h1","Chapter"),m.m("div","" + Std.string(this.item))]);
-	}
-	,__class__: ui_content_ChapterView
-};
-var ui_content_SubchapterView = function(item) {
-	this.item = item;
-};
-$hxClasses["ui.content.SubchapterView"] = ui_content_SubchapterView;
-ui_content_SubchapterView.__name__ = true;
-ui_content_SubchapterView.__interfaces__ = [mithril_Mithril];
-ui_content_SubchapterView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("h1","Subchapter"),m.m("div","" + Std.string(this.item))]);
-	}
-	,__class__: ui_content_SubchapterView
-};
-var ui_content_ContentTreeView = function(filter) {
-	this.filter = filter;
+var ui_content_ContentTreeView = function(content) {
+	this.content = content;
 };
 $hxClasses["ui.content.ContentTreeView"] = ui_content_ContentTreeView;
 ui_content_ContentTreeView.__name__ = true;
@@ -2018,29 +1681,18 @@ ui_content_ContentTreeView.parsePath = function(p) {
 };
 ui_content_ContentTreeView.prototype = {
 	view: function() {
-		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var _g = model_ContentTreeModel.instance.contentTree;
-		switch(_g._hx_index) {
-		case 0:
-			return m.m("h1","Nil");
-		case 1:
-			return m.m("h1","Loading");
-		case 2:
-			var ct = _g.d;
-			var path = ct.id;
-			return m.m("details[open]",[m.m("summary","ContentTree " + ct.id)].concat(ct.rooms.map(function(child) {
-				return new ui_content_UIRoom(child,path,_gthis.filter).view();
-			})));
-		}
+		var path = this.content.id;
+		return m.m("details[open]",[m.m("summary","Content " + this.content.id)].concat(this.content.rooms.map(function(child) {
+			return new ui_content_UIRoom(child,path).view();
+		})));
 	}
 	,__class__: ui_content_ContentTreeView
 };
-var ui_content_UIRoom = function(item,parentPath,filter) {
+var ui_content_UIRoom = function(item,parentPath) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
-	this.filter = filter;
 };
 $hxClasses["ui.content.UIRoom"] = ui_content_UIRoom;
 ui_content_UIRoom.__name__ = true;
@@ -2049,22 +1701,19 @@ ui_content_UIRoom.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var showItem = this.filter != null && this.filter.filterRooms.indexOf(this.item.id) != -1;
-		var cssClass = showItem ? ".open" : ".protected";
 		var children = this.item.shelves != null ? this.item.shelves : [];
 		var objPath = ui_content_ContentTreeView.parsePath(this.path);
 		var itemPath = "/" + ["room",objPath.treeId,objPath.roomId].join("/");
-		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.id + ":" + itemPath);
-		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(children.map(function(child) {
-			return new ui_content_UIShelf(child,_gthis.path,_gthis.filter).view();
+		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.title + ":" + itemPath);
+		return m.m("details[open]",[m.m("summary",[anchor])].concat(children.map(function(child) {
+			return new ui_content_UIShelf(child,_gthis.path).view();
 		})));
 	}
 	,__class__: ui_content_UIRoom
 };
-var ui_content_UIShelf = function(item,parentPath,filter) {
+var ui_content_UIShelf = function(item,parentPath) {
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
-	this.filter = filter;
 };
 $hxClasses["ui.content.UIShelf"] = ui_content_UIShelf;
 ui_content_UIShelf.__name__ = true;
@@ -2073,23 +1722,21 @@ ui_content_UIShelf.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
-		var cssClass = showItem ? ".open" : ".protected";
 		var books = this.item.books != null ? this.item.books : [];
+		var css = "access" + this.item.access;
 		var objPath = ui_content_ContentTreeView.parsePath(this.path);
 		var itemPath = "/" + ["shelf",objPath.treeId,objPath.roomId,objPath.shelfId].join("/");
 		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + itemPath);
-		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(books.map(function(child) {
-			return new ui_content_UIBook(child,_gthis.path,_gthis.filter).view();
+		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(books.map(function(child) {
+			return new ui_content_UIBook(child,_gthis.path).view();
 		})));
 	}
 	,__class__: ui_content_UIShelf
 };
-var ui_content_UIBook = function(item,parentPath,filter) {
+var ui_content_UIBook = function(item,parentPath) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
-	this.filter = filter;
 };
 $hxClasses["ui.content.UIBook"] = ui_content_UIBook;
 ui_content_UIBook.__name__ = true;
@@ -2098,23 +1745,21 @@ ui_content_UIBook.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
-		var cssClass = showItem ? ".open" : ".protected";
 		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var css = "access" + this.item.access;
 		var objPath = ui_content_ContentTreeView.parsePath(this.path);
 		var itemPath = "/" + ["book",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId].join("/");
 		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + itemPath);
-		return m.m("details[open]." + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
-			return new ui_content_UIChapter(child,_gthis.path,_gthis.filter).view();
+		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UIChapter(child,_gthis.path).view();
 		})));
 	}
 	,__class__: ui_content_UIBook
 };
-var ui_content_UIChapter = function(item,parentPath,filter) {
+var ui_content_UIChapter = function(item,parentPath) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
-	this.filter = filter;
 };
 $hxClasses["ui.content.UIChapter"] = ui_content_UIChapter;
 ui_content_UIChapter.__name__ = true;
@@ -2123,23 +1768,21 @@ ui_content_UIChapter.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
-		var cssClass = showItem ? ".open" : ".protected";
-		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
+		var css = "access" + this.item.access;
 		var objPath = ui_content_ContentTreeView.parsePath(this.path);
 		var itemPath = "/" + ["chapter",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId,objPath.chapterId].join("/");
 		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + itemPath);
-		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
-			return new ui_content_UISubchapter(child,_gthis.path,_gthis.filter).view();
+		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UISubchapter(child,_gthis.path).view();
 		})));
 	}
 	,__class__: ui_content_UIChapter
 };
-var ui_content_UISubchapter = function(item,parentPath,filter) {
+var ui_content_UISubchapter = function(item,parentPath) {
 	this.item = null;
 	this.item = item;
 	this.path = parentPath + "/" + item.id;
-	this.filter = filter;
 };
 $hxClasses["ui.content.UISubchapter"] = ui_content_UISubchapter;
 ui_content_UISubchapter.__name__ = true;
@@ -2148,46 +1791,22 @@ ui_content_UISubchapter.prototype = {
 	view: function() {
 		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var showItem = this.filter != null && this.filter.filterAccess >= this.item.access;
-		var cssClass = showItem ? ".open" : ".protected";
-		var chapters = this.item.chapters != null ? this.item.chapters : [];
+		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
+		var css = "access" + this.item.access;
 		var objPath = ui_content_ContentTreeView.parsePath(this.path);
 		var itemPath = "/" + ["subchapter",objPath.treeId,objPath.roomId,objPath.shelfId,objPath.bookId,objPath.chapterId,objPath.subchapterId].join("/");
 		var anchor = m.m("a",{ href : itemPath, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + itemPath);
-		return m.m("details[open]" + cssClass,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
-			return new ui_content_UIChapter(child,_gthis.path,_gthis.filter).view();
+		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+			return new ui_content_UIChapter(child,_gthis.path).view();
 		})));
 	}
 	,__class__: ui_content_UISubchapter
-};
-var utils_Profile = function() {
-	this.init();
-};
-$hxClasses["utils.Profile"] = utils_Profile;
-utils_Profile.__name__ = true;
-utils_Profile.prototype = {
-	init: function() {
-		this.starttime = new Date().getTime();
-	}
-	,ms: function() {
-		return new Date().getTime() - this.starttime;
-	}
-	,msString: function() {
-		return " (ms:" + this.ms() + ")";
-	}
-	,__class__: utils_Profile
 };
 var utils__$UserEmail_UserEmail_$Impl_$ = {};
 $hxClasses["utils._UserEmail.UserEmail_Impl_"] = utils__$UserEmail_UserEmail_$Impl_$;
 utils__$UserEmail_UserEmail_$Impl_$.__name__ = true;
 utils__$UserEmail_UserEmail_$Impl_$.isValid = function(address) {
 	return utils__$UserEmail_UserEmail_$Impl_$.ereg.match(address);
-};
-utils__$UserEmail_UserEmail_$Impl_$.makePiped = function(email) {
-	return StringTools.replace(StringTools.replace(email,"@","||"),".","|");
-};
-utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
-	return utils__$UserEmail_UserEmail_$Impl_$.makePiped(this1);
 };
 var utils__$UserPassword_UserPassword_$Impl_$ = {};
 $hxClasses["utils._UserPassword.UserPassword_Impl_"] = utils__$UserPassword_UserPassword_$Impl_$;
@@ -2250,28 +1869,28 @@ DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
+data_UserConfig.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
+data_ClientUser.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<data.UserData>", userConfig : "DataClass<data.UserConfig>"}]}};
+data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}};
+data_Content.uid = 1;
+data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", color : "String", textcolor : "String", sort : "Int"}]}};
+data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int"}]}};
+data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}};
+data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", text : "String", subchapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}};
+data_ErrorsAndLogs.element = ($_=window.document,$bind($_,$_.querySelector));
+data_ErrorsAndLogs.logs = [];
+data_ErrorsAndLogs.errors = [];
+data_ContentModel.instance = new data_ContentModel();
+data_ContentModel.defaultData = { id : "startup", rooms : [{ id : "home", title : "Room HOME", sort : 1, shelves : [{ id : "sh", title : "sh", access : 0, sort : 0, books : [{ id : "book", title : "book", access : 0, chapters : [{ id : "ch", title : "ch", access : 0, subchapters : [{ id : "sch", title : "sch", access : 0}]}]}]},{ id : "home", title : "Shelf HOME", access : 1, sort : 1, books : [{ id : "book", title : "book", access : 0, chapters : [{ id : "ch", title : "ch", access : 0, subchapters : [{ id : "sch", title : "sch", access : 0}]}]}]}]},{ id : "startup", title : "Startup", sort : 0, shelves : [{ id : "shelf0", access : 0, title : "Shelf 0", sort : 1, books : [{ id : "book0", title : "Book Zero", access : 0, chapters : [{ id : "chapter0", title : "Chapter Zero", access : 0, subchapters : [{ id : "subchapter0", title : "Subchapter Zero", access : 0},{ id : "subchapter1", title : "Subchapter One", access : 1},{ id : "subchapter2", title : "Subchapter Two", access : 2}]},{ id : "chapter1", title : "Chapter One", access : 1, subchapters : [{ id : "subchapter0", title : "Subchapter Zero", access : 0},{ id : "subchapter1", title : "Subchapter One", access : 1}]},{ id : "chapter1", title : "Chapter One", access : 2, subchapters : [{ id : "subchapter0", title : "Subchapter Zero", access : 0}]}]},{ id : "book1", title : "Book One", access : 1, chapters : [{ id : "chapter0", title : "Chapter Zero", access : 0, subchapters : [{ id : "subchapter0", title : "Subchapter Zero", access : 0}]}]},{ id : "book2", title : "Book Two", access : 2, chapters : [{ id : "chapter0", title : "Chapter Zero", access : 0, subchapters : [{ id : "subchapter0", title : "Subchapter Zero", access : 0}]}]}]}]}]};
+data_UserLoader.instance = new data_UserLoader();
+data_UserModel.instance = new data_UserModel();
 dataclass_Converter.directConversions = ["Int","Bool","Float","String"];
 dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 js_Boot.__toStr = ({ }).toString;
-model_ContentItemModel.instance = new model_ContentItemModel();
-model_ContentTreeModel.instance = new model_ContentTreeModel();
-model_ContentTree.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<model.Room>>"}]}};
-model_ContentTree.uid = 1;
-model_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<model.Shelf>>", title : "String", color : "String", textcolor : "String"}]}};
-model_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<model.Book>>"}]}};
-model_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Booktype>", info : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
-model_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "Enum<model.Chaptertype>", info : "String", text : "String", chapters : "Array<DataClass<model.Chapter>>"}]}};
-model_ErrorsAndLogs.logs = [];
-model_ErrorsAndLogs.errors = [];
-model_Routes.instance = new model_Routes();
-model_UserModel.instance = new model_UserModel();
-model_CurrentUser.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<model.UserData>", userConfig : "DataClass<model.UserConfig>"}]}};
-model_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
-model_UserConfig.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
 ui_ClientUI.instance = new ui_ClientUI();
-utils_Profile.instance = new utils_Profile();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
 Client.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
