@@ -8,9 +8,9 @@ class UserLoader {
     
     private function new () {}  // private constructor
 
-    public function load(app:firebase.app.App) {
+    public function load() {
         // this.setLoadingUser();
-        app.auth().onAuthStateChanged(user -> {
+       firebase.Firebase.app().auth().onAuthStateChanged(user -> {
             if (user != null) {
                 ErrorsAndLogs.addLog('Browser session user found.');
                 UserModel.instance.setLoadingUser();

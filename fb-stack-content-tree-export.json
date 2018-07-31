@@ -1,56 +1,102 @@
 {
-  "id" : "current-display-tree",
-  "children" : [ {
-    "id" : "kak",
-    "children" : [ {
-      "access" : 123,
-      "children" : [ {
-        "access" : 123,
-        "children" : [ {
-          "access" : 123,
-          "children" : [ {
-            "access" : 123,
-            "id" : "c1",
-            "info" : "Information om c1",
-            "text" : "text i c1",
-            "title" : "Chapter c1",
-            "type" : "Info"
-          } ],
-          "id" : "c3",
-          "info" : "Information om c3",
-          "text" : "text i c3",
-          "title" : "Chapter c3",
-          "type" : "Article"
-        }, {
-          "access" : 123,
-          "id" : "c2",
-          "info" : "Information om c2",
-          "text" : "text i c2",
-          "title" : "Chapter c2",
-          "type" : "Info"
-        } ],
-        "id" : "b1",
-        "info" : "Information om b1",
-        "title" : "Book b1",
-        "type" : "Standard"
-      }, {
-        "access" : 123,
-        "children" : [ {
-          "access" : 123,
-          "id" : "ci1",
-          "info" : "Information om ci1",
-          "text" : "text i ci1",
-          "title" : "Chapter ci1",
-          "type" : "Info"
-        } ],
-        "id" : "b2",
-        "info" : "Information om b2",
-        "title" : "Book b2",
-        "type" : "Standard"
-      } ],
-      "id" : "si",
-      "info" : "Information om si",
-      "title" : "Book si"
-    } ]
-  } ]
+  "id": "nisse",
+  "rooms": [
+    {
+      "id": "test",
+      "shelves": [
+        {
+          "id": "sh0",
+          "title": "Shelf01",
+          "access": 0,
+          "info": "defaultShelfInfo",
+          "books": [
+            {
+              "id": "book0",
+              "title": "Bok 0",
+              "access": 0,
+              "type": "standard",
+              "info": "defaultBookInfo",
+              "chapters": [],
+              "sort": 0
+            },
+            {
+              "id": "book1",
+              "title": "Bok 1",
+              "access": 1,
+              "type": "standard",
+              "info": "defaultBookInfo",
+              "chapters": [],
+              "sort": 0
+            }
+          ],
+          "sort": 0
+        },
+        {
+          "id": "sh1",
+          "title": "Shelf1",
+          "access": 1,
+          "info": "defaultShelfInfo",
+          "books": [],
+          "sort": 0
+        },
+        {
+          "id": "sh2",
+          "title": "Shelf2",
+          "access": 0,
+          "info": "defaultShelfInfo",
+          "books": [
+            {
+              "id": "book0",
+              "title": "Book 0",
+              "access": 0,
+              "type": "standard",
+              "info": "defaultBookInfo",
+              "chapters": [
+                {
+                  "id": "chapter0",
+                  "title": "Chapter Access 0",
+                  "access": 0,
+                  "type": "article",
+                  "info": "defaultChapterInfo",
+                  "text": "defaultChapterText",
+                  "subchapters": [],
+                  "sort": 0
+                },
+                {
+                  "id": "chapter1",
+                  "title": "Chapter Access 1",
+                  "access": 1,
+                  "type": "article",
+                  "info": "defaultChapterInfo",
+                  "text": "defaultChapterText",
+                  "subchapters": [],
+                  "sort": 0
+                },
+                {
+                  "id": "chapter2",
+                  "title": "Chapter Access 2",
+                  "access": 2,
+                  "type": "article",
+                  "info": "defaultChapterInfo",
+                  "text": "defaultChapterText",
+                  "subchapters": [],
+                  "sort": 0
+                }
+              ],
+              "sort": 0
+            }
+          ],
+          "sort": 0
+        }
+      ],
+      "title": "TestRoom",
+      "sort": 0
+    },
+    {
+      "id": "room2",
+      "shelves": [],
+      "title": "Room2",
+      "sort": 0
+    }
+  ]
 }

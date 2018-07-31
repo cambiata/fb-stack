@@ -1,4 +1,4 @@
-package dat;
+package data;
 
 
 import js.Browser;
@@ -8,6 +8,7 @@ import mithril.M.Mithril;
 import mithril.M;
 import mithril.M.m;
 import data.ContentModel;
+import data.Content;
 
 class Routes {
     public static var instance(default, null):Routes = new Routes();
@@ -31,12 +32,11 @@ class Routes {
 
         var routes = {
             "/": this.homeHandler,
-            "/yxa": routeHandler,
-            "/room/:treeId/:roomId": this.roomHandler,
-            "/shelf/:treeId/:roomId/:shelfId": this.shelfHandler,
-            "/book/:treeId/:roomId/:shelfId/:bookId": this.bookHandler,
-            "/chapter/:treeId/:roomId/:shelfId/:bookId/:chapterId": this.chapterHandler,
-            "/subchapter/:treeId/:roomId/:shelfId/:bookId/:chapterId/:subchapterId": this.subchapterHandler,
+            "/room/:roomId": this.roomHandler,
+            "/shelf/:roomId/:shelfId": this.shelfHandler,
+            "/book/:roomId/:shelfId/:bookId": this.bookHandler,
+            "/chapter/:roomId/:shelfId/:bookId/:chapterId": this.chapterHandler,
+            "/subchapter/:roomId/:shelfId/:bookId/:chapterId/:subchapterId": this.subchapterHandler,
         }       
         
         var element = js.Browser.document.querySelector;
@@ -55,15 +55,15 @@ class Routes {
             return null;
         },
         render:function(vnode) {
-            return m('div', 'RouteHandler');
+            return m('div', 'homeHandler');
         }
     }
 
     public var roomHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                var ref:RoomRef = {treeId:args.get('treeId'), roomId:args.get('roomId')};
-                
+                var ref:RoomRef = {treeId:null, roomId:args.get('roomId')};
+                FilterModel.instance.setRoom(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver roomHandler Error: $e');
@@ -79,7 +79,7 @@ class Routes {
     public var shelfHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                var ref:ShelfRef = {treeId:args.get('treeId'), roomId:args.get('roomId'), shelfId:args.get('shelfId')};
+                var ref:ShelfRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId')};
                 // ContentItemModel.instance.contentItem = ShelfType(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
@@ -96,7 +96,7 @@ class Routes {
     public var bookHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                var ref:BookRef = {treeId:args.get('treeId'), roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId')};
+                var ref:BookRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId')};
                 // ContentItemModel.instance.contentItem = BookType(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
@@ -113,7 +113,7 @@ class Routes {
     public var chapterHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                var ref:ChapterRef = {treeId:args.get('treeId'), roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId'), chapterId:args.get('chapterId')};
+                var ref:ChapterRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId'), chapterId:args.get('chapterId')};
                 // ContentItemModel.instance.contentItem = ChapterType(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {

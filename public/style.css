@@ -19,7 +19,15 @@ header {
     grid-column-gap: 1em;
 }
 
-main {
+main#content {
+    width: 100%;
+    padding: 1em;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-column-gap: 1em;
+}
+
+main#develop {
     padding: 1em;
     display: inline-grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -223,7 +231,7 @@ button {
     /* text-transform: uppercase; */
     border: 2px solid #24739b;
     background: transparent;
-    color: white; 
+    color: #24739b; 
     font-size: 100%;
 
 }
@@ -254,4 +262,30 @@ input {
 
 .access2 {
     background-color: #fcc;
+}
+
+.border {
+    border: 1px solid black;
+}
+
+.paddingOneEm {
+    padding: 1em;
+}
+
+.error {
+    background-color: #fcc;
+}
+
+.grid2 {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr ;
+    grid-gap: 0.5em;
+    padding: 0.5em;
+}
+
+.grid1 {
+    display: inline-grid;
+    grid-template-columns: 1fr ;
+    grid-gap: 0.5em;
+    padding: 0.5em;    
 }

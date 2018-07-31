@@ -49,9 +49,7 @@ class MLoginForm implements Mithril {
         var enabled = state.validEmail && state.validPassword;
         var disabledString = enabled ? '' : '[disabled]';
         return m('form', [
-            m("button[type=button]", {onclick:e->{
-                submitCallback('jonasnys@gmail.com', '123456');
-            }}, 'J'),
+
 
             cast new MInputEmail(this.state).view(),
             cast new MInputPassword(this.state).view(),

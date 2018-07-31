@@ -3,6 +3,7 @@ import data.Content;
 import mithril.M;
 
 using dataclass.JsonConverter;
+using Lambda;
 
 class ContentModel {
     public static var instance(default, null):ContentModel = new ContentModel();
@@ -14,196 +15,58 @@ class ContentModel {
     public var content(default, set):Content;
 
     function set_content(u:Content) {
+        function updatePaths(tree:Content) {
+            tree.path = ''; // '/' + tree.id; Do not include tree.id!
+            tree.rooms.iter(room->{
+                room.path = tree.path + '/' + room.id;
+                room.shelves.iter(shelf->{
+                    shelf.path = room.path + '/' + shelf.id;
+                    shelf.books.iter(book->{
+                        book.path = shelf.path + '/' + book.id;
+                        book.chapters.iter(chapter->{
+                            chapter.path = book.path + '/' + chapter.id;
+                            chapter.subchapters.iter (sub->{
+                                sub.path = chapter.path + '/' + sub.id;
+                            });
+                        });
+                    });
+                });
+            });
+        }
+        
         this.content = u;
         ErrorsAndLogs.addLog('Content:' + this.content);
+
+        updatePaths(this.content);
+
         M.redraw();
         return u;
     }    
 
-    static var defaultData:Dynamic = {
-        id: 'startup',
-        rooms: [ 
-            {
-                id: 'home',
-                title: 'Room HOME',
-                sort: 1,
-                shelves: [
-                    {
-                        id:'sh',
-                        title: 'sh',
-                        access: 0,
-                        sort: 0,
-                        books: [
-                            {
-                                id:'book',
-                                title: 'book',
-                                access: 0,
-                                chapters: [
-                                    {
-                                        id:'ch',
-                                        title:'ch',
-                                        access: 0,
-                                        subchapters: [
-                                            {
-                                                id:'sch',
-                                                title:'sch',
-                                                access: 0,
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id:'home',
-                        title: 'Shelf HOME',
-                        access: 1,
-                        sort: 1,
-                        books: [
-                            {
-                                id:'book',
-                                title: 'book',
-                                access: 0,
-                                chapters: [
-                                    {
-                                        id:'ch',
-                                        title:'ch',
-                                        access: 0,
-                                        subchapters: [
-                                            {
-                                                id:'sch',
-                                                title:'sch',
-                                                access: 0,
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                ],
-            },
-            {
-                id: 'startup',
-                title: 'Startup',
-                sort: 0,
-                shelves: [
-                    {
-                        id:'shelf0',
-                        access: 0,
-                        title: 'Shelf 0',
-                        sort: 1,
-                        books: [
-                            {
-                                id: 'book0',
-                                title: 'Book Zero',
-                                access: 0,
-                                chapters: [
-                                    {
-                                        id:'chapter0',
-                                        title:'Chapter Zero',
-                                        access: 0,
-                                        subchapters: [
-                                            {
-                                                id:'subchapter0',
-                                                title:'Subchapter Zero',
-                                                access: 0,
-                                            },
-                                            {
-                                                id:'subchapter1',
-                                                title:'Subchapter One',
-                                                access: 1,
-                                            },
-                                            {
-                                                id:'subchapter2',
-                                                title:'Subchapter Two',
-                                                access: 2,
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        id:'chapter1',
-                                        title:'Chapter One',
-                                        access: 1,
-                                        subchapters: [
-                                            {
-                                                id:'subchapter0',
-                                                title:'Subchapter Zero',
-                                                access: 0,
-                                            },
-                                            {
-                                                id:'subchapter1',
-                                                title:'Subchapter One',
-                                                access: 1,
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        id:'chapter1',
-                                        title:'Chapter One',
-                                        access: 2,
-                                        subchapters: [
-                                            {
-                                                id:'subchapter0',
-                                                title:'Subchapter Zero',
-                                                access: 0,
-                                            }
-                                        ]
-                                    },
-                                ]
-                            },
-                            {
-                                id: 'book1',
-                                title: 'Book One',
-                                access: 1,
-                                chapters: [
-                                    {
-                                        id:'chapter0',
-                                        title:'Chapter Zero',
-                                        access: 0,
-                                        subchapters: [
-                                            {
-                                                id:'subchapter0',
-                                                title:'Subchapter Zero',
-                                                access: 0,
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                id: 'book2',
-                                title: 'Book Two',
-                                access: 2,
-                                chapters: [
-                                    {
-                                        id:'chapter0',
-                                        title:'Chapter Zero',
-                                        access: 0,
-                                        subchapters: [
-                                            {
-                                                id:'subchapter0',
-                                                title:'Subchapter Zero',
-                                                access: 0,
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                        ]
-                    },
-                ],
-            },
-        ]
-    }
-
     public function init() {
-        this.content = Content.fromJson(defaultData);
+        this.content = new Content({id: 'tree0', rooms:[
+            new Room({id:'room0', title:'TestRoom', shelves:[
+                new Shelf({id:'sh0', title:'Shelf01', access:0, books:[
+                    new Book({id:'book0', title:'Bok 0', access: 0}),
+                    new Book({id:'book1', title:'Bok 1', access: 1}),
+                ]}),
+                new Shelf({id:'sh1', title:'Shelf1', access:1, books:[]}),
+                new Shelf({id:'sh2', title:'Shelf2', access:0, books:[
+                    new Book({id:'book0', title:'Book 0', access:0, chapters:[
+                        new Chapter({id:'chapter0', title:'Chapter Access 0', access:0, subchapters:[]}),
+                        new Chapter({id:'chapter1', title:'Chapter Access 1', access:1, subchapters:[]}),
+                        new Chapter({id:'chapter2', title:'Chapter Access 2', access:2, subchapters:[]}),
+                    ]}),
+                ]}),
+                new Shelf({id:'home', title:'Home shelf', type: Homepage, access:999, books:[
+                    new Book({id:'homebook0', title:'Home Book 0', access:999, chapters:[]}),
+                    new Book({id:'homebook1', title:'Home Book 1', access:999, chapters:[]}),
+                ]}),
+            ]}),
+            new Room({id:'room1', title: 'Room1'}),
+        ]});
+        trace(haxe.Json.stringify(this.content.toJson()));
     }
-
-
-
    
 }
 
