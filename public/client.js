@@ -518,6 +518,15 @@ var data_Content = function(data1) {
 $hxClasses["data.Content"] = data_Content;
 data_Content.__name__ = true;
 data_Content.__interfaces__ = [DataClass];
+data_Content.validate = function(data1) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data1,"id")) {
+		output.push("id");
+	} else if(data1.id == null) {
+		output.push("id");
+	}
+	return output;
+};
 data_Content.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -986,8 +995,7 @@ data_FilterModel.prototype = {
 				return room.id == _gthis.contentRoomRef.roomId;
 			})[0];
 		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			data_ErrorsAndLogs.addError("Can not find room with id from contentRoomRef: " + Std.string(this.contentBookRef) + (" " + Std.string(e1)));
+			data_ErrorsAndLogs.addError("Can not find room with id from contentRoomRef: " + Std.string(this.contentBookRef) + (" " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)));
 		}
 		return this.getContent().rooms[0];
 	}
@@ -1155,14 +1163,14 @@ data_UserLoader.prototype = {
 					userCopy1.set_userConfig(dataclass_JsonConverter.fromJson(data_UserConfig,data2));
 					return data_UserModel.instance.set_clientUser(userCopy1);
 				});
-				return null;
+				return;
 			} else {
 				data_ErrorsAndLogs.addLog("Can not use Realtime data for anonymous user.");
-				return null;
+				return;
 			}
 		} catch( e ) {
 			data_ErrorsAndLogs.addError("initRealtimeDatabase error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-			return null;
+			return;
 		}
 	}
 	,signIn: function(email,password) {
@@ -2285,8 +2293,8 @@ ui_content_UIRoom.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var children = this.item.shelves != null ? this.item.shelves : [];
-		var anchor = m.m("a",{ href : this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.title + ":" + this.item.path);
-		return m.m("details[open]",[m.m("summary",[anchor])].concat(children.map(function(child) {
+		var anchor = m.m("a",{ href : "/room" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.title + ":" + this.item.path);
+		return m.m("details[openx]",[m.m("summary",[anchor])].concat(children.map(function(child) {
 			return new ui_content_UIShelf(child).view();
 		})));
 	}
@@ -2303,7 +2311,7 @@ ui_content_UIShelf.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var books = this.item.books != null ? this.item.books : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/shelf" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + this.item.path);
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(books.map(function(child) {
 			return new ui_content_UIBook(child).view();
 		})));
@@ -2322,7 +2330,7 @@ ui_content_UIBook.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.chapters != null ? this.item.chapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/book" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + this.item.path);
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UIChapter(child).view();
 		})));
@@ -2341,7 +2349,7 @@ ui_content_UIChapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/chapter" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path);
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UISubchapter(child).view();
 		})));
@@ -2360,7 +2368,7 @@ ui_content_UISubchapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/subchapter" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path);
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UIChapter(child).view();
 		})));
