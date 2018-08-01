@@ -7,6 +7,8 @@ import js.Node.exports;
 import firebase.Admin;
 import functions.Functions;
 
+using StringTools;
+
 class Server {
     static public function main() {
 
@@ -47,6 +49,24 @@ class Server {
                 res.json({errors:[], data:snap.val()});
                 res.end();
             }); 
+        });
+
+        app.get('/api/test/:items', (req:Request, res:Response)->{ 
+            var data = [];
+            var items:Array<String> = Std.string(req.params.items).split(',').map(s->s.trim()).filter(s->s.length>0);
+            trace(items);
+            var promises = items.map(s-> Admin.database().ref('content-item').child(s).once(EventType.Value)
+            .then(snap->{
+                trace('id:$s content:'+ snap.val());
+                return js.Promise.resolve({id:s, content:snap.val()});
+            }));
+            
+            return js.Promise.all(promises)
+            .then(items->{
+                res.json({items:items, errors:[]});
+            }).catchError(e->{
+                res.json({items:[], errors:[e]});
+            });
         });
 
         exports.app = Functions.https.onRequest(app);  

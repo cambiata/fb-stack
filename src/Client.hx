@@ -19,17 +19,19 @@ class Client {
         ContentModel.instance.init();
         UserModel.instance.init();
         
-        // haxe.Timer.delay(()->{
-        //     ContentLoader.instance.load();
-        //     UserLoader.instance.load();
-        //     haxe.Timer.delay(()->{  
-        //         UserLoader.instance.loadRealtimeUpdate();
-        //         ContentLoader.instance.loadRealtimeUpdate();
-        //     }, 3000);
-        // }, 3000);
+        haxe.Timer.delay(()->{
+            ContentLoader.instance.load();
+            UserLoader.instance.load();
+            haxe.Timer.delay(()->{  
+                UserLoader.instance.loadRealtimeUpdate();
+                ContentLoader.instance.loadRealtimeUpdate();
+            }, 3000);
+        }, 3000);
 
         ClientUI.instance.init();
         Routes.instance.init();
+
+        // ContentitemLoader.instance.loadRealtimeDatabase();
     }
 }
 

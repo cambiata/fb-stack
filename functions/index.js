@@ -10,6 +10,13 @@ function $extend(from, fields) {
 }
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
 HxOverrides.substr = function(s,pos,len) {
 	if(len == null) {
 		len = s.length;
@@ -29,7 +36,7 @@ Server.main = function() {
 	admin.initializeApp(functions.config().firebase);
 	var app = new js_npm_Express();
 	app.get("/api/userdata",AppMiddlewares.mwErrors,AppMiddlewares.mwToken,AppMiddlewares.mwUserEmail,AppMiddlewares.mwUserData,function(req,res) {
-		console.log("src/Server.hx:24:","Route /api/userdata" + " ---------------------------------");
+		console.log("src/Server.hx:26:","Route /api/userdata" + " ---------------------------------");
 		res.json({ errors : res.locals.errors, userData : res.locals.userData});
 		res.end();
 		return;
@@ -38,7 +45,7 @@ Server.main = function() {
 		var dbpath = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(res1.locals.userEmail);
 		return admin.database().ref(dbpath).once("value",function(snap) {
 			var userconfigdata = snap.val();
-			console.log("src/Server.hx:34:","userconfigdata: " + userconfigdata);
+			console.log("src/Server.hx:36:","userconfigdata: " + userconfigdata);
 			res1.json({ userData : res1.locals.userData, userConfig : userconfigdata, dbpath : dbpath, errors : res1.locals.errors});
 			res1.end();
 			return;
@@ -56,6 +63,27 @@ Server.main = function() {
 			return;
 		});
 	});
+	app.get("/api/test/:items",function(req3,res3) {
+		var items = Std.string(req3.params.items).split(",").map(function(s) {
+			return StringTools.trim(s);
+		}).filter(function(s1) {
+			return s1.length > 0;
+		});
+		console.log("src/Server.hx:57:",items);
+		return Promise.all(items.map(function(s2) {
+			return admin.database().ref("content-item").child(s2).once("value").then(function(snap2) {
+				console.log("src/Server.hx:60:","id:" + s2 + " content:" + snap2.val());
+				var promises = snap2.val();
+				return Promise.resolve({ id : s2, content : promises});
+			});
+		})).then(function(items1) {
+			res3.json({ items : items1, errors : []});
+			return;
+		})["catch"](function(e) {
+			res3.json({ items : [], errors : [e]});
+			return;
+		});
+	});
 	module.exports.app = functions.https.onRequest(app);
 };
 var AppMiddlewares = function() { };
@@ -65,11 +93,11 @@ AppMiddlewares.mwErrors = function(req,res,next) {
 	next();
 };
 AppMiddlewares.mwToken = function(req,res,next) {
-	console.log("src/Server.hx:64:","Middleware mwToken ***************************");
+	console.log("src/Server.hx:84:","Middleware mwToken ***************************");
 	var token = null;
 	try {
 		token = req.get("Authorization").split("Bearer ")[1];
-		console.log("src/Server.hx:68:","token: " + HxOverrides.substr(token,0,50) + "...");
+		console.log("src/Server.hx:88:","token: " + HxOverrides.substr(token,0,50) + "...");
 	} catch( e ) {
 		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
 		res.locals.errors.push("Middleware mwToken error: " + Std.string(e1));
@@ -78,19 +106,19 @@ AppMiddlewares.mwToken = function(req,res,next) {
 	next();
 };
 AppMiddlewares.mwUserEmail = function(req,res,next) {
-	console.log("src/Server.hx:77:","Middleware mwUserEmail ***************************");
+	console.log("src/Server.hx:97:","Middleware mwUserEmail ***************************");
 	try {
 		var token = res.locals.token;
 		admin.auth().verifyIdToken(token).then(function(verified) {
 			return admin.auth().getUser(verified.uid);
 		}).then(function(user) {
 			res.locals.userEmail = user.email;
-			console.log("src/Server.hx:85:","userEmail = " + Std.string(res.locals.userEmail));
+			console.log("src/Server.hx:105:","userEmail = " + Std.string(res.locals.userEmail));
 			return next();
 		})["catch"](function(e) {
 			res.locals.errors.push("Middleware mwUserEmail error 1: " + e);
 			if((e == null ? "null" : "" + e).indexOf("Error: Credential implementation") > -1) {
-				console.log("src/Server.hx:91:","localhost error!");
+				console.log("src/Server.hx:111:","localhost error!");
 				res.locals.userEmail = "jonasnys@gmail.com";
 			}
 			return next();
@@ -102,25 +130,25 @@ AppMiddlewares.mwUserEmail = function(req,res,next) {
 	}
 };
 AppMiddlewares.mwUserData = function(req,res,next) {
-	console.log("src/Server.hx:103:","Middleware mwUserData ***************************");
+	console.log("src/Server.hx:123:","Middleware mwUserData ***************************");
 	try {
 		var userEmail = res.locals.userEmail;
 		var dbpath = "user/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-		console.log("src/Server.hx:108:","dbpath: " + dbpath);
+		console.log("src/Server.hx:128:","dbpath: " + dbpath);
 		admin.database().ref(dbpath).once("value",function(snap) {
 			res.locals.userData = snap.val();
 			res.locals.userData.email = userEmail;
-			console.log("src/Server.hx:113:","User data: " + Std.string(res.locals.userData));
+			console.log("src/Server.hx:133:","User data: " + Std.string(res.locals.userData));
 			return next();
 		},function(failure) {
-			console.log("src/Server.hx:116:","Middleware mwUserData error 1: " + failure);
+			console.log("src/Server.hx:136:","Middleware mwUserData error 1: " + failure);
 			res.locals.userData = null;
 			res.locals.errors.push("" + failure);
 			return next();
 		});
 	} catch( e ) {
 		var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-		console.log("src/Server.hx:122:","Middleware mwUserData error 2: " + Std.string(e1));
+		console.log("src/Server.hx:142:","Middleware mwUserData error 2: " + Std.string(e1));
 		res.locals.userData = null;
 		res.locals.errors.push("" + Std.string(e1));
 		next();
@@ -133,6 +161,37 @@ Std.string = function(s) {
 };
 var StringTools = function() { };
 StringTools.__name__ = true;
+StringTools.isSpace = function(s,pos) {
+	var c = HxOverrides.cca(s,pos);
+	if(!(c > 8 && c < 14)) {
+		return c == 32;
+	} else {
+		return true;
+	}
+};
+StringTools.ltrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,r)) ++r;
+	if(r > 0) {
+		return HxOverrides.substr(s,r,l - r);
+	} else {
+		return s;
+	}
+};
+StringTools.rtrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,l - r - 1)) ++r;
+	if(r > 0) {
+		return HxOverrides.substr(s,0,l - r);
+	} else {
+		return s;
+	}
+};
+StringTools.trim = function(s) {
+	return StringTools.ltrim(StringTools.rtrim(s));
+};
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
 };

@@ -23,7 +23,7 @@ main#content {
     width: 100%;
     padding: 1em;
     display: inline-grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 2fr .2fr;
     grid-column-gap: 1em;
 }
 
@@ -121,8 +121,6 @@ summary {
 }
 
 
-
-
 /*--------------------------------------------------*/
 
 section.shelf > header {    
@@ -202,7 +200,7 @@ section.shelf {
     "footer footer footer footer"; 
 }
 
-section a {
+section > a {
     display: inline-block;
     padding: 0.3em 0.6em;
     border-radius: 6px;
@@ -216,7 +214,7 @@ section a {
 
 }
 
-section a:hover {
+section > a:hover {
     background-color: #039be5;
     color: white;
 }
@@ -266,6 +264,7 @@ input {
 
 .border {
     border: 1px solid black;
+    padding: 2px;
 }
 
 .paddingOneEm {
@@ -274,6 +273,14 @@ input {
 
 .error {
     background-color: #fcc;
+}
+
+
+.grid4 {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr ;
+    grid-gap: 0.5em;
+    padding: 0.5em;
 }
 
 .grid2 {
@@ -288,4 +295,41 @@ input {
     grid-template-columns: 1fr ;
     grid-gap: 0.5em;
     padding: 0.5em;    
+}
+
+.active {
+    background-color: "#cfc";
+    border:3px solid blue;
+
+}
+
+
+article header {
+    padding: 0.5em;
+}
+
+article > header {
+    grid-area:"header";
+    background-color: #dfd;
+}
+
+article > aside {
+    grid-area:"aside";
+}
+
+article > section#section1 {
+    grid-area:"section1";
+}
+article > section#section2 {
+    grid-area:"section2";
+}
+
+article {
+    display:inline-grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-areas: 
+        "header header"
+        "aside section1"
+        "aside section2";
+
 }

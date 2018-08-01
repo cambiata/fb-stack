@@ -11,7 +11,7 @@ class ErrorsAndLogs {
     static public var logs(default,null):Array<String> = [];
     static public function addLog(log:String) {
         logs.unshift(log);
-        trace(log);
+        // trace(log);
         var el = Browser.document.createDivElement();
         el.textContent = log;
         element('#logs').appendChild(el);

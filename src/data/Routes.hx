@@ -46,7 +46,6 @@ class Routes {
    public var homeHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver roomHandler Error: $e');
@@ -63,7 +62,7 @@ class Routes {
         onmatch: function(args, path) {
             try {
                 var ref:RoomRef = {treeId:null, roomId:args.get('roomId')};
-                FilterModel.instance.setRoom(ref);
+                FilterModel.instance.setFilterRoom(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver roomHandler Error: $e');
@@ -80,6 +79,7 @@ class Routes {
         onmatch: function(args, path) {
             try {
                 var ref:ShelfRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId')};
+                FilterModel.instance.setFilterShelf(ref);
                 // ContentItemModel.instance.contentItem = ShelfType(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
@@ -98,6 +98,7 @@ class Routes {
             try {
                 var ref:BookRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId')};
                 // ContentItemModel.instance.contentItem = BookType(ref);
+                FilterModel.instance.setFilterBook(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver bookHandler Error: $e');
@@ -114,7 +115,7 @@ class Routes {
         onmatch: function(args, path) {
             try {
                 var ref:ChapterRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId'), chapterId:args.get('chapterId')};
-                // ContentItemModel.instance.contentItem = ChapterType(ref);
+                FilterModel.instance.setFilterChapter(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver chapterHandler Error: $e');
@@ -130,8 +131,9 @@ class Routes {
     public var subchapterHandler:SimpleRouteResolver = {
         onmatch: function(args, path) {
             try {
-                var ref:SubchapterRef = {treeId:args.get('treeId'), roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId'), chapterId:args.get('chapterId'), subchapterId: args.get('subachapterId')};
+                var ref:SubchapterRef = {treeId:null, roomId:args.get('roomId'), shelfId:args.get('shelfId'), bookId:args.get('bookId'), chapterId:args.get('chapterId'), subchapterId: args.get('subchapterId')};
                 // ContentItemModel.instance.contentItem = SubchapterType(ref);
+                FilterModel.instance.setFilterSubchapter(ref);
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver subchapterHandler Error: $e');
