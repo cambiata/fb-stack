@@ -63,7 +63,10 @@ class ContentModel {
                     new Book({id:'homebook1', title:'Home Book 1', access:999, chapters:[]}),
                 ]}),
             ]}),
-            new Room({id:'room1', title: 'Room1'}),
+            new Room({id:'room1', title: 'Room1', shelves:[
+                new Shelf({id:'room1homeshelf', title:'Homeshelf Room1', type:Shelftype.Homepage, access:0, books:[]}),
+                new Shelf({id:'room1sh0', title:'Shelf0 of Room1', access:0, books:[]}),
+            ]}),
         ]});
         trace(haxe.Json.stringify(this.content.toJson()));
     }

@@ -28,9 +28,10 @@ class UIContent implements Mithril {
 
     }
     public function view() {
+        var homeroom:Room = FilterModel.instance.getHomeroom();
         return [
-            new UIContentHomepage().view(),
-            new UIContentShelves().view(),
+            new UIContentHomepage(homeroom).view(),
+            new UIContentFilteredShelves(homeroom).view(),
             new UIContentBook().view(),
             new UIContentSearch().view(),
         ];
@@ -38,14 +39,16 @@ class UIContent implements Mithril {
 }
 
 class UIContentHomepage implements Mithril {
-    public function new() { 
-    
+    public function new(homeRoom:Room) { 
+        this.homeRoom = homeRoom;
     }
     
+    var homeRoom:Room;
+
     public function view() {
         return try {
             // var firstRoom:Room = ContentModel.instance.content.rooms.first();
-            var homeRoom:Room = data.FilterModel.instance.getRoom().fallbackRoomIfNull();
+            // var homeRoom:Room = data.FilterModel.instance.getRoom().fallbackRoomIfNull();
             trace(homeRoom);
             m('.border', [
                 m('h1', homeRoom.title + ' (' + homeRoom.id + ')'),
@@ -110,13 +113,24 @@ class UIShelvesList implements Mithril {
     
 }
 
-class UIContentShelves implements Mithril {
-    public function new() { 
-    
+class UIContentFilteredShelves implements Mithril {
+    public function new(homeroom:Room) { 
+        this.homeroom = homeroom;
     }
     
+    var homeroom:Room;
+    
     public function view() {
-        return m('.border', 'UIContentShelves');
+        return try {
+            m('div.border', [
+                m('h2', 'UIContentFilteredShelves'),
+                new UIShelvesList(this.homeroom.shelves).view(),
+            ]);
+        } catch (e:Dynamic) {
+            ErrorsAndLogs.addError('UIContentFilteredShelves:' + e);
+            m('.error', 'UIContentFilteredShelves $e');
+
+        }
     }
 }
 

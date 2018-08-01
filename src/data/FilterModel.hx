@@ -4,6 +4,7 @@ import data.Content;
 import mithril.M;
 
 using cx.ArrayTools;
+using FilterModel.FilterTools;
 
 class FilterModel {
     public static var instance(default, null):FilterModel = new FilterModel();
@@ -12,11 +13,11 @@ class FilterModel {
 
     private function new () {}  // private constructor
 
-    public var contentRoomRef:RoomRef = {treeId: null, roomId: null};
+    public var filterRoomRef:RoomRef = {treeId: null, roomId: null};
 
-    public var contentShelvesRef:ShelfRef = null;
+    public var filterShelvesRef:ShelfRef = null;
 
-    public var contentBookRef:BookRef = null;
+    public var filterBookRef:BookRef = null;
 
     public function getContent():Content {
         return ContentModel.instance.content;
@@ -24,17 +25,31 @@ class FilterModel {
 
     public function getRoom():Room {
         try {
-            return getContent().rooms.filter(room->room.id == contentRoomRef.roomId).first();
+            return getContent().rooms.filter(room->room.id == filterRoomRef.roomId).first();
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('Can not find room with id from contentRoomRef: ' + contentBookRef + ' $e');
+            ErrorsAndLogs.addError('Can not find room with id from filterRoomRef: ' + filterBookRef + ' $e');
         }
         return getContent().rooms.first();
     }
 
+    public function getHomeroom():Room {
+        return getRoom().fallbackRoomIfNull();
+    }
+
+
     public function setRoom(ref:RoomRef) {
-        this.contentRoomRef = ref;
+        this.filterRoomRef = ref;
         M.redraw();
     }
+
+    // public function getShelves():Array<Shelf> {
+    //     return try {
+    //         (filterShelvesRef != null && filterShelvesRef != null) ? getRoom().shelves.filter(shelf->shelf.id == filterShelvesRef.shelfId) : getRoom().shelves;
+    //     } catch (e:Dynamic) {
+    //         ErrorsAndLogs.addError('Can not filter shelves to ' + filterShelvesRef);
+    //         getRoom().shelves;
+    //     }
+    // }
 
 
     // public function getShelvesOfType(type:data.Content.Shelftype) {

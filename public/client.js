@@ -972,15 +972,15 @@ data_ContentModel.prototype = {
 		return u;
 	}
 	,init: function() {
-		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", shelves : [new data_Shelf({ id : "sh0", title : "Shelf01", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0}),new data_Book({ id : "book1", title : "Bok 1", access : 1})]}),new data_Shelf({ id : "sh1", title : "Shelf1", access : 1, books : []}),new data_Shelf({ id : "sh2", title : "Shelf2", access : 0, books : [new data_Book({ id : "book0", title : "Book 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]}),new data_Shelf({ id : "home", title : "Home shelf", type : "homepage", access : 999, books : [new data_Book({ id : "homebook0", title : "Home Book 0", access : 999, chapters : []}),new data_Book({ id : "homebook1", title : "Home Book 1", access : 999, chapters : []})]})]}),new data_Room({ id : "room1", title : "Room1"})]}));
-		console.log("src/data/ContentModel.hx:68:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
+		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", shelves : [new data_Shelf({ id : "sh0", title : "Shelf01", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0}),new data_Book({ id : "book1", title : "Bok 1", access : 1})]}),new data_Shelf({ id : "sh1", title : "Shelf1", access : 1, books : []}),new data_Shelf({ id : "sh2", title : "Shelf2", access : 0, books : [new data_Book({ id : "book0", title : "Book 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]}),new data_Shelf({ id : "home", title : "Home shelf", type : "homepage", access : 999, books : [new data_Book({ id : "homebook0", title : "Home Book 0", access : 999, chapters : []}),new data_Book({ id : "homebook1", title : "Home Book 1", access : 999, chapters : []})]})]}),new data_Room({ id : "room1", title : "Room1", shelves : [new data_Shelf({ id : "room1homeshelf", title : "Homeshelf Room1", type : "homepage", access : 0, books : []}),new data_Shelf({ id : "room1sh0", title : "Shelf0 of Room1", access : 0, books : []})]})]}));
+		console.log("src/data/ContentModel.hx:71:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
 	}
 	,__class__: data_ContentModel
 	,__properties__: {set_content:"set_content"}
 };
 var data_FilterModel = function() {
-	this.contentBookRef = null;
-	this.contentRoomRef = { treeId : null, roomId : null};
+	this.filterBookRef = null;
+	this.filterRoomRef = { treeId : null, roomId : null};
 };
 $hxClasses["data.FilterModel"] = data_FilterModel;
 data_FilterModel.__name__ = true;
@@ -992,15 +992,19 @@ data_FilterModel.prototype = {
 		var _gthis = this;
 		try {
 			return this.getContent().rooms.filter(function(room) {
-				return room.id == _gthis.contentRoomRef.roomId;
+				return room.id == _gthis.filterRoomRef.roomId;
 			})[0];
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("Can not find room with id from contentRoomRef: " + Std.string(this.contentBookRef) + (" " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)));
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			data_ErrorsAndLogs.addError("Can not find room with id from filterRoomRef: " + Std.string(this.filterBookRef) + (" " + Std.string(e1)));
 		}
 		return this.getContent().rooms[0];
 	}
+	,getHomeroom: function() {
+		return data_FilterTools.fallbackRoomIfNull(this.getRoom());
+	}
 	,setRoom: function(ref) {
-		this.contentRoomRef = ref;
+		this.filterRoomRef = ref;
 		m.redraw();
 	}
 	,__class__: data_FilterModel
@@ -1970,11 +1974,13 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [new ui_UIContentHomepage().view(),new ui_UIContentShelves().view(),new ui_UIContentBook().view(),new ui_UIContentSearch().view()];
+		var homeroom = data_FilterModel.instance.getHomeroom();
+		return [new ui_UIContentHomepage(homeroom).view(),new ui_UIContentFilteredShelves(homeroom).view(),new ui_UIContentBook().view(),new ui_UIContentSearch().view()];
 	}
 	,__class__: ui_UIContent
 };
-var ui_UIContentHomepage = function() {
+var ui_UIContentHomepage = function(homeRoom) {
+	this.homeRoom = homeRoom;
 };
 $hxClasses["ui.UIContentHomepage"] = ui_UIContentHomepage;
 ui_UIContentHomepage.__name__ = true;
@@ -1983,9 +1989,8 @@ ui_UIContentHomepage.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		try {
-			var homeRoom = data_FilterTools.fallbackRoomIfNull(data_FilterModel.instance.getRoom());
-			console.log("src/ui/ClientUI.hx:49:",homeRoom);
-			return m.m(".border",[m.m("h1",homeRoom.title + " (" + homeRoom.id + ")"),m.m("h2","Home shelf"),new ui_UIHomeShelf(homeRoom).view(),m.m("h2","Other shelves"),new ui_UIShelvesList(data_FilterTools.getShelvesExcludeType(homeRoom.shelves,"homepage")).view()]);
+			console.log("src/ui/ClientUI.hx:52:",this.homeRoom);
+			return m.m(".border",[m.m("h1",this.homeRoom.title + " (" + this.homeRoom.id + ")"),m.m("h2","Home shelf"),new ui_UIHomeShelf(this.homeRoom).view(),m.m("h2","Other shelves"),new ui_UIShelvesList(data_FilterTools.getShelvesExcludeType(this.homeRoom.shelves,"homepage")).view()]);
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
 			data_ErrorsAndLogs.addError("Can not find book: " + Std.string(e1));
@@ -2028,17 +2033,24 @@ ui_UIShelvesList.prototype = {
 	}
 	,__class__: ui_UIShelvesList
 };
-var ui_UIContentShelves = function() {
+var ui_UIContentFilteredShelves = function(homeroom) {
+	this.homeroom = homeroom;
 };
-$hxClasses["ui.UIContentShelves"] = ui_UIContentShelves;
-ui_UIContentShelves.__name__ = true;
-ui_UIContentShelves.__interfaces__ = [mithril_Mithril];
-ui_UIContentShelves.prototype = {
+$hxClasses["ui.UIContentFilteredShelves"] = ui_UIContentFilteredShelves;
+ui_UIContentFilteredShelves.__name__ = true;
+ui_UIContentFilteredShelves.__interfaces__ = [mithril_Mithril];
+ui_UIContentFilteredShelves.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m(".border","UIContentShelves");
+		try {
+			return m.m("div.border",[m.m("h2","UIContentFilteredShelves"),new ui_UIShelvesList(this.homeroom.shelves).view()]);
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			data_ErrorsAndLogs.addError("UIContentFilteredShelves:" + Std.string(e1));
+			return m.m(".error","UIContentFilteredShelves " + Std.string(e1));
+		}
 	}
-	,__class__: ui_UIContentShelves
+	,__class__: ui_UIContentFilteredShelves
 };
 var ui_UIContentBook = function() {
 };
