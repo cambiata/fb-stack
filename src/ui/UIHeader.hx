@@ -77,12 +77,11 @@ class MLogoutForm implements Mithril {
         return m('form', [
 
 
-            m('div', ''),
-            m('h3', 'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
+            m('div', 'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
             // m('h3', {style:{color:homeroom.textcolor}},'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
 			m("button[type=button]", { onclick: e -> {
 				UserLoader.instance.signOut();
-			}}, 'Logout'), 
+			}}, 'Logga ut'), 
             // m('div',''+clientUser),
         ]);
     }
@@ -114,7 +113,7 @@ class UIHeader implements Mithril {
                 case User: 
                     var user = UserModel.instance.clientUser;
                     cast this.logoutform.setUser(user).view() ;
-                case Loading: m('h2', {style:{textAlign:'right', paddingRight:'1em'}}, 'Loading user data...');
+                case Loading: m('div', 'Loading user data...');
                 case Anonymous: cast this.loginform.view();
             };
         return [

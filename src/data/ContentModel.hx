@@ -58,7 +58,7 @@ class ContentModel {
                             new Chapter({id:'sub1', title:'Sub1', access:0}),
                             new Chapter({id:'sub2', title:'Sub2', access:0}),
                         ]}),
-                        new Chapter({id:'chapter2', title:'Kapitel 2', access:0, subchapters:[]}),
+                        new Chapter({id:'chapter3', title:'Kapitel 3', access:0, subchapters:[]}),
                     ]}),
                     new Book({id:'book1', title:'Bok 1', access: 1, chapters:[
                         new Chapter({id:'chapter0', title:'Kapitel 1', access:1, subchapters:[

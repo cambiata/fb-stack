@@ -5,7 +5,7 @@ import mithril.M;
 import data.ErrorsAndLogs;
 import data.*;
 import data.Content;
-
+import ui.content.ContentItemsView;
 using data.Content.ContentFilters;
 using cx.ArrayTools;
 using dataclass.JsonConverter;
@@ -17,7 +17,7 @@ class ClientUI implements Mithril {
     public function init() {
         var element = js.Browser.document.querySelector;       
         M.mount(element('header'), new UIHeader());
-        M.mount(element('div#buttons'), new UIDevbuttons());
+        // M.mount(element('div#buttons'), new UIDevbuttons());
         M.mount(element('main#develop'), new UIDevelop());
         M.mount(element('main#content'), new UIContent());
     }    
@@ -30,14 +30,14 @@ class UIContent implements Mithril {
 
     public function view() {
         return [
-            new UIContentHomepage().view(),
-            new UIContentFilteredShelves().view(),
-            new UIContentBook().view(),
-            new UIContentSearch().view(),
+            new HomeView().view(),
+            new ShelvesView().view(),
+            new BookView().view(),
         ];
     }
 }
 
+/*
 class UIContentHomepage implements Mithril {
     public function new() { 
         this.homeroom = FilterModel.instance.getHomeroom();
@@ -84,6 +84,7 @@ class UIContentHomepage implements Mithril {
         } 
     }
 }
+*/
 
 // class UIHomeShelf implements Mithril {
 //     public function new(room:Room) { 
@@ -111,73 +112,47 @@ class UIContentHomepage implements Mithril {
 
 
 
-class UIShelvesList implements Mithril {
-    public function new(shelves:Array<Shelf>) { //(state:T) {
-        this.shelves = shelves;
-    }
-    var shelves:Array<Shelf>;
+
+
+// class UIContentFilteredShelves implements Mithril {
+//     public function new() { 
+//         this.homeroom = FilterModel.instance.getHomeroom();
+//     }
     
-    public function view() {
-        return m('div.grid1', this.shelves.map(shelf->{
-            var a = m('a.error', {href:'/shelf'+shelf.path, oncreate: M.routeLink}, 'Shelf: ' + shelf.path);
-            m('div.border', [a]);
-        }) );
-    }
-}
-
-class UIBooksList implements Mithril {
-    public function new(books:Array<Book>) {
-        this.books = books;
-    }
-    var books:Array<Book>;
-
-    public function view() {
-        return m('div.grid4', this.books.map(book->{
-            m('a', {href:'/book'+book.path, oncreate: M.routeLink}, 'Book: ' + book.path);
-        }));
-
-    }
-
-}
-
-class UIContentFilteredShelves implements Mithril {
-    public function new() { 
-        this.homeroom = FilterModel.instance.getHomeroom();
-    }
+//     var homeroom:Room;
     
-    var homeroom:Room;
-    
-    public function view() {
-        return try {
-            m('div.border', [
-                m('a', {href:'/room' +  this.homeroom.path, oncreate: M.routeLink},'Shelf filter:' + FilterModel.instance.filterShelf),
-                // m('div', 'Shelf filter:' + FilterModel.instance.filterShelf),
-                // m('a', {onclick:e->{
-                //     FilterModel.instance.filterShelf = null;
-                // }}, 'Reset'),
-                m('h2', 'UIContentFilteredShelves'),
-                m('div.grid1', FilterModel.instance.getFilteredShelves().getShelvesExcludeType(Shelftype.Homepage).map(shelf->{
-                    var a = m('a', {href:'/shelf'+shelf.path, oncreate: M.routeLink}, 'Sh: ' + shelf.title);
-                    m('div.border', [
-                        a,
-                        m('h4', 'Books:'),
-                        m('div.grid4', [
-                            shelf.books.map(book->{
-                                m('a.border', {href:'/book'+book.path, oncreate: M.routeLink}, 'B: ' + book.title);
+//     public function view() {
+//         return try {
+//             m('div.border', [
+//                 m('a', {href:'/room' +  this.homeroom.path, oncreate: M.routeLink},'Shelf filter:' + FilterModel.instance.filterShelf),
+//                 // m('div', 'Shelf filter:' + FilterModel.instance.filterShelf),
+//                 // m('a', {onclick:e->{
+//                 //     FilterModel.instance.filterShelf = null;
+//                 // }}, 'Reset'),
+//                 m('h2', 'UIContentFilteredShelves'),
+//                 m('div.grid1', FilterModel.instance.getFilteredShelves().getShelvesExcludeType(Shelftype.Homepage).map(shelf->{
+//                     var a = m('a', {href:'/shelf'+shelf.path, oncreate: M.routeLink}, 'Sh: ' + shelf.title);
+//                     m('div.border', [
+//                         a,
+//                         m('h4', 'Books:'),
+//                         m('div.grid4', [
+//                             shelf.books.map(book->{
+//                                 m('a.border', {href:'/book'+book.path, oncreate: M.routeLink}, 'B: ' + book.title);
 
-                            })
-                        ]),
-                    ]);
-                }))
-            ]);
-        } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('UIContentFilteredShelves:' + e);
-            m('.error', 'UIContentFilteredShelves $e');
+//                             })
+//                         ]),
+//                     ]);
+//                 }))
+//             ]);
+//         } catch (e:Dynamic) {
+//             ErrorsAndLogs.addError('UIContentFilteredShelves:' + e);
+//             m('.error', 'UIContentFilteredShelves $e');
 
-        }
-    }
-}
+//         }
+//     }
+// }
 
+/*
 class UIContentBook implements Mithril {
     public function new() { 
         this.book = FilterModel.instance.getBook();
@@ -267,6 +242,7 @@ class UIContentBook implements Mithril {
         } 
     }
 }
+*/
 
 class UIContentSearch implements Mithril {
     public function new() { 
@@ -274,32 +250,57 @@ class UIContentSearch implements Mithril {
     }
     
     public function view() {
-        return m('.border', 'UIContentSearch');
+        return new UIFilters().view();
     }
 }
 
-class UIContentitemView implements Mithril {
-    public function new(chapter:Chapter) { //(state:T) {
-        this.chapter = chapter;
-    }
-    var chapter:Chapter;
+class UIFilters implements Mithril {
+    public function new() {}
+
     public function view() {
-        var content = data.ContentitemModel.instance.getChapterContent(this.chapter.path);
-        var contentView = content == null ? [
-            m('div.error', '404 - content is null for ' + this.chapter.path),
-            m('button', {onclick:e->{
-                ContentitemLoader.instance.createItem(this.chapter.path, 'This is new content for ' + this.chapter.title + ' (' + this.chapter.path + ')');
-            }}, 'Create'),
-         ] 
-         : m('div', 'Content: ' + content); 
 
-        return m('div', [
-            m('h1', 'UIContentitemView'),
-            contentView,
-        ] );
+
+        var f = FilterModel.instance.filterContent;
+        var s:String = f != null ? '${f.roomId}/${f.shelfId}/${f.bookId}/${f.chapterId}/${f.subchapterId}' : 'null';
+        var filterContentView = m('div', 'filter2: $s');
+
+
+
+        return m('.border', [
+            m('h3', 'Filters:'),
+            filterContentView,
+            // roomFilterView,
+            // shelfFilterView,
+            // bookFilterView,
+            // chapterFilterView,
+            // subchapterFilterView,
+        ]);
+
     }
-    
 }
+
+// class UIContentitemView implements Mithril {
+//     public function new(chapter:Chapter) { //(state:T) {
+//         this.chapter = chapter;
+//     }
+//     var chapter:Chapter;
+//     public function view() {
+//         var content = data.ContentitemModel.instance.getChapterContent(this.chapter.path);
+//         var contentView = content == null ? [
+//             m('div.error', '404 - content is null for ' + this.chapter.path),
+//             m('button', {onclick:e->{
+//                 ContentitemLoader.instance.createItem(this.chapter.path, 'This is new content for ' + this.chapter.title + ' (' + this.chapter.path + ')');
+//             }}, 'Create'),
+//          ] 
+//          : m('div', 'Content: ' + content); 
+
+//         return m('div', [
+//             m('h1', 'UIContentitemView'),
+//             contentView,
+//         ] );
+//     }
+    
+// }
 
 //-----------------------------------------------------------------------------------------------------------------------------
 
@@ -314,15 +315,15 @@ class UIDevbuttons implements Mithril {
             m("button[type=button]", {onclick:e->{
                 data.UserLoader.instance.signIn('jonasnys@gmail.com', '123456');
             }}, 'Log in as Jonas'),
-            m("button[type=button]", {onclick:e->{
-                FilterModel.instance.setFilterRoom({treeId:null, roomId:'room1'});
-            }}, 'Set room as room1'),
-            m("button[type=button]", {onclick:e->{
-                FilterModel.instance.setFilterRoom({treeId:null, roomId:'room0'});
-            }}, 'Set room as room0'),
-            m("button[type=button]", {onclick:e->{
-                FilterModel.instance.setFilterRoom({treeId:null, roomId:'x'});
-            }}, 'Set room as x'),
+            // m("button[type=button]", {onclick:e->{
+            //     FilterModel.instance.setFilterRoom({treeId:null, roomId:'room1'});
+            // }}, 'Set room as room1'),
+            // m("button[type=button]", {onclick:e->{
+            //     FilterModel.instance.setFilterRoom({treeId:null, roomId:'room0'});
+            // }}, 'Set room as room0'),
+            // m("button[type=button]", {onclick:e->{
+            //     FilterModel.instance.setFilterRoom({treeId:null, roomId:'x'});
+            // }}, 'Set room as x'),
             m("button[type=button]", {onclick:e->{
                 M.redraw();
             }}, 'M.redraw()'),
@@ -358,7 +359,8 @@ class UIDevelop implements Mithril {
         return [
             new ui.content.ContentTreeView(ContentModel.instance.content).view(),
             new ui.content.ContentTreeView(ContentModel.instance.content.sort()).view(),
-            new ui.content.ContentTreeView(ContentModel.instance.content.fiterRoomAndShelfHome()).view(),
+            // new ui.content.ContentTreeView(ContentModel.instance.content.fiterRoomAndShelfHome()).view(),
+            new UIFilters().view(),
         ];
     }
 }

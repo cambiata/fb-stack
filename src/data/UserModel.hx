@@ -23,12 +23,13 @@ class UserModel {
 
     public function init() {
         ErrorsAndLogs.addLog('UserModel.instance.init()');
-        this.setAnonymousUser();
+        // this.setAnonymousUser();
+        this.setLoadingUser();
     }
 
     public function setAnonymousUser() {
-        this.clientUser = new ClientUser(anonymousUser());
         this.clientUserState = Anonymous;
+        this.clientUser = new ClientUser(anonymousUser());
     }
 
     public function setLoadedUserFromData(data:Dynamic) {

@@ -12,18 +12,22 @@ body {
 header {
     padding: 0.5em;
     background-color: #aaf;
-    min-height: 1.5em;
+    /* min-height: 1.5em; */
     width:100%;
-    display: inline-grid;
-    grid-template-columns: 1fr 2fr ;
-    grid-column-gap: 1em;
+    /* display: inline-grid; */
+    /* grid-template-columns: 1fr 2fr ;
+    grid-column-gap: 1em; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 main#content {
     width: 100%;
     padding: 1em;
-    display: inline-grid;
-    grid-template-columns: 1fr 1fr 2fr .2fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
     grid-column-gap: 1em;
 }
 
@@ -35,10 +39,16 @@ main#develop {
 }
 
 form {
-    display: inline-grid;
+    /* display: inline-grid;
     grid-template-columns: repeat(4, 200px); ;
     grid-column-gap: 1em; 
-    text-align: right;
+    text-align: right; */
+    display: flex;
+    align-items: center;
+}
+
+form > * {
+    margin-left: 1em;
 }
 
 #logs {
@@ -122,7 +132,7 @@ summary {
 
 
 /*--------------------------------------------------*/
-
+/* 
 section.shelf > header {    
     grid-area: header;
     padding: 0;
@@ -139,7 +149,6 @@ section.shelf > footer {
 }
 
 section.shelf > article {
-    /* background-color: white; */
     min-height: 5em;
     border-bottom-left-radius: 0.5em;
     border-bottom-right-radius: 0.5em; 
@@ -178,16 +187,15 @@ section.shelf > article > footer {
    border-bottom-left-radius: 0.5em;
    border-bottom-right-radius: 0.5em;   
    text-align: right; 
-}
+} */
 
 
 
-main.content {
+/* main.content {
     display: block
+} */
 
-}
-
-section.shelf {    
+/* section.shelf {    
     background-color: #dedede;
     padding: 0.8em;
     display: grid;
@@ -217,16 +225,15 @@ section > a {
 section > a:hover {
     background-color: #039be5;
     color: white;
-}
+} */
 
-button {
+/* button {
     display: inline-block;
     padding: 0.3em 0.6em;
     border-radius: 0.2em;
     transition-duration: 0.4s;
     cursor: pointer;
     text-decoration: none;
-    /* text-transform: uppercase; */
     border: 2px solid #24739b;
     background: transparent;
     color: #24739b; 
@@ -237,7 +244,7 @@ button {
 button:hover {
     background-color: white;
     color: #24739b;
-}
+} */
 
 input {
     display: inline-block;
@@ -267,16 +274,14 @@ input {
     padding: 2px;
 }
 
-.paddingOneEm {
-    padding: 1em;
-}
+
 
 .error {
     background-color: #fcc;
 }
 
 
-.grid4 {
+/* .grid4 {
     display: inline-grid;
     grid-template-columns: 1fr 1fr 1fr 1fr ;
     grid-gap: 0.5em;
@@ -295,15 +300,10 @@ input {
     grid-template-columns: 1fr ;
     grid-gap: 0.5em;
     padding: 0.5em;    
-}
-
-.active {
-    background-color: "#cfc";
-    border:3px solid blue;
-
-}
+} */
 
 
+/* 
 article header {
     padding: 0.5em;
 }
@@ -332,4 +332,23 @@ article {
         "aside section1"
         "aside section2";
 
+} */
+
+nav {
+    /* background-color: #ddd; */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 200px));
+    padding: 0.2em;
+}
+
+nav > a {
+    margin: 0.1em;
+    border: 1px solid gray;
+    border-radius: 4px;
+    padding: 0.5em;
+    background-color: #eee;
+}
+
+nav > a.selected {
+    background-color: white;
 }

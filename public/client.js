@@ -11,14 +11,12 @@ var Client = function() {
 	data_FirebaseModel.instance.init();
 	data_ContentModel.instance.init();
 	data_UserModel.instance.init();
+	data_ContentLoader.instance.load();
+	data_UserLoader.instance.load();
 	haxe_Timer.delay(function() {
-		data_ContentLoader.instance.load();
-		data_UserLoader.instance.load();
-		return haxe_Timer.delay(function() {
-			data_UserLoader.instance.loadRealtimeUpdate();
-			data_ContentLoader.instance.loadRealtimeUpdate();
-			return;
-		},3000);
+		data_UserLoader.instance.loadRealtimeUpdate();
+		data_ContentLoader.instance.loadRealtimeUpdate();
+		return;
 	},3000);
 	ui_ClientUI.instance.init();
 	data_Routes.instance.init();
@@ -349,6 +347,17 @@ StringTools.lpad = function(s,c,l) {
 };
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
+};
+var ValueType = $hxEnums["ValueType"] = { __ename__ : true, __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"]
+	,TNull: {_hx_index:0,__enum__:"ValueType",toString:$estr}
+	,TInt: {_hx_index:1,__enum__:"ValueType",toString:$estr}
+	,TFloat: {_hx_index:2,__enum__:"ValueType",toString:$estr}
+	,TBool: {_hx_index:3,__enum__:"ValueType",toString:$estr}
+	,TObject: {_hx_index:4,__enum__:"ValueType",toString:$estr}
+	,TFunction: {_hx_index:5,__enum__:"ValueType",toString:$estr}
+	,TClass: ($_=function(c) { return {_hx_index:6,c:c,__enum__:"ValueType",toString:$estr}; },$_.__params__ = ["c"],$_)
+	,TEnum: ($_=function(e) { return {_hx_index:7,e:e,__enum__:"ValueType",toString:$estr}; },$_.__params__ = ["e"],$_)
+	,TUnknown: {_hx_index:8,__enum__:"ValueType",toString:$estr}
 };
 var Type = function() { };
 $hxClasses["Type"] = Type;
@@ -863,16 +872,6 @@ data_Chapter.prototype = {
 var data_ContentFilters = function() { };
 $hxClasses["data.ContentFilters"] = data_ContentFilters;
 data_ContentFilters.__name__ = true;
-data_ContentFilters.fiterRoomAndShelfHome = function(ct) {
-	return new data_Content({ id : ct.id, rooms : ct.rooms.filter(function(room) {
-		return room.id == "home";
-	}).map(function(room1) {
-		return new data_Room({ id : room1.id, title : room1.title, shelves : room1.shelves.filter(function(shelf) {
-			console.log("src/data/Content.hx:89:",shelf.id);
-			return shelf.id == "home";
-		})});
-	})});
-};
 data_ContentFilters.sort = function(ct) {
 	var a = ct.rooms;
 	a.sort(function(a1,b) {
@@ -980,7 +979,7 @@ data_ContentModel.prototype = {
 		return u;
 	}
 	,init: function() {
-		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room0", type : "homepage", access : 0, books : []}),new data_Shelf({ id : "sh0", title : "Shelf01", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]}),new data_Chapter({ id : "chapter1", title : "Kapitel 2", access : 0, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0}),new data_Chapter({ id : "sub2", title : "Sub2", access : 0})]}),new data_Chapter({ id : "chapter2", title : "Kapitel 2", access : 0, subchapters : []})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "sh1", title : "Shelf1", access : 1, books : []}),new data_Shelf({ id : "sh2", title : "Shelf2", access : 0, books : [new data_Book({ id : "book0", title : "Book 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]}),new data_Shelf({ id : "home", title : "Home shelf", type : "homepage", access : 999, books : [new data_Book({ id : "homebook0", title : "Home Book 0", access : 999, chapters : []}),new data_Book({ id : "homebook1", title : "Home Book 1", access : 999, chapters : []})]})]}),new data_Room({ id : "room1", title : "Room1", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room1", type : "homepage", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]}),new data_Shelf({ id : "sh0", title : "Shelf0 of Room1", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]})]})]}));
+		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room0", type : "homepage", access : 0, books : []}),new data_Shelf({ id : "sh0", title : "Shelf01", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]}),new data_Chapter({ id : "chapter1", title : "Kapitel 2", access : 0, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0}),new data_Chapter({ id : "sub2", title : "Sub2", access : 0})]}),new data_Chapter({ id : "chapter3", title : "Kapitel 3", access : 0, subchapters : []})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "sh1", title : "Shelf1", access : 1, books : []}),new data_Shelf({ id : "sh2", title : "Shelf2", access : 0, books : [new data_Book({ id : "book0", title : "Book 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]}),new data_Shelf({ id : "home", title : "Home shelf", type : "homepage", access : 999, books : [new data_Book({ id : "homebook0", title : "Home Book 0", access : 999, chapters : []}),new data_Book({ id : "homebook1", title : "Home Book 1", access : 999, chapters : []})]})]}),new data_Room({ id : "room1", title : "Room1", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room1", type : "homepage", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]}),new data_Shelf({ id : "sh0", title : "Shelf0 of Room1", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]})]})]}));
 		console.log("src/data/ContentModel.hx:94:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
 	}
 	,__class__: data_ContentModel
@@ -1012,22 +1011,7 @@ data_ContentitemLoader.prototype = {
 		});
 		return null;
 	}
-	,createItem: function(path,content) {
-		var pipeId = data_PipeTool.toPipe(path);
-		firebase.database().ref("content-item").child(pipeId).set(content);
-		data_ContentitemModel.instance.setChapterContentItem(pipeId,content);
-	}
 	,__class__: data_ContentitemLoader
-};
-var data_PipeTool = function() { };
-$hxClasses["data.PipeTool"] = data_PipeTool;
-data_PipeTool.__name__ = true;
-data_PipeTool.toPipe = function(path) {
-	var pipeId = StringTools.replace(path,"/","|");
-	if(StringTools.startsWith(pipeId,"|")) {
-		pipeId = HxOverrides.substr(pipeId,1,null);
-	}
-	return pipeId;
 };
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
@@ -1079,173 +1063,136 @@ haxe_ds_StringMap.prototype = {
 	}
 	,__class__: haxe_ds_StringMap
 };
-var data_ContentitemModel = function() {
-	this.chapterContent = new haxe_ds_StringMap();
-};
-$hxClasses["data.ContentitemModel"] = data_ContentitemModel;
-data_ContentitemModel.__name__ = true;
-data_ContentitemModel.prototype = {
-	setChapterContentItem: function(pipeId,content) {
-		console.log("src/data/ContentitemModel.hx:27:",pipeId + " " + content);
-		var _this = this.chapterContent;
-		if(__map_reserved[pipeId] != null) {
-			_this.setReserved(pipeId,content);
-		} else {
-			_this.h[pipeId] = content;
-		}
-		m.redraw();
-	}
-	,getChapterContent: function(path) {
-		var _gthis = this;
-		var pipeId = data_PipeTool.toPipe(path);
-		var _this = this.chapterContent;
-		if(__map_reserved[pipeId] != null ? _this.existsReserved(pipeId) : _this.h.hasOwnProperty(pipeId)) {
-			var _this1 = this.chapterContent;
-			if(__map_reserved[pipeId] != null) {
-				return _this1.getReserved(pipeId);
-			} else {
-				return _this1.h[pipeId];
-			}
-		}
-		data_ApiCalls.getRequest("/api/test/" + pipeId).then(function(d) {
-			var data1 = d;
-			console.log("src/data/ContentitemModel.hx:42:",data1);
-			var a = data1.items;
-			console.log("src/data/ContentitemModel.hx:44:",a);
-			var items = a.map(function(item) {
-				return { id : item.id, content : item.content};
-			});
-			console.log("src/data/ContentitemModel.hx:46:",items);
-			console.log("src/data/ContentitemModel.hx:47:","set chapterContent");
-			Lambda.iter(items,function(item1) {
-				var _this2 = _gthis.chapterContent;
-				var key = item1.id;
-				var value = item1.content;
-				if(__map_reserved[key] != null) {
-					_this2.setReserved(key,value);
-				} else {
-					_this2.h[key] = value;
-				}
-				return;
-			});
-			return null;
-		})["catch"](function(e) {
-			data_ErrorsAndLogs.addError(e);
-			console.log("src/data/ContentitemModel.hx:61:","ERror" + e);
-			return;
-		});
-		return "This chapter does not exist in the cache " + pipeId;
-	}
-	,__class__: data_ContentitemModel
-};
 var data_FilterModel = function() {
-	this.filterSubchapter = null;
-	this.filterChapter = null;
-	this.filterBook = null;
-	this.filterShelf = null;
-	this.filterRoom = { treeId : null, roomId : null};
 };
 $hxClasses["data.FilterModel"] = data_FilterModel;
 data_FilterModel.__name__ = true;
 data_FilterModel.prototype = {
-	setFilterRoom: function(ref) {
-		this.filterRoom = ref;
-		this.filterShelf = null;
-		this.filterBook = null;
-		this.filterChapter = null;
-		this.filterSubchapter = null;
+	setFilterContent: function(ref) {
+		this.filterContent = ref;
+		console.log("src/data/FilterModel.hx:17:",this.filterContent);
 		m.redraw();
-	}
-	,setFilterShelf: function(ref) {
-		this.filterShelf = ref;
-		m.redraw();
-	}
-	,setFilterBook: function(ref) {
-		this.filterBook = ref;
-		m.redraw();
-	}
-	,setFilterChapter: function(ref) {
-		this.filterSubchapter = null;
-		this.filterChapter = ref;
-		this.filterBook = { treeId : ref.treeId, roomId : ref.roomId, shelfId : ref.shelfId, bookId : ref.bookId};
-		m.redraw();
-	}
-	,setFilterSubchapter: function(ref) {
-		this.filterSubchapter = ref;
-		this.filterBook = { treeId : ref.treeId, roomId : ref.roomId, shelfId : ref.shelfId, bookId : ref.bookId};
-		this.filterChapter = { treeId : ref.treeId, roomId : ref.roomId, shelfId : ref.shelfId, bookId : ref.bookId, chapterId : ref.chapterId};
-		m.redraw();
-	}
-	,getContent: function() {
-		return data_ContentModel.instance.content;
 	}
 	,getRoom: function() {
 		var _gthis = this;
 		try {
-			return this.getContent().rooms.filter(function(room) {
-				return room.id == _gthis.filterRoom.roomId;
+			return data_ContentModel.instance.content.rooms.filter(function(room) {
+				return room.id == _gthis.filterContent.roomId;
 			})[0];
 		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			data_ErrorsAndLogs.addError("Can not find room with id from filterRoomRef: " + Std.string(this.filterRoom) + (" " + Std.string(e1)));
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getRoom(): Cant not get room with ref" + Std.string(this.filterContent));
+			data_ErrorsAndLogs.addLog("Fallback to first room - cant show room with ref " + Std.string(this.filterContent));
+			return data_ContentModel.instance.content.rooms[0];
 		}
-		return this.getContent().rooms[0];
 	}
-	,getHomeroom: function() {
-		return data_FilterTools.fallbackRoomIfNull(this.getRoom());
+	,getRoomHomeshelf: function() {
+		try {
+			return data_FilterTools.getShelvesOfType(this.getRoom().shelves,"homepage")[0];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref" + Std.string(this.filterContent));
+			return null;
+		}
 	}
-	,getFilteredShelves: function() {
+	,getRoomShelvesExceptHomeshelf: function() {
+		try {
+			return data_FilterTools.getShelvesExcludeType(this.getRoom().shelves,"homepage");
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref" + Std.string(this.filterContent));
+			return [];
+		}
+	}
+	,getShelves: function() {
 		var _gthis = this;
-		if(this.filterShelf != null) {
-			return this.getHomeroom().shelves.filter(function(shelf) {
-				return shelf.id == _gthis.filterShelf.shelfId;
-			});
-		} else {
-			return this.getHomeroom().shelves;
+		try {
+			var shelves = this.getRoomShelvesExceptHomeshelf();
+			if(this.filterContent != null && this.filterContent.shelfId != null) {
+				shelves = shelves.filter(function(shelf) {
+					return shelf.id == _gthis.filterContent.shelfId;
+				});
+			}
+			return shelves;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getShelves(): Cant not get shelves of room with ref" + Std.string(this.filterContent));
+			return [];
+		}
+	}
+	,getShelf: function() {
+		var _gthis = this;
+		try {
+			return this.getRoom().shelves.filter(function(shelf) {
+				return shelf.id == _gthis.filterContent.shelfId;
+			})[0];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getShelf(): Cant not get shelf with ref" + Std.string(this.filterContent));
+			return null;
 		}
 	}
 	,getBook: function() {
 		var _gthis = this;
 		try {
-			return this.getHomeroom().shelves.filter(function(shelf) {
-				return shelf.id == _gthis.filterBook.shelfId;
-			})[0].books.filter(function(book) {
-				return book.id == _gthis.filterBook.bookId;
+			return this.getShelf().books.filter(function(book) {
+				return book.id == _gthis.filterContent.bookId;
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getBook(): Cant not get book with ref" + Std.string(this.filterContent));
+			return null;
+		}
+	}
+	,getChapters: function() {
+		try {
+			return this.getBook().chapters;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getChapters(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
 	,getChapter: function() {
 		var _gthis = this;
 		try {
-			try {
-				return this.getBook().chapters.filter(function(chapter) {
-					return chapter.id == _gthis.filterChapter.chapterId;
+			if(this.filterContent.chapterId != null) {
+				return this.getChapters().filter(function(chapter) {
+					return chapter.id == _gthis.filterContent.chapterId;
 				})[0];
-			} catch( e ) {
-				(e instanceof js__$Boot_HaxeError);
-				return this.getBook().chapters[0];
+			} else {
+				data_ErrorsAndLogs.addLog("Fallback to first chapter");
+				return this.getChapters()[0];
 			}
-		} catch( e1 ) {
-			(e1 instanceof js__$Boot_HaxeError);
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getChapter(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
+			return null;
+		}
+	}
+	,getSubchapters: function() {
+		try {
+			return this.getChapter().subchapters;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
 	,getSubchapter: function() {
 		var _gthis = this;
 		try {
-			try {
-				return this.getChapter().subchapters.filter(function(sub) {
-					return sub.id == _gthis.filterSubchapter.subchapterId;
+			if(this.filterContent.subchapterId != null) {
+				return this.getSubchapters().filter(function(sub) {
+					return sub.id == _gthis.filterContent.subchapterId;
 				})[0];
-			} catch( e ) {
-				(e instanceof js__$Boot_HaxeError);
-				return this.getChapter().subchapters[0];
+			} else {
+				data_ErrorsAndLogs.addLog("Fallback to first subchapter");
+				return this.getSubchapters()[0];
 			}
-		} catch( e1 ) {
-			(e1 instanceof js__$Boot_HaxeError);
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			data_ErrorsAndLogs.addError("FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1254,13 +1201,6 @@ data_FilterModel.prototype = {
 var data_FilterTools = function() { };
 $hxClasses["data.FilterTools"] = data_FilterTools;
 data_FilterTools.__name__ = true;
-data_FilterTools.fallbackRoomIfNull = function(room) {
-	if(room == null) {
-		return data_ContentModel.instance.content.rooms[0];
-	} else {
-		return room;
-	}
-};
 data_FilterTools.getShelvesOfType = function(shelves,type) {
 	return shelves.filter(function(shelf) {
 		return shelf.type == type;
@@ -1283,69 +1223,26 @@ data_FirebaseModel.prototype = {
 	,__class__: data_FirebaseModel
 };
 var data_Routes = function() {
-	this.subchapterHandler = { onmatch : function(args,path) {
+	this.homeHandler = { onmatch : function(args,path) {
 		try {
-			data_FilterModel.instance.setFilterSubchapter({ treeId : null, roomId : args["roomId"], shelfId : args["shelfId"], bookId : args["bookId"], chapterId : args["chapterId"], subchapterId : args["subchapterId"]});
 			data_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
+			data_FilterModel.instance.setFilterContent(null);
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("RouteResolver subchapterHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
 		}
 		return null;
 	}, render : function(vnode) {
-		return m.m("div","RouteHandler");
+		return m.m("div","homeHandler");
 	}};
-	this.chapterHandler = { onmatch : function(args1,path1) {
+	this.contentHandler = { onmatch : function(args1,path1) {
 		try {
-			data_FilterModel.instance.setFilterChapter({ treeId : null, roomId : args1["roomId"], shelfId : args1["shelfId"], bookId : args1["bookId"], chapterId : args1["chapterId"]});
 			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
+			data_FilterModel.instance.setFilterContent(args1);
 		} catch( e1 ) {
-			data_ErrorsAndLogs.addError("RouteResolver chapterHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
 		}
 		return null;
 	}, render : function(vnode1) {
-		return m.m("div","RouteHandler");
-	}};
-	this.bookHandler = { onmatch : function(args2,path2) {
-		try {
-			data_FilterModel.instance.setFilterBook({ treeId : null, roomId : args2["roomId"], shelfId : args2["shelfId"], bookId : args2["bookId"]});
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path2 + ": " + Std.string(args2) + "");
-		} catch( e2 ) {
-			data_ErrorsAndLogs.addError("RouteResolver bookHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
-		}
-		return null;
-	}, render : function(vnode2) {
-		return m.m("div","RouteHandler");
-	}};
-	this.shelfHandler = { onmatch : function(args3,path3) {
-		try {
-			data_FilterModel.instance.setFilterShelf({ treeId : null, roomId : args3["roomId"], shelfId : args3["shelfId"]});
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path3 + ": " + Std.string(args3) + "");
-		} catch( e3 ) {
-			data_ErrorsAndLogs.addError("RouteResolver ShelfHandler Error: " + Std.string((e3 instanceof js__$Boot_HaxeError) ? e3.val : e3));
-		}
-		return null;
-	}, render : function(vnode3) {
-		return m.m("div","RouteHandler");
-	}};
-	this.roomHandler = { onmatch : function(args4,path4) {
-		try {
-			data_FilterModel.instance.setFilterRoom({ treeId : null, roomId : args4["roomId"]});
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path4 + ": " + Std.string(args4) + "");
-		} catch( e4 ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e4 instanceof js__$Boot_HaxeError) ? e4.val : e4));
-		}
-		return null;
-	}, render : function(vnode4) {
-		return m.m("div","RouteHandler");
-	}};
-	this.homeHandler = { onmatch : function(args5,path5) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path5 + ": " + Std.string(args5) + "");
-		} catch( e5 ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e5 instanceof js__$Boot_HaxeError) ? e5.val : e5));
-		}
-		return null;
-	}, render : function(vnode5) {
 		return m.m("div","homeHandler");
 	}};
 };
@@ -1353,7 +1250,7 @@ $hxClasses["data.Routes"] = data_Routes;
 data_Routes.__name__ = true;
 data_Routes.prototype = {
 	init: function() {
-		var routes = { "/" : this.homeHandler, "/room/:roomId" : this.roomHandler, "/shelf/:roomId/:shelfId" : this.shelfHandler, "/book/:roomId/:shelfId/:bookId" : this.bookHandler, "/chapter/:roomId/:shelfId/:bookId/:chapterId" : this.chapterHandler, "/subchapter/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.subchapterHandler};
+		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
 		m.route(window.document.querySelector("#routes"),"/",routes);
 	}
 	,__class__: data_Routes
@@ -1470,11 +1367,11 @@ data_UserModel.prototype = {
 	}
 	,init: function() {
 		data_ErrorsAndLogs.addLog("UserModel.instance.init()");
-		this.setAnonymousUser();
+		this.setLoadingUser();
 	}
 	,setAnonymousUser: function() {
-		this.set_clientUser(new data_ClientUser(this.anonymousUser()));
 		this.clientUserState = data_ClientUserState.Anonymous;
+		this.set_clientUser(new data_ClientUser(this.anonymousUser()));
 	}
 	,setLoadedUserFromData: function(data1) {
 		try {
@@ -2155,7 +2052,6 @@ ui_ClientUI.prototype = {
 	init: function() {
 		var element = ($_=window.document,$bind($_,$_.querySelector));
 		m.mount(element("header"),new ui_UIHeader());
-		m.mount(element("div#buttons"),new ui_UIDevbuttons());
 		m.mount(element("main#develop"),new ui_UIDevelop());
 		m.mount(element("main#content"),new ui_UIContent());
 	}
@@ -2169,135 +2065,9 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [new ui_UIContentHomepage().view(),new ui_UIContentFilteredShelves().view(),new ui_UIContentBook().view(),new ui_UIContentSearch().view()];
+		return [new ui_content_HomeView().view(),new ui_content_ShelvesView().view(),new ui_content_BookView().view()];
 	}
 	,__class__: ui_UIContent
-};
-var ui_UIContentHomepage = function() {
-	this.homeroom = data_FilterModel.instance.getHomeroom();
-	this.homeShelves = data_FilterTools.getShelvesOfType(this.homeroom.shelves,"homepage");
-	this.otherShelves = data_FilterTools.getShelvesExcludeType(this.homeroom.shelves,"homepage");
-};
-$hxClasses["ui.UIContentHomepage"] = ui_UIContentHomepage;
-ui_UIContentHomepage.__name__ = true;
-ui_UIContentHomepage.__interfaces__ = [mithril_Mithril];
-ui_UIContentHomepage.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		try {
-			var homeshelfView;
-			try {
-				homeshelfView = [m.m("div","Home Shelf"),m.m("div.border.grid1","Sh: " + data_FilterTools.getShelvesOfType(this.homeroom.shelves,"homepage")[0].title)];
-			} catch( e ) {
-				var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-				homeshelfView = m.m("div.error","Cant get home shelf for this room!");
-			}
-			var otherShelvesView;
-			try {
-				otherShelvesView = [m.m("div","Other shelves overview:"),m.m("div.grid2",this.otherShelves.map(function(shelf) {
-					return m.m("a.border",{ href : "/shelf" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Sh: " + shelf.title);
-				}))];
-			} catch( e2 ) {
-				var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
-				otherShelvesView = m.m("div.error","Cant get other shelves for this room!");
-			}
-			var tmp = "Room filter:" + Std.string(data_FilterModel.instance.filterRoom);
-			return m.m(".border",[m.m("a",{ href : "/", oncreate : mithril__$M_M_$Impl_$.routeLink},tmp),m.m("h2",this.homeroom.title + " (" + this.homeroom.id + ")"),homeshelfView,otherShelvesView]);
-		} catch( e4 ) {
-			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
-			data_ErrorsAndLogs.addError("Can not find book: " + Std.string(e5));
-			return m.m(".error","ERROR " + Std.string(e5));
-		}
-	}
-	,__class__: ui_UIContentHomepage
-};
-var ui_UIShelvesList = function(shelves) {
-	this.shelves = shelves;
-};
-$hxClasses["ui.UIShelvesList"] = ui_UIShelvesList;
-ui_UIShelvesList.__name__ = true;
-ui_UIShelvesList.__interfaces__ = [mithril_Mithril];
-ui_UIShelvesList.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.grid1",this.shelves.map(function(shelf) {
-			var a = m.m("a.error",{ href : "/shelf" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf: " + shelf.path);
-			return m.m("div.border",[a]);
-		}));
-	}
-	,__class__: ui_UIShelvesList
-};
-var ui_UIBooksList = function(books) {
-	this.books = books;
-};
-$hxClasses["ui.UIBooksList"] = ui_UIBooksList;
-ui_UIBooksList.__name__ = true;
-ui_UIBooksList.__interfaces__ = [mithril_Mithril];
-ui_UIBooksList.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.grid4",this.books.map(function(book) {
-			return m.m("a",{ href : "/book" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book: " + book.path);
-		}));
-	}
-	,__class__: ui_UIBooksList
-};
-var ui_UIContentFilteredShelves = function() {
-	this.homeroom = data_FilterModel.instance.getHomeroom();
-};
-$hxClasses["ui.UIContentFilteredShelves"] = ui_UIContentFilteredShelves;
-ui_UIContentFilteredShelves.__name__ = true;
-ui_UIContentFilteredShelves.__interfaces__ = [mithril_Mithril];
-ui_UIContentFilteredShelves.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		try {
-			return m.m("div.border",[m.m("a",{ href : "/room" + this.homeroom.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf filter:" + Std.string(data_FilterModel.instance.filterShelf)),m.m("h2","UIContentFilteredShelves"),m.m("div.grid1",data_FilterTools.getShelvesExcludeType(data_FilterModel.instance.getFilteredShelves(),"homepage").map(function(shelf) {
-				var a = m.m("a",{ href : "/shelf" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Sh: " + shelf.title);
-				return m.m("div.border",[a,m.m("h4","Books:"),m.m("div.grid4",[shelf.books.map(function(book) {
-					return m.m("a.border",{ href : "/book" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"B: " + book.title);
-				})])]);
-			}))]);
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			data_ErrorsAndLogs.addError("UIContentFilteredShelves:" + Std.string(e1));
-			return m.m(".error","UIContentFilteredShelves " + Std.string(e1));
-		}
-	}
-	,__class__: ui_UIContentFilteredShelves
-};
-var ui_UIContentBook = function() {
-	this.book = data_FilterModel.instance.getBook();
-	this.chapter = data_FilterModel.instance.getChapter();
-	this.subchapter = data_FilterModel.instance.getSubchapter();
-};
-$hxClasses["ui.UIContentBook"] = ui_UIContentBook;
-ui_UIContentBook.__name__ = true;
-ui_UIContentBook.__interfaces__ = [mithril_Mithril];
-ui_UIContentBook.prototype = {
-	view: function() {
-		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		try {
-			var view404 = data_FilterModel.instance.filterBook != null && this.book == null ? m.m("h1.error","404") : null;
-			var bookView = this.book != null ? m.m("div",[m.m("h2","Book:" + this.book.title),m.m("div","" + this.book.path),m.m("div","" + this.book.info)]) : m.m("div","No book");
-			var chaptersListView = this.chapter != null ? [m.m("h3","ChaptersList:"),m.m("div.grid1",this.book.chapters.map(function(chapter) {
-				var active = chapter.id == _gthis.chapter.id ? ".active" : "";
-				return m.m("a.border" + active,{ href : "/chapter" + chapter.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Ch " + chapter.title);
-			}))] : m.m("div","No chapter");
-			var chapterView = this.chapter != null ? m.m("div",[m.m("div","Chapter filter:" + Std.string(data_FilterModel.instance.filterChapter)),m.m("h2","Chapter " + this.chapter.title),m.m("div","" + this.chapter.path),m.m("div","" + this.chapter.info),new ui_UIContentitemView(this.chapter).view()]) : m.m("div","No chapter");
-			var subchaptersView = this.subchapter != null ? m.m("div",[m.m("div","Subchapters:"),m.m("div","Subchapter filter:" + Std.string(data_FilterModel.instance.filterSubchapter)),m.m("nav",this.chapter.subchapters.map(function(sub) {
-				var active1 = sub.id == _gthis.subchapter.id ? ".active" : "";
-				return m.m("a.border" + active1,{ href : "/subchapter" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Sub " + sub.title);
-			})),m.m("h3","Subchapter: " + this.subchapter.title),m.m("div","" + this.subchapter.path),m.m("div","" + this.subchapter.info),new ui_UIContentitemView(this.subchapter).view()]) : m.m("div","No subchapter");
-			var tmp = m.m("div","Book filter:" + Std.string(data_FilterModel.instance.filterBook));
-			return m.m("article.border",[m.m("header",{ style : { gridArea : "header"}},[view404,bookView,tmp]),m.m("aside.border",{ style : { gridArea : "aside"}},[chaptersListView]),m.m("section#section1.border",{ style : { gridArea : "section1"}},[chapterView]),m.m("section#section2.border",{ style : { gridArea : "section2"}},[subchaptersView])]);
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			return m.m("div.border.error","Can not show book data for filter: " + Std.string(data_FilterModel.instance.filterBook));
-		}
-	}
-	,__class__: ui_UIContentBook
 };
 var ui_UIContentSearch = function() {
 };
@@ -2307,28 +2077,24 @@ ui_UIContentSearch.__interfaces__ = [mithril_Mithril];
 ui_UIContentSearch.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m(".border","UIContentSearch");
+		return new ui_UIFilters().view();
 	}
 	,__class__: ui_UIContentSearch
 };
-var ui_UIContentitemView = function(chapter) {
-	this.chapter = chapter;
+var ui_UIFilters = function() {
 };
-$hxClasses["ui.UIContentitemView"] = ui_UIContentitemView;
-ui_UIContentitemView.__name__ = true;
-ui_UIContentitemView.__interfaces__ = [mithril_Mithril];
-ui_UIContentitemView.prototype = {
+$hxClasses["ui.UIFilters"] = ui_UIFilters;
+ui_UIFilters.__name__ = true;
+ui_UIFilters.__interfaces__ = [mithril_Mithril];
+ui_UIFilters.prototype = {
 	view: function() {
-		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var content = data_ContentitemModel.instance.getChapterContent(this.chapter.path);
-		var contentView = content == null ? [m.m("div.error","404 - content is null for " + this.chapter.path),m.m("button",{ onclick : function(e) {
-			data_ContentitemLoader.instance.createItem(_gthis.chapter.path,"This is new content for " + _gthis.chapter.title + " (" + _gthis.chapter.path + ")");
-			return;
-		}},"Create")] : m.m("div","Content: " + content);
-		return m.m("div",[m.m("h1","UIContentitemView"),contentView]);
+		var f = data_FilterModel.instance.filterContent;
+		var s = f != null ? "" + f.roomId + "/" + f.shelfId + "/" + f.bookId + "/" + f.chapterId + "/" + f.subchapterId : "null";
+		var filterContentView = m.m("div","filter2: " + s);
+		return m.m(".border",[m.m("h3","Filters:"),filterContentView]);
 	}
-	,__class__: ui_UIContentitemView
+	,__class__: ui_UIFilters
 };
 var ui_UIDevbuttons = function() {
 };
@@ -2342,30 +2108,21 @@ ui_UIDevbuttons.prototype = {
 			data_UserLoader.instance.signIn("jonasnys@gmail.com","123456");
 			return;
 		}},"Log in as Jonas"),m.m("button[type=button]",{ onclick : function(e1) {
-			data_FilterModel.instance.setFilterRoom({ treeId : null, roomId : "room1"});
-			return;
-		}},"Set room as room1"),m.m("button[type=button]",{ onclick : function(e2) {
-			data_FilterModel.instance.setFilterRoom({ treeId : null, roomId : "room0"});
-			return;
-		}},"Set room as room0"),m.m("button[type=button]",{ onclick : function(e3) {
-			data_FilterModel.instance.setFilterRoom({ treeId : null, roomId : "x"});
-			return;
-		}},"Set room as x"),m.m("button[type=button]",{ onclick : function(e4) {
 			m.redraw();
 			return;
-		}},"M.redraw()"),m.m("button[type=button]",{ onclick : function(e5) {
+		}},"M.redraw()"),m.m("button[type=button]",{ onclick : function(e2) {
 			data_ContentLoader.instance.load();
 			return haxe_Timer.delay(function() {
 				data_ContentLoader.instance.loadRealtimeUpdate();
 				return;
 			},3000);
-		}},"Load Content"),m.m("button[type=button]",{ onclick : function(e6) {
+		}},"Load Content"),m.m("button[type=button]",{ onclick : function(e3) {
 			data_UserLoader.instance.load();
 			return haxe_Timer.delay(function() {
 				data_UserLoader.instance.loadRealtimeUpdate();
 				return;
 			},3000);
-		}},"Load User"),m.m("button[type=button]",{ onclick : function(e7) {
+		}},"Load User"),m.m("button[type=button]",{ onclick : function(e4) {
 			return data_ContentitemLoader.instance.load(["a"]);
 		}},"Load contentitem")];
 	}
@@ -2379,7 +2136,7 @@ ui_UIDevelop.__interfaces__ = [mithril_Mithril];
 ui_UIDevelop.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_content_ContentTreeView(data_ContentFilters.sort(data_ContentModel.instance.content)).view(),new ui_content_ContentTreeView(data_ContentFilters.fiterRoomAndShelfHome(data_ContentModel.instance.content)).view()];
+		return [new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_content_ContentTreeView(data_ContentFilters.sort(data_ContentModel.instance.content)).view(),new ui_UIFilters().view()];
 	}
 	,__class__: ui_UIDevelop
 };
@@ -2489,10 +2246,10 @@ ui_MLogoutForm.prototype = {
 			return m.m("div","clientUser == null");
 		}
 		var userData = this.clientUser.userData;
-		return m.m("form",[m.m("div",""),m.m("h3","Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
+		return m.m("form",[m.m("div","Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
 			data_UserLoader.instance.signOut();
 			return;
-		}},"Logout")]);
+		}},"Logga ut")]);
 	}
 	,setUser: function(u) {
 		this.clientUser = u;
@@ -2523,7 +2280,7 @@ ui_UIHeader.prototype = {
 			userView = this.loginform.view();
 			break;
 		case 1:
-			userView = m.m("h2",{ style : { textAlign : "right", paddingRight : "1em"}},"Loading user data...");
+			userView = m.m("div","Loading user data...");
 			break;
 		case 2:
 			var user = data_UserModel.instance.clientUser;
@@ -2533,6 +2290,150 @@ ui_UIHeader.prototype = {
 		return [m.m("h1","Headertext"),userView];
 	}
 	,__class__: ui_UIHeader
+};
+var ui_content_HomeView = function() {
+};
+$hxClasses["ui.content.HomeView"] = ui_content_HomeView;
+ui_content_HomeView.__name__ = true;
+ui_content_HomeView.__interfaces__ = [mithril_Mithril];
+ui_content_HomeView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var room = data_FilterModel.instance.getRoom();
+		var homeshelfView;
+		try {
+			homeshelfView = new ui_content_UIShelvesList([data_FilterModel.instance.getRoomHomeshelf()]).view();
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			homeshelfView = m.m("h3.error","404 - can not show homeshelf for room  " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		var othershelvesView;
+		try {
+			othershelvesView = m.m("nav",data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf) {
+				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
+				return m.m("a" + selected,{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
+			}));
+		} catch( e2 ) {
+			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
+			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		var homeView;
+		try {
+			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),homeshelfView,m.m("div","Other shelves:"),othershelvesView];
+		} catch( e4 ) {
+			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			homeView = m.m("h1.error","404 - can not show room " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		return m.m("div.border",[m.m("h1","homepage"),homeView]);
+	}
+	,__class__: ui_content_HomeView
+};
+var ui_content_ShelvesView = function() {
+};
+$hxClasses["ui.content.ShelvesView"] = ui_content_ShelvesView;
+ui_content_ShelvesView.__name__ = true;
+ui_content_ShelvesView.__interfaces__ = [mithril_Mithril];
+ui_content_ShelvesView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div.border",[m.m("h1","shelves"),m.m("p",[m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")]),m.m("div",data_FilterModel.instance.getShelves().map(function(shelf) {
+			var a = m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
+			return m.m("div.border",[a,m.m("nav",[shelf.books.map(function(book) {
+				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
+				return m.m("a" + selected,{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + book.title);
+			})])]);
+		}))]);
+	}
+	,__class__: ui_content_ShelvesView
+};
+var ui_content_BookView = function() {
+};
+$hxClasses["ui.content.BookView"] = ui_content_BookView;
+ui_content_BookView.__name__ = true;
+ui_content_BookView.__interfaces__ = [mithril_Mithril];
+ui_content_BookView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var book = data_FilterModel.instance.getBook();
+		var bookView;
+		try {
+			bookView = book == null ? m.m("div","No book selected") : [m.m("h1","" + book.title),m.m("p","" + book.info),m.m("div","Nr of chapters:" + book.chapters.length)];
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			bookView = m.m(".error","404 - Can not show book: " + Std.string(book));
+		}
+		var chapter = data_FilterModel.instance.getChapter();
+		var chapterView;
+		try {
+			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h3","" + chapter.title),m.m("p","" + HxOverrides.substr(chapter.text,0,50) + "...")];
+		} catch( e2 ) {
+			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
+			chapterView = m.m("div","Chapter does not exist");
+		}
+		var chapters = data_FilterModel.instance.getChapters();
+		var chaptersView;
+		try {
+			chaptersView = [m.m("div.border","Chapters length:" + chapters.length),m.m("nav",chapters.map(function(chap) {
+				var selected = chap == data_FilterModel.instance.getChapter() ? ".selected" : "";
+				return m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title);
+			}))];
+		} catch( e4 ) {
+			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			chaptersView = m.m("div.border","No chapters");
+		}
+		var subchapter = data_FilterModel.instance.getSubchapter();
+		var subchapterView;
+		try {
+			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h3","" + subchapter.title),m.m("p","" + HxOverrides.substr(subchapter.text,0,50) + "...")];
+		} catch( e6 ) {
+			var e7 = (e6 instanceof js__$Boot_HaxeError) ? e6.val : e6;
+			subchapterView = m.m("div","Subchapter does not exist");
+		}
+		var subchapters = data_FilterModel.instance.getSubchapters();
+		var subchaptersView;
+		try {
+			subchaptersView = [m.m("div.border","Subchapters length:" + subchapters.length),m.m("nav",subchapters.map(function(sub) {
+				var selected1 = sub == data_FilterModel.instance.getSubchapter() ? ".selected" : "";
+				return m.m("a" + selected1,{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
+			}))];
+		} catch( e8 ) {
+			var e9 = (e8 instanceof js__$Boot_HaxeError) ? e8.val : e8;
+			subchaptersView = m.m("div.border","No subchapters");
+		}
+		return m.m("div.border",[bookView,chaptersView,chapterView,subchaptersView,subchapterView]);
+	}
+	,__class__: ui_content_BookView
+};
+var ui_content_UIShelvesList = function(shelves) {
+	this.shelves = shelves;
+};
+$hxClasses["ui.content.UIShelvesList"] = ui_content_UIShelvesList;
+ui_content_UIShelvesList.__name__ = true;
+ui_content_UIShelvesList.__interfaces__ = [mithril_Mithril];
+ui_content_UIShelvesList.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div.grid1",this.shelves.map(function(shelf) {
+			var a = m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf: " + shelf.path);
+			return m.m("div.border",[a]);
+		}));
+	}
+	,__class__: ui_content_UIShelvesList
+};
+var ui_content_UIBooksList = function(books) {
+	this.books = books;
+};
+$hxClasses["ui.content.UIBooksList"] = ui_content_UIBooksList;
+ui_content_UIBooksList.__name__ = true;
+ui_content_UIBooksList.__interfaces__ = [mithril_Mithril];
+ui_content_UIBooksList.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div.grid4",this.books.map(function(book) {
+			return m.m("a",{ href : "/book" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book: " + book.path);
+		}));
+	}
+	,__class__: ui_content_UIBooksList
 };
 var ui_content_ContentTreeView = function(content) {
 	this.content = content;
@@ -2561,8 +2462,8 @@ ui_content_UIRoom.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var children = this.item.shelves != null ? this.item.shelves : [];
-		var anchor = m.m("a",{ href : "/room" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.title + ":" + this.item.path);
-		return m.m("details[openx]",[m.m("summary",[anchor])].concat(children.map(function(child) {
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room:" + this.item.title + ":" + this.item.path);
+		return m.m("details[open]",[m.m("summary",[anchor])].concat(children.map(function(child) {
 			return new ui_content_UIShelf(child).view();
 		})));
 	}
@@ -2579,8 +2480,8 @@ ui_content_UIShelf.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var books = this.item.books != null ? this.item.books : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/shelf" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + this.item.path);
-		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(books.map(function(child) {
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf:" + this.item.title + ":" + this.item.path);
+		return m.m("details[openx]." + css,[m.m("summary",[anchor])].concat(books.map(function(child) {
 			return new ui_content_UIBook(child).view();
 		})));
 	}
@@ -2598,8 +2499,8 @@ ui_content_UIBook.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.chapters != null ? this.item.chapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/book" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + this.item.path);
-		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book:" + this.item.title + ":" + this.item.path);
+		return m.m("details[openx]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UIChapter(child).view();
 		})));
 	}
@@ -2617,8 +2518,8 @@ ui_content_UIChapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/chapter" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path);
-		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path);
+		return m.m("details[openx]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UISubchapter(child).view();
 		})));
 	}
@@ -2636,7 +2537,7 @@ ui_content_UISubchapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/subchapter" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path);
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UIChapter(child).view();
 		})));
@@ -2731,7 +2632,6 @@ data_ErrorsAndLogs.logs = [];
 data_ErrorsAndLogs.errors = [];
 data_ContentModel.instance = new data_ContentModel();
 data_ContentitemLoader.instance = new data_ContentitemLoader();
-data_ContentitemModel.instance = new data_ContentitemModel();
 data_FilterModel.instance = new data_FilterModel();
 data_FirebaseModel.instance = new data_FirebaseModel();
 data_Routes.instance = new data_Routes();

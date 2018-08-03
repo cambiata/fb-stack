@@ -70,12 +70,15 @@ class Chapter implements DataClass {
     @exclude public var path:String = '';
 }
 
-typedef TreeRef = {treeId:String}
-typedef RoomRef = {> TreeRef, roomId:String}
-typedef ShelfRef = {> RoomRef, shelfId:String}
-typedef BookRef = {> ShelfRef, bookId:String}
-typedef ChapterRef = {> BookRef, chapterId:String}
-typedef SubchapterRef = {> ChapterRef, subchapterId:String};
+// typedef TreeRef = {treeId:String}
+// typedef RoomRef = {> TreeRef, roomId:String}
+// typedef ShelfRef = {> RoomRef, shelfId:String}
+// typedef BookRef = {> ShelfRef, bookId:String}
+// typedef ChapterRef = {> BookRef, chapterId:String}
+// typedef SubchapterRef = {> ChapterRef, subchapterId:String};
+
+typedef ContentRef = {roomId:String, shelfId:String, bookId:String, chapterId:String, subchapterId:String};
+
 
 class ContentFilters {
 
