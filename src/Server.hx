@@ -1,3 +1,6 @@
+import firebase.auth.UserRecord;
+import firebase.admin.App;
+import js.Lib;
 import firebase.EventType;
 import haxe.Json;
 import js.npm.express.Request;
@@ -10,18 +13,24 @@ import functions.Functions;
 using StringTools;
 
 class Server {
+
+    // static final USER_TABLE = '/user';
+
     static public function main() {
 
-
         // Init Firebase admin
-        Admin.initializeApp(Functions.config().firebase);
-        
-        //exports.helloWorld = Functions.https.onRequest((request, response) -> response.send("Hello from Haxe!"));
-        
+        Admin.initializeApp(Functions.config().firebase);        
+
         // Setup express server
         var app = new Express();
+        setupRoutes(app);
+        setupTriggers(app);  
+        setupTestRoutes(app);
+        exports.app = Functions.https.onRequest(app);       
+    }
 
-        // Get authorized userData from realtime database /users document
+    static public function setupRoutes(app:js.npm.Express) {
+       // Get authorized userData from realtime database /users document
         app.get('/api/userdata', AppMiddlewares.mwErrors, AppMiddlewares.mwToken, AppMiddlewares.mwUserEmail, AppMiddlewares.mwUserData, (req:Request, res:Response)->{            
             trace('Route /api/userdata' + ' ---------------------------------');
             res.json({errors:res.locals.errors, userData:res.locals.userData});
@@ -69,8 +78,53 @@ class Server {
             });
         });
 
-        exports.app = Functions.https.onRequest(app);  
+         
+
+
+
+
+
     }
+
+    static public function setupTriggers(app:js.npm.Express) {
+   
+        exports.usersOnCreate = Functions.database.ref('/user/{dbId}').onCreate((snapshot, context)->{
+            trace('haxe fnDbRefSyncusersOnWrite on Create');
+            var object:Dynamic = snapshot.val();                        
+            var dbId = context.params.dbId;
+            var user = {        
+                email: object.email,
+                emailVerified: false,
+                password: object.pass,
+                photoURL: "http://www.example.com/12345678/photo.png",
+                disabled: false              
+            };
+            return Admin.auth().createUser(user);
+        });
+
+        exports.usersOnDelete = Functions.database.ref('/user/{dbId}').onDelete((snapshot, context)->{            
+            trace('Delete!');
+            var dbId = context.params.dbId;
+            var email = dbId.replace('||', '@').replace('|', '.');
+            trace('email' + email);
+            return Admin.auth().getUserByEmail(email)
+            .then(data->{
+                var userRecord:UserRecord = data;
+                var uid = userRecord.uid;
+                trace('uid:' + uid);
+                return Admin.auth().deleteUser(uid);
+            });
+        });
+    }
+    
+    static public function setupTestRoutes(app:js.npm.Express) {
+        app.get('/api/test/:par1', (req:Request, res:Response)->{
+            var par1 = Std.string(req.params.par1);
+            res.json('Api test ' + par1);
+            res.end();
+        });       
+    }
+
 }
 
 class AppMiddlewares {
