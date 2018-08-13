@@ -1,6 +1,7 @@
 package data;
 import utils.*;
 import data.ClientUser;
+import firebase.Firebase;
 using dataclass.JsonConverter;
 
 class UserLoader {
@@ -104,5 +105,18 @@ class UserLoader {
             }
         });
     }       
+
+
+    // onAuthStateChanged as promise!
+    // https://github.com/firebase/firebase-js-sdk/issues/462
+    public function getCurrentUser() {
+        return new js.Promise((resolve, reject) -> {
+            var unsubscribe:Dynamic = null;
+            unsubscribe = Firebase.app().auth().onAuthStateChanged(user -> {
+                unsubscribe();
+                resolve(cast user);
+            }, reject);
+        });
+    }    
 
 } 

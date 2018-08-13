@@ -9,17 +9,29 @@ function $extend(from, fields) {
 }
 var Client = function() {
 	data_FirebaseModel.instance.init();
+	data_UserLoader.instance.getCurrentUser().then(function(user) {
+		console.log("src/Client.hx:22:","getCurrentUser " + user);
+		data_ErrorsAndLogs.addLog("getUserPromise: User" + Std.string(user != null));
+		if(user != null) {
+			data_ErrorsAndLogs.addLog("User session found!");
+			data_ApiCalls.getAuthRequest("/api/userconfig").then(function(dataResponse) {
+				var data1 = dataResponse;
+				data_UserModel.instance.setLoadedUserFromData(data1);
+				data_ErrorsAndLogs.addLog("UserResponse: " + Std.string(data1));
+				return;
+			});
+			return null;
+		} else {
+			data_ErrorsAndLogs.addLog("No User session found!");
+			return null;
+		}
+	})["catch"](function(e) {
+		data_ErrorsAndLogs.addError("Error: " + e);
+		return;
+	});
 	data_ContentModel.instance.init();
 	data_UserModel.instance.init();
-	data_ContentLoader.instance.load();
-	data_UserLoader.instance.load();
-	haxe_Timer.delay(function() {
-		data_UserLoader.instance.loadRealtimeUpdate();
-		data_ContentLoader.instance.loadRealtimeUpdate();
-		return;
-	},3000);
 	ui_ClientUI.instance.init();
-	data_Routes.instance.init();
 };
 $hxClasses["Client"] = Client;
 Client.__name__ = true;
@@ -347,17 +359,6 @@ StringTools.lpad = function(s,c,l) {
 };
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
-};
-var ValueType = $hxEnums["ValueType"] = { __ename__ : true, __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"]
-	,TNull: {_hx_index:0,__enum__:"ValueType",toString:$estr}
-	,TInt: {_hx_index:1,__enum__:"ValueType",toString:$estr}
-	,TFloat: {_hx_index:2,__enum__:"ValueType",toString:$estr}
-	,TBool: {_hx_index:3,__enum__:"ValueType",toString:$estr}
-	,TObject: {_hx_index:4,__enum__:"ValueType",toString:$estr}
-	,TFunction: {_hx_index:5,__enum__:"ValueType",toString:$estr}
-	,TClass: ($_=function(c) { return {_hx_index:6,c:c,__enum__:"ValueType",toString:$estr}; },$_.__params__ = ["c"],$_)
-	,TEnum: ($_=function(e) { return {_hx_index:7,e:e,__enum__:"ValueType",toString:$estr}; },$_.__params__ = ["e"],$_)
-	,TUnknown: {_hx_index:8,__enum__:"ValueType",toString:$estr}
 };
 var Type = function() { };
 $hxClasses["Type"] = Type;
@@ -1068,12 +1069,7 @@ var data_FilterModel = function() {
 $hxClasses["data.FilterModel"] = data_FilterModel;
 data_FilterModel.__name__ = true;
 data_FilterModel.prototype = {
-	setFilterContent: function(ref) {
-		this.filterContent = ref;
-		console.log("src/data/FilterModel.hx:17:",this.filterContent);
-		m.redraw();
-	}
-	,getRoom: function() {
+	getRoom: function() {
 		var _gthis = this;
 		try {
 			return data_ContentModel.instance.content.rooms.filter(function(room) {
@@ -1081,8 +1077,6 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getRoom(): Cant not get room with ref" + Std.string(this.filterContent));
-			data_ErrorsAndLogs.addLog("Fallback to first room - cant show room with ref " + Std.string(this.filterContent));
 			return data_ContentModel.instance.content.rooms[0];
 		}
 	}
@@ -1091,7 +1085,7 @@ data_FilterModel.prototype = {
 			return data_FilterTools.getShelvesOfType(this.getRoom().shelves,"homepage")[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref" + Std.string(this.filterContent));
+			data_ErrorsAndLogs.addError("FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1100,7 +1094,7 @@ data_FilterModel.prototype = {
 			return data_FilterTools.getShelvesExcludeType(this.getRoom().shelves,"homepage");
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref" + Std.string(this.filterContent));
+			data_ErrorsAndLogs.addError("FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
 			return [];
 		}
 	}
@@ -1116,7 +1110,7 @@ data_FilterModel.prototype = {
 			return shelves;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getShelves(): Cant not get shelves of room with ref" + Std.string(this.filterContent));
+			data_ErrorsAndLogs.addError("FilterModel.getShelves(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
 			return [];
 		}
 	}
@@ -1128,7 +1122,6 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getShelf(): Cant not get shelf with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1140,7 +1133,6 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getBook(): Cant not get book with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1149,7 +1141,7 @@ data_FilterModel.prototype = {
 			return this.getBook().chapters;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getChapters(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
+			data_ErrorsAndLogs.addError("FilterModel.getChapters(): Cant not get chapters of book with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1161,7 +1153,6 @@ data_FilterModel.prototype = {
 					return chapter.id == _gthis.filterContent.chapterId;
 				})[0];
 			} else {
-				data_ErrorsAndLogs.addLog("Fallback to first chapter");
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
@@ -1187,7 +1178,6 @@ data_FilterModel.prototype = {
 					return sub.id == _gthis.filterContent.subchapterId;
 				})[0];
 			} else {
-				data_ErrorsAndLogs.addLog("Fallback to first subchapter");
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
@@ -1222,39 +1212,6 @@ data_FirebaseModel.prototype = {
 	}
 	,__class__: data_FirebaseModel
 };
-var data_Routes = function() {
-	this.homeHandler = { onmatch : function(args,path) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
-			data_FilterModel.instance.setFilterContent(null);
-		} catch( e ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-		}
-		return null;
-	}, render : function(vnode) {
-		return m.m("div","homeHandler");
-	}};
-	this.contentHandler = { onmatch : function(args1,path1) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
-			data_FilterModel.instance.setFilterContent(args1);
-		} catch( e1 ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
-		}
-		return null;
-	}, render : function(vnode1) {
-		return m.m("div","homeHandler");
-	}};
-};
-$hxClasses["data.Routes"] = data_Routes;
-data_Routes.__name__ = true;
-data_Routes.prototype = {
-	init: function() {
-		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
-		m.route(window.document.querySelector("#routes"),"/",routes);
-	}
-	,__class__: data_Routes
-};
 var data_UserLoader = function() {
 };
 $hxClasses["data.UserLoader"] = data_UserLoader;
@@ -1268,7 +1225,7 @@ data_UserLoader.prototype = {
 				return data_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
 					data_UserModel.instance.setLoadedUserFromData(data1);
 					data_ErrorsAndLogs.addErrors(data1.errors);
-					console.log("src/data/UserLoader.hx:21:","UserModelLoaded");
+					console.log("src/data/UserLoader.hx:22:","UserModelLoaded");
 					return;
 				})["catch"](function(error) {
 					data_ErrorsAndLogs.addError("Could not load userconfig for browser session user");
@@ -1290,9 +1247,9 @@ data_UserLoader.prototype = {
 		try {
 			if(data_UserModel.instance.clientUser != null) {
 				var userEmail = data_UserModel.instance.clientUser.userData.email;
-				console.log("src/data/UserLoader.hx:41:",userEmail);
+				console.log("src/data/UserLoader.hx:42:",userEmail);
 				var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-				console.log("src/data/UserLoader.hx:44:","dbpath: " + dbpath);
+				console.log("src/data/UserLoader.hx:45:","dbpath: " + dbpath);
 				firebase.database().ref(dbpath).on("value",function(snap,str) {
 					var userCopy = data_UserModel.instance.clientUser;
 					var data1 = snap.val();
@@ -1324,10 +1281,10 @@ data_UserLoader.prototype = {
 			data_UserModel.instance.setLoadingUser();
 			return firebase.auth().signInWithEmailAndPassword(email,password);
 		}).then(function(user) {
-			console.log("src/data/UserLoader.hx:81:","USER " + user);
+			console.log("src/data/UserLoader.hx:82:","USER " + user);
 			return null;
 		})["catch"](function(error) {
-			console.log("src/data/UserLoader.hx:85:","ERROR" + error);
+			console.log("src/data/UserLoader.hx:86:","ERROR" + error);
 			data_ErrorsAndLogs.addError("error:" + error);
 			data_UserModel.instance.setAnonymousUser();
 			return;
@@ -1350,6 +1307,17 @@ data_UserLoader.prototype = {
 				rej((e instanceof js__$Boot_HaxeError) ? e.val : e);
 			}
 			return;
+		});
+	}
+	,getCurrentUser: function() {
+		return new Promise(function(resolve,reject) {
+			var unsubscribe = null;
+			unsubscribe = firebase.app().auth().onAuthStateChanged(function(user) {
+				unsubscribe();
+				resolve(user);
+				return;
+			},reject);
+			return unsubscribe;
 		});
 	}
 	,__class__: data_UserLoader
@@ -1501,18 +1469,16 @@ dataclass_Converter.prototype = {
 		while(_g < _g1.length) {
 			var field = _g1[_g];
 			++_g;
-			if(Object.prototype.hasOwnProperty.call(inputData,field)) {
-				var input = inputData[field];
-				if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && input != null && StringTools.startsWith(rtti[field],"DataClass<") && Object.prototype.hasOwnProperty.call(input,"$ref")) {
-					var refData = { obj : Reflect.field(input,"$ref"), field : field};
-					if(!refAssign.h.hasOwnProperty(currentId)) {
-						refAssign.h[currentId] = [refData];
-					} else {
-						refAssign.h[currentId].push(refData);
-					}
+			var input = inputData[field];
+			if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && input != null && StringTools.startsWith(rtti[field],"DataClass<") && Object.prototype.hasOwnProperty.call(input,"$ref")) {
+				var refData = { obj : Reflect.field(input,"$ref"), field : field};
+				if(!refAssign.h.hasOwnProperty(currentId)) {
+					refAssign.h[currentId] = [refData];
 				} else {
-					outputData[field] = this.toField(rtti[field],input,refCount,refAssign,toDataClass);
+					refAssign.h[currentId].push(refData);
 				}
+			} else {
+				outputData[field] = this.toField(rtti[field],input,refCount,refAssign,toDataClass);
 			}
 		}
 		if(this.circularReferences == dataclass_CircularReferenceHandling.TrackReferences && !toDataClass && currentId > 0) {
@@ -2634,7 +2600,6 @@ data_ContentModel.instance = new data_ContentModel();
 data_ContentitemLoader.instance = new data_ContentitemLoader();
 data_FilterModel.instance = new data_FilterModel();
 data_FirebaseModel.instance = new data_FirebaseModel();
-data_Routes.instance = new data_Routes();
 data_UserLoader.instance = new data_UserLoader();
 data_UserModel.instance = new data_UserModel();
 dataclass_Converter.directConversions = ["Int","Bool","Float","String"];

@@ -22,8 +22,8 @@ class FilterModel {
         return try {
             ContentModel.instance.content.rooms.filter(room->room.id == this.filterContent.roomId).first();
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getRoom(): Cant not get room with ref' + this.filterContent);
-            ErrorsAndLogs.addLog('Fallback to first room - cant show room with ref ' + this.filterContent);
+            // ErrorsAndLogs.addError('FilterModel.getRoom(): Cant not get room with ref ' + this.filterContent);
+            // ErrorsAndLogs.addLog('Fallback to first room - cant show room with ref ' + this.filterContent);
             ContentModel.instance.content.rooms.first();
         }
     }
@@ -32,7 +32,7 @@ class FilterModel {
         return try {
             this.getRoom().shelves.getShelvesOfType(Homepage).first();
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref' + this.filterContent);
+            ErrorsAndLogs.addError('FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref ' + this.filterContent);
             null;        
         }
     }
@@ -41,7 +41,7 @@ class FilterModel {
         return try {
             this.getRoom().shelves.getShelvesExcludeType(Homepage);
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref' + this.filterContent);
+            ErrorsAndLogs.addError('FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref ' + this.filterContent);
             [];        
         }
     }    
@@ -58,7 +58,7 @@ class FilterModel {
             shelves;
 
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getShelves(): Cant not get shelves of room with ref' + this.filterContent);
+            ErrorsAndLogs.addError('FilterModel.getShelves(): Cant not get shelves of room with ref ' + this.filterContent);
             [];
         }
     }
@@ -67,7 +67,7 @@ class FilterModel {
         return try {
             getRoom().shelves.filter(shelf->shelf.id == this.filterContent.shelfId).first();
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getShelf(): Cant not get shelf with ref' + this.filterContent);
+            // ErrorsAndLogs.addError('FilterModel.getShelf(): Cant not get shelf with ref ' + this.filterContent);
             null;
         }
     }
@@ -76,7 +76,7 @@ class FilterModel {
         return try {
             getShelf().books.filter(book->book.id == this.filterContent.bookId).first();
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getBook(): Cant not get book with ref' + this.filterContent);
+            // ErrorsAndLogs.addError('FilterModel.getBook(): Cant not get book with ref ' + this.filterContent);
             null;            
         }
     }
@@ -85,7 +85,7 @@ class FilterModel {
         return try {
             getBook().chapters;
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getChapters(): Cant not get chapters of book with ref' + this.filterContent);
+            ErrorsAndLogs.addError('FilterModel.getChapters(): Cant not get chapters of book with ref ' + this.filterContent);
             null;
         }
     }
@@ -95,7 +95,7 @@ class FilterModel {
             if (this.filterContent.chapterId != null) {
                 getChapters().filter(chapter->chapter.id == this.filterContent.chapterId).first();
             } else {
-                ErrorsAndLogs.addLog('Fallback to first chapter');
+                // ErrorsAndLogs.addLog('Fallback to first chapter');
                 getChapters().first();
             }
         } catch (e:Dynamic) {
@@ -118,7 +118,7 @@ class FilterModel {
             if (this.filterContent.subchapterId != null) {
                 getSubchapters().filter(sub->sub.id == this.filterContent.subchapterId).first();
             } else {
-                ErrorsAndLogs.addLog('Fallback to first subchapter');
+                // ErrorsAndLogs.addLog('Fallback to first subchapter');
                 getSubchapters().first();
             }
         } catch (e:Dynamic) {
