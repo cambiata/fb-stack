@@ -1,4 +1,5 @@
 package data;
+import js.Promise;
 import utils.*;
 import data.ClientUser;
 import firebase.Firebase;
@@ -109,7 +110,7 @@ class UserLoader {
 
     // onAuthStateChanged as promise!
     // https://github.com/firebase/firebase-js-sdk/issues/462
-    public function getCurrentUser() {
+    public function getCurrentBrowserUser() {        
         return new js.Promise((resolve, reject) -> {
             var unsubscribe:Dynamic = null;
             unsubscribe = Firebase.app().auth().onAuthStateChanged(user -> {
@@ -118,5 +119,74 @@ class UserLoader {
             }, reject);
         });
     }    
+
+    public function setUserStateLoading() {        
+        UserModel.instance.setLoadingUser();
+        return Promise.resolve(true);
+    }
+
+    public function setupOnAuthChange() {
+       firebase.Firebase.app().auth().onAuthStateChanged(user -> {
+            if (user != null) {
+                trace('--- Browser session user found.');
+
+                trace('compare:' + user.email + ' ' + UserModel.instance.clientUser.userData.email);
+                if (user.email == UserModel.instance.clientUser.userData.email) return null;
+
+                UserModel.instance.setLoadingUser();
+                ApiCalls.getAuthRequest('/api/userconfig')
+                .then(data->{
+                    UserModel.instance.setLoadedUserFromData(data);
+                    trace(data.errors);
+                    trace('--- UserModelLoaded');
+                }).catchError(error->{
+                    trace('--- Could not load userconfig for browser session user');
+                    trace(error);
+                });
+
+                return null;
+
+            } else {
+                trace('--- No browser session user found.');
+                UserModel.instance.setAnonymousUser();
+                return null;
+            }
+        }, error -> {
+            trace('--- Error: ' + error);
+            UserModel.instance.setAnonymousUser();
+        });
+
+        return Promise.resolve(true);
+    }
+
+    public function startup() {
+        UserModel.instance.init();        
+        return UserLoader.instance.setUserStateLoading()
+        .then(val->{
+            return UserLoader.instance.getCurrentBrowserUser();
+        })
+        .then(browserUser->{
+            if (browserUser == null) {
+                UserModel.instance.setAnonymousUser();
+                return null;
+            }
+
+            trace('Browser user found');
+            return ApiCalls.getAuthRequest('/api/userconfig');
+        })
+        .then(dataResponse->{
+            trace(dataResponse);
+            if (dataResponse == null) return null;
+            var data:Dynamic = dataResponse;
+            UserModel.instance.setLoadedUserFromData(data);  
+        })
+        .then(val->{
+            return UserLoader.instance.setupOnAuthChange(); 
+        })
+        .then(val->{
+            trace('finished User loading!');
+            return js.Promise.resolve(true);
+        });
+    }
 
 } 

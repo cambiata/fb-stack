@@ -14,7 +14,7 @@ class MInputEmail<T:{email:String, validEmail:Bool}> implements Mithril {
     function validate(e) {
         var str = e.target.value;
         var valid = UserEmail.isValid(str);
-        trace ('$str Is valid email: ' + valid);
+        // trace ('$str Is valid email: ' + valid);
         state.email = str;
         state.validEmail = valid;
         M.redraw();
@@ -117,7 +117,7 @@ class UIHeader implements Mithril {
                 case Anonymous: cast this.loginform.view();
             };
         return [
-            m('h1', 'Headertext'),
+            m('h3', '' + UserModel.instance.clientUser.userData),
             userView,
         ];
     }

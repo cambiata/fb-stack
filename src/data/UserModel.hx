@@ -23,8 +23,9 @@ class UserModel {
 
     public function init() {
         ErrorsAndLogs.addLog('UserModel.instance.init()');
-        // this.setAnonymousUser();
-        this.setLoadingUser();
+        // this.clientUser = new ClientUser(anonymousUser());
+        // this.setLoadingUser();
+        this.setAnonymousUser();
     }
 
     public function setAnonymousUser() {
