@@ -1,5 +1,6 @@
 package data;
 
+import ui.ClientUI.PagesModel;
 import data.Content;
 import mithril.M;
 
@@ -15,6 +16,25 @@ class FilterModel {
     public function setFilterContent(ref:ContentRef) {
         this.filterContent = ref;
         trace(this.filterContent);
+
+
+        var pageIndex = 0;
+        if (this.filterContent.subchapterId != null) {
+            pageIndex = 2;
+        } else if (this.filterContent.chapterId != null) {
+            pageIndex = 2;
+        } else if (this.filterContent.bookId != null) {
+            pageIndex = 2;            
+        } else if (this.filterContent.shelfId != null) {
+            pageIndex = 1;
+        } else if (this.filterContent.roomId != null) {
+            pageIndex = 0;
+        }
+        
+        PagesModel.instance.pageIdx = pageIndex;
+        trace(pageIndex);
+
+
         M.redraw();
     }
 

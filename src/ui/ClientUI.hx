@@ -6,6 +6,9 @@ import data.ErrorsAndLogs;
 import data.*;
 import data.Content;
 import ui.content.ContentItemsView;
+
+import markdown.MithrilTools;
+
 using data.Content.ContentFilters;
 using cx.ArrayTools;
 using dataclass.JsonConverter;
@@ -61,15 +64,214 @@ class UIContent implements Mithril {
 
     public function view() {
         new Pages([
-            new HomeView().view(),
-            new ShelvesView().view(),
-            new BookView().view(),
+            new Homepage().view(),
+            // new HomeView().view(),
+            new Shelvespage().view(),
+            
+            //new ShelvesView().view(),
+            new Bookpage().view(),
+            // new BookView().view(),
             [
                 new ui.content.ContentTreeView(ContentModel.instance.content).view(),
                 new UIFilters().view(),
             ]            
         ], PagesModel.instance.pageIdx, null, null, PagesModel.instance.pageWidth).view();
     }
+}
+
+class Bookpage implements Mithril {
+    public function new() {
+
+    }
+    
+    public function view() {
+
+        var book = FilterModel.instance.getBook();
+
+        var headerView = (book != null) ?  [m('a', {href:'/content' + FilterModel.instance.getShelf().path, oncreate:M.routeLink}, '<<'), m('span', ' ' + book.title)] : cast 'No book selected';
+        
+
+        var chapter = FilterModel.instance.getChapter();
+        var chapterView = try {
+            if (chapter == null) m('div', 'No chapter selected') else
+            [
+                m('h3', '' + chapter.title),
+                // m('p', '' + chapter.text),
+                MithrilTools.markdownToView(chapter.text),
+            ];
+        } catch (e:Dynamic) {
+            m('div', 'Chapter does not exist');
+        }
+
+        var chapters = FilterModel.instance.getChapters();
+        var chaptersView = try {
+            [
+                // m('div.border', 'Chapters length:' + chapters.length),
+                m('nav', chapters.map(chap->{
+                    var selected = (chap == FilterModel.instance.getChapter()) ? '.selected' : '';
+                    m('a$selected', {href:'/content' + chap.path, oncreate:M.routeLink}, '' + chap.title);
+                }))
+            ];
+        } catch (e:Dynamic) {
+            m('div.border', 'No chapters');
+        }
+
+        var subchapter = FilterModel.instance.getSubchapter();
+        var subchapterView = try {
+            if (subchapter == null) m('div', 'No subchapter selected') else
+            [
+                m('h3', '' + subchapter.title),
+                // m('p', '' + subchapter.text),
+                MithrilTools.markdownToView(subchapter.text),
+                
+
+            ];
+        } catch (e:Dynamic) {
+            m('div', 'Subchapter does not exist');
+            
+        }
+
+        var subchapters = FilterModel.instance.getSubchapters();
+        var subchaptersView = try {
+            [
+                // m('div.border', 'Subchapters length:' + subchapters.length),
+                m('nav', subchapters.map(sub->{
+                    var selected = (sub == FilterModel.instance.getSubchapter()) ? '.selected' : '';
+                    m('a$selected', {href:'/content' + sub.path, oncreate:M.routeLink}, '' + sub.title);
+                }))
+            ];
+        } catch (e:Dynamic) {
+            m('div.border', 'No subchapters');
+        }
+
+        return m('div.book', [
+            m('header', headerView),
+            m('nav', chaptersView),
+            m('article', [
+                chapterView,
+                subchaptersView,
+                subchapterView,
+            ]),
+            
+
+        ]);
+    }
+
+}
+
+class Shelvespage implements Mithril {
+    public function new() {
+
+    }
+    
+    public function view() {
+
+         var shelves = FilterModel.instance.getShelves().map(shelf->{
+             
+             var books = 
+                     shelf.books.map(book->{
+                    var selected = book == FilterModel.instance.getBook() ? '.selected' : '';
+                    
+                    m('a', {href:'/content'+book.path, oncreate: M.routeLink}, [
+                        m('img', {src:"/assets/slice4.png"}),
+                        m('div', book.title),
+                    ]);
+                });
+     
+                     
+                m('section.home', [
+                    m('header', shelf.title),
+                    books,
+                ]);
+         });
+
+        
+        // return m('div.border', [
+        //     m('h1', 'shelves'),
+        //     m('p', [m('a', {href:'/content' + FilterModel.instance.getRoom().path, oncreate:M.routeLink}, 'Visa alla'),]),
+
+        //     m('div', FilterModel.instance.getShelves().map(shelf->{
+        //         var a = m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, '' + shelf.title);
+        //         m('div.border', [
+        //             a,
+        //             m('nav', [
+        //                 shelf.books.map(book->{
+        //                     var selected = book == FilterModel.instance.getBook() ? '.selected' : '';
+                            
+
+
+        //                 })
+        //             ]),
+        //         ]);
+        //     }))
+
+        // ] );
+        return [
+            m('section.invisible' , m('header', [
+                m('a', {href:'/content' + FilterModel.instance.getRoom().path, oncreate:M.routeLink}, '<<'),
+                m('a', {href:'/content' + FilterModel.instance.getRoom().path + '/shelves', oncreate:M.routeLink}, 'Visa alla'),
+            ])),
+            shelves,
+        ];
+
+    }
+}
+
+
+class Homepage implements Mithril {
+    public function new() {
+
+    }
+    
+    public function view() {
+
+        var room = FilterModel.instance.getRoom();
+
+        var homeshelfView = try {
+            new UIShelvesList([FilterModel.instance.getRoomHomeshelf()]).view();
+        } catch (e:Dynamic) {
+            m('h3.error', '404 - can not show homeshelf for room  ' + FilterModel.instance.filterContent);
+        } 
+
+        var othershelvesView = try {
+            m('nav', FilterModel.instance.getRoomShelvesExceptHomeshelf().map(shelf->{
+                var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';
+                m('a$selected', {href:'/content'+shelf.path, oncreate: M.routeLink}, '' + shelf.title);
+            }));
+        } catch (e:Dynamic) {
+            m('h3.error', '404 - can not show other shelves for room  ' + FilterModel.instance.filterContent);
+        }
+
+        var homeView = try {
+            [
+                m('a.border', {href:'/content' + room.path, oncreate:M.routeLink},  'Room: ' + FilterModel.instance.getRoom().title),
+                m('div', 'Homeshelf:'),
+                homeshelfView,
+                m('div', 'Other shelves:'),
+                othershelvesView,
+
+            ];
+        } catch (e:Dynamic) {
+            m('h1.error', '404 - can not show room ' + FilterModel.instance.filterContent);
+        } 
+        
+        var i=0;
+        var items = FilterModel.instance.getRoomShelvesExceptHomeshelf().map(shelf->{
+            m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, [
+                m('img', {src:"/assets/slice3.png"}),
+                m('div', shelf.title),
+            ]);
+        });
+
+        return m('div.home', [
+            m('section.home', homeshelfView),
+            m('section.home-fullwidth', 'Sektion home'),
+            m('section.home', items),
+            m('section.home', othershelvesView),
+        ]);
+    }
+
+
 }
 
 class PagesModel {
@@ -85,7 +287,7 @@ class PagesModel {
         return this.pageIdx;
     }
 
-    public var pageWidth(default, set):String = '25%';
+    public var pageWidth(default, set):String = '100%';
     function set_pageWidth(val:String) {
         this.pageWidth = val;
         M.redraw();

@@ -9,15 +9,15 @@ function $extend(from, fields) {
 }
 var Client = function() {
 	data_FirebaseModel.instance.init();
+	data_Routes.instance.init();
 	Promise.all([data_UserLoader.instance.startup(),data_ContentLoader.instance.startup().then(function(val) {
 		return Promise.resolve(true);
 	})]).then(function(val1) {
-		console.log("src/Client.hx:30:","ALL STARTED");
+		console.log("src/Client.hx:31:","ALL STARTED");
 		ui_ClientUI.instance.init();
-		data_Routes.instance.init();
 		return;
 	})["catch"](function(e) {
-		console.log("src/Client.hx:38:","Error:" + e);
+		console.log("src/Client.hx:39:","Error:" + e);
 		return;
 	});
 };
@@ -141,6 +141,68 @@ EReg.prototype = {
 		this.r.s = s;
 		return this.r.m != null;
 	}
+	,matched: function(n) {
+		if(this.r.m != null && n >= 0 && n < this.r.m.length) {
+			return this.r.m[n];
+		} else {
+			throw new js__$Boot_HaxeError("EReg::matched");
+		}
+	}
+	,matchedPos: function() {
+		if(this.r.m == null) {
+			throw new js__$Boot_HaxeError("No string matched");
+		}
+		return { pos : this.r.m.index, len : this.r.m[0].length};
+	}
+	,matchSub: function(s,pos,len) {
+		if(len == null) {
+			len = -1;
+		}
+		if(this.r.global) {
+			this.r.lastIndex = pos;
+			this.r.m = this.r.exec(len < 0 ? s : HxOverrides.substr(s,0,pos + len));
+			var b = this.r.m != null;
+			if(b) {
+				this.r.s = s;
+			}
+			return b;
+		} else {
+			var b1 = this.match(len < 0 ? HxOverrides.substr(s,pos,null) : HxOverrides.substr(s,pos,len));
+			if(b1) {
+				this.r.s = s;
+				this.r.m.index += pos;
+			}
+			return b1;
+		}
+	}
+	,map: function(s,f) {
+		var offset = 0;
+		var buf_b = "";
+		while(true) {
+			if(offset >= s.length) {
+				break;
+			} else if(!this.matchSub(s,offset)) {
+				buf_b += Std.string(HxOverrides.substr(s,offset,null));
+				break;
+			}
+			var p = this.matchedPos();
+			buf_b += Std.string(HxOverrides.substr(s,offset,p.pos - offset));
+			buf_b += Std.string(f(this));
+			if(p.len == 0) {
+				buf_b += Std.string(HxOverrides.substr(s,p.pos,1));
+				offset = p.pos + 1;
+			} else {
+				offset = p.pos + p.len;
+			}
+			if(!this.r.global) {
+				break;
+			}
+		}
+		if(!this.r.global && offset > 0 && offset < s.length) {
+			buf_b += Std.string(HxOverrides.substr(s,offset,null));
+		}
+		return buf_b;
+	}
 	,__class__: EReg
 };
 var HxOverrides = function() { };
@@ -187,6 +249,14 @@ HxOverrides.substr = function(s,pos,len) {
 	}
 	return s.substr(pos,len);
 };
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
+};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -220,6 +290,84 @@ Lambda.has = function(it,elt) {
 Lambda.iter = function(it,f) {
 	var x = $getIterator(it);
 	while(x.hasNext()) f(x.next());
+};
+var Document = function() {
+	this.refLinks = new haxe_ds_StringMap();
+	this.inlineSyntaxes = [];
+};
+$hxClasses["Document"] = Document;
+Document.__name__ = ["Document"];
+Document.prototype = {
+	parseRefLinks: function(lines) {
+		var titles = new EReg("(" + "\"[^\"]+\"" + "|" + "'[^']+'" + "|" + "\\([^)]+\\)" + ")","");
+		var link = new EReg("^[ ]{0,3}" + "\\[([^\\]]+)\\]" + ":\\s+(\\S+)\\s*(" + "\"[^\"]+\"" + "|" + "'[^']+'" + "|" + "\\([^)]+\\)" + "|)\\s*$","");
+		var _g1 = 0;
+		var _g = lines.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			if(!link.match(lines[i])) {
+				continue;
+			}
+			var id = link.matched(1);
+			var url = link.matched(2);
+			var title = link.matched(3);
+			if(StringTools.startsWith(url,"<") && StringTools.endsWith(url,">")) {
+				url = HxOverrides.substr(url,1,url.length - 2);
+			}
+			if(title == "" && lines[i + 1] != null && titles.match(lines[i + 1])) {
+				title = titles.matched(1);
+				lines[i + 1] = "";
+			}
+			if(title == "") {
+				title = null;
+			} else {
+				title = title.substring(1,title.length - 1);
+			}
+			id = id.toLowerCase();
+			var value = new Link(id,url,title);
+			var _this = this.refLinks;
+			if(__map_reserved[id] != null) {
+				_this.setReserved(id,value);
+			} else {
+				_this.h[id] = value;
+			}
+			lines[i] = "";
+		}
+	}
+	,parseLines: function(lines) {
+		var parser = new markdown_BlockParser(lines,this);
+		var blocks = [];
+		while(parser.pos < parser.lines.length) {
+			var _g = 0;
+			var _g1 = markdown_BlockSyntax.get_syntaxes();
+			while(_g < _g1.length) {
+				var syntax = _g1[_g];
+				++_g;
+				if(syntax.canParse(parser)) {
+					var block = syntax.parse(parser);
+					if(block != null) {
+						blocks.push(block);
+					}
+					break;
+				}
+			}
+		}
+		return blocks;
+	}
+	,parseInline: function(text) {
+		return new markdown_InlineParser(text,this).parse();
+	}
+	,__class__: Document
+};
+var Link = function(id,url,title) {
+	this.id = id;
+	this.url = url;
+	this.title = title;
+};
+$hxClasses["Link"] = Link;
+Link.__name__ = ["Link"];
+Link.prototype = {
+	__class__: Link
 };
 Math.__name__ = ["Math"];
 var Reflect = function() { };
@@ -304,6 +452,14 @@ Std.parseInt = function(x) {
 var StringTools = function() { };
 $hxClasses["StringTools"] = StringTools;
 StringTools.__name__ = ["StringTools"];
+StringTools.htmlEscape = function(s,quotes) {
+	s = s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+	if(quotes) {
+		return s.split("\"").join("&quot;").split("'").join("&#039;");
+	} else {
+		return s;
+	}
+};
 StringTools.startsWith = function(s,start) {
 	if(s.length >= start.length) {
 		return HxOverrides.substr(s,0,start.length) == start;
@@ -358,6 +514,9 @@ StringTools.lpad = function(s,c,l) {
 	while(s.length < l) s = c + s;
 	return s;
 };
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+};
 var Type = function() { };
 $hxClasses["Type"] = Type;
 Type.__name__ = ["Type"];
@@ -386,6 +545,46 @@ Type.createEnum = function(e,constr,params) {
 		throw new js__$Boot_HaxeError("Constructor " + constr + " does not need parameters");
 	}
 	return f;
+};
+var cx_Cache = function(maxItems) {
+	if(maxItems == null) {
+		maxItems = 3;
+	}
+	this.cache = new haxe_ds_StringMap();
+	this.prio = [];
+	this.max = maxItems;
+};
+$hxClasses["cx.Cache"] = cx_Cache;
+cx_Cache.__name__ = ["cx","Cache"];
+cx_Cache.prototype = {
+	set: function(key,value) {
+		var _this = this.cache;
+		if(__map_reserved[key] != null) {
+			_this.setReserved(key,value);
+		} else {
+			_this.h[key] = value;
+		}
+		this.prio.push(key);
+		while(this.prio.length > this.max) this.cache.remove(this.prio.shift());
+	}
+	,get: function(key) {
+		var _this = this.cache;
+		if(!(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key))) {
+			return null;
+		}
+		var array = this.prio;
+		if(array[array.length - 1] != key) {
+			HxOverrides.remove(this.prio,key);
+			this.prio.push(key);
+		}
+		var _this1 = this.cache;
+		if(__map_reserved[key] != null) {
+			return _this1.getReserved(key);
+		} else {
+			return _this1.h[key];
+		}
+	}
+	,__class__: cx_Cache
 };
 var data_ApiCalls = function() { };
 $hxClasses["data.ApiCalls"] = data_ApiCalls;
@@ -1003,6 +1202,22 @@ haxe_ds_StringMap.prototype = {
 		}
 		return this.rh.hasOwnProperty("$" + key);
 	}
+	,remove: function(key) {
+		if(__map_reserved[key] != null) {
+			key = "$" + key;
+			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.rh[key]);
+			return true;
+		} else {
+			if(!this.h.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.h[key]);
+			return true;
+		}
+	}
 	,keys: function() {
 		return HxOverrides.iter(this.arrayKeys());
 	}
@@ -1031,7 +1246,21 @@ data_FilterModel.__name__ = ["data","FilterModel"];
 data_FilterModel.prototype = {
 	setFilterContent: function(ref) {
 		this.filterContent = ref;
-		console.log("src/data/FilterModel.hx:17:",this.filterContent);
+		console.log("src/data/FilterModel.hx:18:",this.filterContent);
+		var pageIndex = 0;
+		if(this.filterContent.subchapterId != null) {
+			pageIndex = 2;
+		} else if(this.filterContent.chapterId != null) {
+			pageIndex = 2;
+		} else if(this.filterContent.bookId != null) {
+			pageIndex = 2;
+		} else if(this.filterContent.shelfId != null) {
+			pageIndex = 1;
+		} else if(this.filterContent.roomId != null) {
+			pageIndex = 0;
+		}
+		ui_PagesModel.instance.set_pageIdx(pageIndex);
+		console.log("src/data/FilterModel.hx:35:",pageIndex);
 		m.redraw();
 	}
 	,getRoom: function() {
@@ -1185,10 +1414,11 @@ var data_Routes = function() {
 	}, render : function(vnode) {
 		return m.m("div","homeHandler");
 	}};
-	this.contentHandler = { onmatch : function(args1,path1) {
+	this.shelvesHandler = { onmatch : function(args1,path1) {
 		try {
 			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
 			data_FilterModel.instance.setFilterContent(args1);
+			ui_PagesModel.instance.set_pageIdx(1);
 		} catch( e1 ) {
 			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
 		}
@@ -1196,12 +1426,23 @@ var data_Routes = function() {
 	}, render : function(vnode1) {
 		return m.m("div","homeHandler");
 	}};
+	this.contentHandler = { onmatch : function(args2,path2) {
+		try {
+			data_ErrorsAndLogs.addLog("RouteResolver:" + path2 + ": " + Std.string(args2) + "");
+			data_FilterModel.instance.setFilterContent(args2);
+		} catch( e2 ) {
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
+		}
+		return null;
+	}, render : function(vnode2) {
+		return m.m("div","homeHandler");
+	}};
 };
 $hxClasses["data.Routes"] = data_Routes;
 data_Routes.__name__ = ["data","Routes"];
 data_Routes.prototype = {
 	init: function() {
-		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
+		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/shelves" : this.shelvesHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
 		m.route(window.document.querySelector("#routes"),"/",routes);
 	}
 	,__class__: data_Routes
@@ -2073,6 +2314,1045 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+var markdown_Node = function() { };
+$hxClasses["markdown.Node"] = markdown_Node;
+markdown_Node.__name__ = ["markdown","Node"];
+var markdown_ElementNode = function(tag,children) {
+	this.tag = tag;
+	this.children = children;
+	this.attributes = new haxe_ds_StringMap();
+};
+$hxClasses["markdown.ElementNode"] = markdown_ElementNode;
+markdown_ElementNode.__name__ = ["markdown","ElementNode"];
+markdown_ElementNode.__interfaces__ = [markdown_Node];
+markdown_ElementNode.empty = function(tag) {
+	return new markdown_ElementNode(tag,null);
+};
+markdown_ElementNode.withTag = function(tag) {
+	return new markdown_ElementNode(tag,[]);
+};
+markdown_ElementNode.text = function(tag,text) {
+	return new markdown_ElementNode(tag,[new markdown_TextNode(text)]);
+};
+markdown_ElementNode.prototype = {
+	__class__: markdown_ElementNode
+};
+var markdown_TextNode = function(text) {
+	this.text = text;
+};
+$hxClasses["markdown.TextNode"] = markdown_TextNode;
+markdown_TextNode.__name__ = ["markdown","TextNode"];
+markdown_TextNode.__interfaces__ = [markdown_Node];
+markdown_TextNode.prototype = {
+	__class__: markdown_TextNode
+};
+var markdown_BlockParser = function(lines,document) {
+	this.lines = lines;
+	this.document = document;
+	this.pos = 0;
+};
+$hxClasses["markdown.BlockParser"] = markdown_BlockParser;
+markdown_BlockParser.__name__ = ["markdown","BlockParser"];
+markdown_BlockParser.prototype = {
+	get_next: function() {
+		if(this.pos >= this.lines.length - 1) {
+			return null;
+		}
+		return this.lines[this.pos + 1];
+	}
+	,advance: function() {
+		this.pos++;
+	}
+	,matches: function(ereg) {
+		if(this.pos >= this.lines.length) {
+			return false;
+		}
+		return ereg.match(this.lines[this.pos]);
+	}
+	,matchesNext: function(ereg) {
+		if(this.get_next() == null) {
+			return false;
+		}
+		return ereg.match(this.get_next());
+	}
+	,__class__: markdown_BlockParser
+	,__properties__: {get_next:"get_next"}
+};
+var markdown_BlockSyntax = function() {
+};
+$hxClasses["markdown.BlockSyntax"] = markdown_BlockSyntax;
+markdown_BlockSyntax.__name__ = ["markdown","BlockSyntax"];
+markdown_BlockSyntax.__properties__ = {get_syntaxes:"get_syntaxes"};
+markdown_BlockSyntax.get_syntaxes = function() {
+	if(markdown_BlockSyntax.syntaxes == null) {
+		markdown_BlockSyntax.syntaxes = [new markdown_EmptyBlockSyntax(),new markdown_BlockHtmlSyntax(),new markdown_SetextHeaderSyntax(),new markdown_HeaderSyntax(),new markdown_CodeBlockSyntax(),new markdown_GitHubCodeBlockSyntax(),new markdown_BlockquoteSyntax(),new markdown_HorizontalRuleSyntax(),new markdown_UnorderedListSyntax(),new markdown_OrderedListSyntax(),new markdown_TableSyntax(),new markdown_ParagraphSyntax()];
+	}
+	return markdown_BlockSyntax.syntaxes;
+};
+markdown_BlockSyntax.isAtBlockEnd = function(parser) {
+	if(parser.pos >= parser.lines.length) {
+		return true;
+	}
+	var _g = 0;
+	var _g1 = markdown_BlockSyntax.get_syntaxes();
+	while(_g < _g1.length) {
+		var syntax = _g1[_g];
+		++_g;
+		if(syntax.canParse(parser) && syntax.get_canEndBlock()) {
+			return true;
+		}
+	}
+	return false;
+};
+markdown_BlockSyntax.prototype = {
+	get_pattern: function() {
+		return null;
+	}
+	,get_canEndBlock: function() {
+		return true;
+	}
+	,canParse: function(parser) {
+		return this.get_pattern().match(parser.lines[parser.pos]);
+	}
+	,parse: function(parser) {
+		return null;
+	}
+	,__class__: markdown_BlockSyntax
+	,__properties__: {get_canEndBlock:"get_canEndBlock",get_pattern:"get_pattern"}
+};
+var markdown_EmptyBlockSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.EmptyBlockSyntax"] = markdown_EmptyBlockSyntax;
+markdown_EmptyBlockSyntax.__name__ = ["markdown","EmptyBlockSyntax"];
+markdown_EmptyBlockSyntax.__super__ = markdown_BlockSyntax;
+markdown_EmptyBlockSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_EMPTY;
+	}
+	,parse: function(parser) {
+		parser.advance();
+		return null;
+	}
+	,__class__: markdown_EmptyBlockSyntax
+});
+var markdown_SetextHeaderSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.SetextHeaderSyntax"] = markdown_SetextHeaderSyntax;
+markdown_SetextHeaderSyntax.__name__ = ["markdown","SetextHeaderSyntax"];
+markdown_SetextHeaderSyntax.__super__ = markdown_BlockSyntax;
+markdown_SetextHeaderSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	canParse: function(parser) {
+		return parser.matchesNext(markdown_BlockSyntax.RE_SETEXT);
+	}
+	,parse: function(parser) {
+		var re = markdown_BlockSyntax.RE_SETEXT;
+		re.match(parser.get_next());
+		var tag = re.matched(1).charAt(0) == "=" ? "h1" : "h2";
+		var contents = parser.document.parseInline(parser.lines[parser.pos]);
+		parser.advance();
+		parser.advance();
+		return new markdown_ElementNode(tag,contents);
+	}
+	,__class__: markdown_SetextHeaderSyntax
+});
+var markdown_HeaderSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.HeaderSyntax"] = markdown_HeaderSyntax;
+markdown_HeaderSyntax.__name__ = ["markdown","HeaderSyntax"];
+markdown_HeaderSyntax.__super__ = markdown_BlockSyntax;
+markdown_HeaderSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_HEADER;
+	}
+	,parse: function(parser) {
+		this.get_pattern().match(parser.lines[parser.pos]);
+		parser.advance();
+		return new markdown_ElementNode("h" + this.get_pattern().matched(1).length,parser.document.parseInline(StringTools.trim(this.get_pattern().matched(2))));
+	}
+	,__class__: markdown_HeaderSyntax
+});
+var markdown_BlockquoteSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.BlockquoteSyntax"] = markdown_BlockquoteSyntax;
+markdown_BlockquoteSyntax.__name__ = ["markdown","BlockquoteSyntax"];
+markdown_BlockquoteSyntax.__super__ = markdown_BlockSyntax;
+markdown_BlockquoteSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_BLOCKQUOTE;
+	}
+	,parseChildLines: function(parser) {
+		var childLines = [];
+		while(parser.pos < parser.lines.length) if(this.get_pattern().match(parser.lines[parser.pos])) {
+			childLines.push(this.get_pattern().matched(1));
+			parser.advance();
+		} else {
+			var nextMatch = parser.get_next() != null && this.get_pattern().match(parser.get_next());
+			if(StringTools.trim(parser.lines[parser.pos]) == "" && nextMatch) {
+				childLines.push("");
+				childLines.push(this.get_pattern().matched(1));
+				parser.advance();
+				parser.advance();
+			} else {
+				break;
+			}
+		}
+		return childLines;
+	}
+	,parse: function(parser) {
+		var childLines = this.parseChildLines(parser);
+		return new markdown_ElementNode("blockquote",parser.document.parseLines(childLines));
+	}
+	,__class__: markdown_BlockquoteSyntax
+});
+var markdown_CodeBlockSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.CodeBlockSyntax"] = markdown_CodeBlockSyntax;
+markdown_CodeBlockSyntax.__name__ = ["markdown","CodeBlockSyntax"];
+markdown_CodeBlockSyntax.__super__ = markdown_BlockSyntax;
+markdown_CodeBlockSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_INDENT;
+	}
+	,parseChildLines: function(parser) {
+		var childLines = [];
+		while(parser.pos < parser.lines.length) if(this.get_pattern().match(parser.lines[parser.pos])) {
+			childLines.push(this.get_pattern().matched(1));
+			parser.advance();
+		} else {
+			var nextMatch = parser.get_next() != null && this.get_pattern().match(parser.get_next());
+			if(StringTools.trim(parser.lines[parser.pos]) == "" && nextMatch) {
+				childLines.push("");
+				childLines.push(this.get_pattern().matched(1));
+				parser.advance();
+				parser.advance();
+			} else {
+				break;
+			}
+		}
+		return childLines;
+	}
+	,parse: function(parser) {
+		var childLines = this.parseChildLines(parser);
+		childLines.push("");
+		return new markdown_ElementNode("pre",[markdown_ElementNode.text("code",StringTools.htmlEscape(childLines.join("\n")))]);
+	}
+	,__class__: markdown_CodeBlockSyntax
+});
+var markdown_GitHubCodeBlockSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.GitHubCodeBlockSyntax"] = markdown_GitHubCodeBlockSyntax;
+markdown_GitHubCodeBlockSyntax.__name__ = ["markdown","GitHubCodeBlockSyntax"];
+markdown_GitHubCodeBlockSyntax.__super__ = markdown_BlockSyntax;
+markdown_GitHubCodeBlockSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_CODE;
+	}
+	,parseChildLines: function(parser) {
+		var childLines = [];
+		parser.advance();
+		while(parser.pos < parser.lines.length) if(!this.get_pattern().match(parser.lines[parser.pos])) {
+			childLines.push(parser.lines[parser.pos]);
+			parser.advance();
+		} else {
+			parser.advance();
+			break;
+		}
+		return childLines;
+	}
+	,parse: function(parser) {
+		var syntax = this.get_pattern().matched(1);
+		var code = markdown_ElementNode.text("code",StringTools.htmlEscape(this.parseChildLines(parser).join("\n")));
+		if(syntax != null && syntax.length > 0) {
+			var _this = code.attributes;
+			var value = "prettyprint " + syntax;
+			if(__map_reserved["class"] != null) {
+				_this.setReserved("class",value);
+			} else {
+				_this.h["class"] = value;
+			}
+		}
+		return new markdown_ElementNode("pre",[code]);
+	}
+	,__class__: markdown_GitHubCodeBlockSyntax
+});
+var markdown_HorizontalRuleSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.HorizontalRuleSyntax"] = markdown_HorizontalRuleSyntax;
+markdown_HorizontalRuleSyntax.__name__ = ["markdown","HorizontalRuleSyntax"];
+markdown_HorizontalRuleSyntax.__super__ = markdown_BlockSyntax;
+markdown_HorizontalRuleSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_HR;
+	}
+	,parse: function(parser) {
+		parser.advance();
+		return markdown_ElementNode.empty("hr");
+	}
+	,__class__: markdown_HorizontalRuleSyntax
+});
+var markdown_BlockHtmlSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.BlockHtmlSyntax"] = markdown_BlockHtmlSyntax;
+markdown_BlockHtmlSyntax.__name__ = ["markdown","BlockHtmlSyntax"];
+markdown_BlockHtmlSyntax.__super__ = markdown_BlockSyntax;
+markdown_BlockHtmlSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_HTML;
+	}
+	,get_canEndBlock: function() {
+		return false;
+	}
+	,parse: function(parser) {
+		var childLines = [];
+		while(parser.pos < parser.lines.length && !parser.matches(markdown_BlockSyntax.RE_EMPTY)) {
+			childLines.push(parser.lines[parser.pos]);
+			parser.advance();
+		}
+		return new markdown_TextNode(childLines.join("\n"));
+	}
+	,__class__: markdown_BlockHtmlSyntax
+});
+var markdown_ListItem = function(lines) {
+	this.forceBlock = false;
+	this.lines = lines;
+};
+$hxClasses["markdown.ListItem"] = markdown_ListItem;
+markdown_ListItem.__name__ = ["markdown","ListItem"];
+markdown_ListItem.prototype = {
+	__class__: markdown_ListItem
+};
+var markdown_ParagraphSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.ParagraphSyntax"] = markdown_ParagraphSyntax;
+markdown_ParagraphSyntax.__name__ = ["markdown","ParagraphSyntax"];
+markdown_ParagraphSyntax.__super__ = markdown_BlockSyntax;
+markdown_ParagraphSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_canEndBlock: function() {
+		return false;
+	}
+	,canParse: function(parser) {
+		return true;
+	}
+	,parse: function(parser) {
+		var childLines = [];
+		while(!markdown_BlockSyntax.isAtBlockEnd(parser)) {
+			childLines.push(StringTools.ltrim(parser.lines[parser.pos]));
+			parser.advance();
+		}
+		return new markdown_ElementNode("p",parser.document.parseInline(childLines.join("\n")));
+	}
+	,__class__: markdown_ParagraphSyntax
+});
+var markdown_ListSyntax = function(listTag) {
+	markdown_BlockSyntax.call(this);
+	this.listTag = listTag;
+};
+$hxClasses["markdown.ListSyntax"] = markdown_ListSyntax;
+markdown_ListSyntax.__name__ = ["markdown","ListSyntax"];
+markdown_ListSyntax.__super__ = markdown_BlockSyntax;
+markdown_ListSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_canEndBlock: function() {
+		return false;
+	}
+	,parse: function(parser) {
+		var items = [];
+		var childLines = [];
+		var endItem = function() {
+			if(childLines.length > 0) {
+				items.push(new markdown_ListItem(childLines));
+				childLines = [];
+			}
+		};
+		var match;
+		var tryMatch = function(pattern) {
+			match = pattern;
+			return pattern.match(parser.lines[parser.pos]);
+		};
+		while(parser.pos < parser.lines.length) {
+			if(tryMatch(markdown_BlockSyntax.RE_EMPTY)) {
+				childLines.push("");
+			} else if(tryMatch(markdown_BlockSyntax.RE_UL) || tryMatch(markdown_BlockSyntax.RE_OL)) {
+				endItem();
+				var tmp = match.matched(1);
+				childLines.push(tmp);
+			} else if(tryMatch(markdown_BlockSyntax.RE_INDENT)) {
+				var tmp1 = match.matched(1);
+				childLines.push(tmp1);
+			} else if(markdown_BlockSyntax.isAtBlockEnd(parser)) {
+				break;
+			} else {
+				if(childLines.length > 0 && childLines[childLines.length - 1] == "") {
+					break;
+				}
+				childLines.push(parser.lines[parser.pos]);
+			}
+			parser.advance();
+		}
+		endItem();
+		var _g1 = 0;
+		var _g = items.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var len = items[i].lines.length;
+			var _g3 = 1;
+			var _g2 = len + 1;
+			while(_g3 < _g2) if(markdown_BlockSyntax.RE_EMPTY.match(items[i].lines[len - _g3++])) {
+				if(i < items.length - 1) {
+					items[i].forceBlock = true;
+					items[i + 1].forceBlock = true;
+				}
+				items[i].lines.pop();
+			} else {
+				break;
+			}
+		}
+		var itemNodes = [];
+		var _g4 = 0;
+		while(_g4 < items.length) {
+			var item = items[_g4];
+			++_g4;
+			var blockItem = item.forceBlock || item.lines.length > 1;
+			var blocksInList = [markdown_BlockSyntax.RE_BLOCKQUOTE,markdown_BlockSyntax.RE_HEADER,markdown_BlockSyntax.RE_HR,markdown_BlockSyntax.RE_INDENT,markdown_BlockSyntax.RE_UL,markdown_BlockSyntax.RE_OL];
+			if(!blockItem) {
+				var _g11 = 0;
+				while(_g11 < blocksInList.length) if(blocksInList[_g11++].match(item.lines[0])) {
+					blockItem = true;
+					break;
+				}
+			}
+			if(blockItem) {
+				var children = parser.document.parseLines(item.lines);
+				if(!item.forceBlock && children.length == 1) {
+					if((children[0] instanceof markdown_ElementNode)) {
+						var node = children[0];
+						if(node.tag == "p") {
+							children = node.children;
+						}
+					}
+				}
+				itemNodes.push(new markdown_ElementNode("li",children));
+			} else {
+				itemNodes.push(new markdown_ElementNode("li",parser.document.parseInline(item.lines[0])));
+			}
+		}
+		return new markdown_ElementNode(this.listTag,itemNodes);
+	}
+	,__class__: markdown_ListSyntax
+});
+var markdown_UnorderedListSyntax = function() {
+	markdown_ListSyntax.call(this,"ul");
+};
+$hxClasses["markdown.UnorderedListSyntax"] = markdown_UnorderedListSyntax;
+markdown_UnorderedListSyntax.__name__ = ["markdown","UnorderedListSyntax"];
+markdown_UnorderedListSyntax.__super__ = markdown_ListSyntax;
+markdown_UnorderedListSyntax.prototype = $extend(markdown_ListSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_UL;
+	}
+	,__class__: markdown_UnorderedListSyntax
+});
+var markdown_OrderedListSyntax = function() {
+	markdown_ListSyntax.call(this,"ol");
+};
+$hxClasses["markdown.OrderedListSyntax"] = markdown_OrderedListSyntax;
+markdown_OrderedListSyntax.__name__ = ["markdown","OrderedListSyntax"];
+markdown_OrderedListSyntax.__super__ = markdown_ListSyntax;
+markdown_OrderedListSyntax.prototype = $extend(markdown_ListSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_BlockSyntax.RE_OL;
+	}
+	,__class__: markdown_OrderedListSyntax
+});
+var markdown_TableSyntax = function() {
+	markdown_BlockSyntax.call(this);
+};
+$hxClasses["markdown.TableSyntax"] = markdown_TableSyntax;
+markdown_TableSyntax.__name__ = ["markdown","TableSyntax"];
+markdown_TableSyntax.__super__ = markdown_BlockSyntax;
+markdown_TableSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
+	get_pattern: function() {
+		return markdown_TableSyntax.TABLE_PATTERN;
+	}
+	,get_canEndBlock: function() {
+		return false;
+	}
+	,parse: function(parser) {
+		var lines = [];
+		while(parser.pos < parser.lines.length && parser.matches(markdown_TableSyntax.TABLE_PATTERN)) {
+			lines.push(parser.lines[parser.pos]);
+			parser.advance();
+		}
+		var heads = [];
+		var rows = [];
+		var headLine = lines.shift();
+		var alignLine = lines.shift();
+		var aligns = [];
+		if(alignLine != null) {
+			markdown_TableSyntax.CELL_PATTERN.map(alignLine,function(e) {
+				var text = e.matched(2);
+				var align = text.charAt(0) == ":" ? text.charAt(text.length - 1) == ":" ? "center" : "left" : text.charAt(text.length - 1) == ":" ? "right" : "left";
+				aligns.push(align);
+				return "";
+			});
+		}
+		var index = 0;
+		markdown_TableSyntax.CELL_PATTERN.map(headLine,function(e1) {
+			var text1 = StringTools.trim(e1.matched(2));
+			var cell = new markdown_ElementNode("th",parser.document.parseInline(text1));
+			if(aligns[index] != "left") {
+				var _this = cell.attributes;
+				var value = aligns[index];
+				if(__map_reserved["align"] != null) {
+					_this.setReserved("align",value);
+				} else {
+					_this.h["align"] = value;
+				}
+			}
+			heads.push(cell);
+			index += 1;
+			return "";
+		});
+		var _g = 0;
+		while(_g < lines.length) {
+			var line = lines[_g++];
+			var cols = [[]];
+			rows.push(new markdown_ElementNode("tr",cols[0]));
+			markdown_TableSyntax.CELL_PATTERN.map(line,(function(index1,cols1) {
+				return function(e2) {
+					var text2 = StringTools.trim(e2.matched(2));
+					var cell1 = new markdown_ElementNode("td",parser.document.parseInline(text2));
+					if(aligns[index1[0]] != "left") {
+						var _this1 = cell1.attributes;
+						var value1 = aligns[index1[0]];
+						if(__map_reserved["align"] != null) {
+							_this1.setReserved("align",value1);
+						} else {
+							_this1.h["align"] = value1;
+						}
+					}
+					cols1[0].push(cell1);
+					index1[0] += 1;
+					return "";
+				};
+			})([0],cols));
+		}
+		return new markdown_ElementNode("table",[new markdown_ElementNode("thead",heads),new markdown_ElementNode("tbody",rows)]);
+	}
+	,__class__: markdown_TableSyntax
+});
+var markdown_InlineSyntax = function(pattern) {
+	this.pattern = new EReg(pattern,"m");
+};
+$hxClasses["markdown.InlineSyntax"] = markdown_InlineSyntax;
+markdown_InlineSyntax.__name__ = ["markdown","InlineSyntax"];
+markdown_InlineSyntax.prototype = {
+	tryMatch: function(parser) {
+		if(this.pattern.match(parser.get_currentSource()) && this.pattern.matchedPos().pos == 0) {
+			parser.writeText();
+			if(this.onMatch(parser)) {
+				parser.consume(this.pattern.matched(0).length);
+			}
+			return true;
+		}
+		return false;
+	}
+	,onMatch: function(parser) {
+		return false;
+	}
+	,__class__: markdown_InlineSyntax
+};
+var markdown_AutolinkSyntaxWithoutBrackets = function() {
+	markdown_InlineSyntax.call(this,"\\b((http|https|ftp)://[^\\s]*)\\b");
+};
+$hxClasses["markdown.AutolinkSyntaxWithoutBrackets"] = markdown_AutolinkSyntaxWithoutBrackets;
+markdown_AutolinkSyntaxWithoutBrackets.__name__ = ["markdown","AutolinkSyntaxWithoutBrackets"];
+markdown_AutolinkSyntaxWithoutBrackets.__super__ = markdown_InlineSyntax;
+markdown_AutolinkSyntaxWithoutBrackets.prototype = $extend(markdown_InlineSyntax.prototype,{
+	tryMatch: function(parser) {
+		return markdown_InlineSyntax.prototype.tryMatch.call(this,parser);
+	}
+	,onMatch: function(parser) {
+		var url = this.pattern.matched(1);
+		var anchor = markdown_ElementNode.text("a",StringTools.htmlEscape(url));
+		var _this = anchor.attributes;
+		if(__map_reserved["href"] != null) {
+			_this.setReserved("href",url);
+		} else {
+			_this.h["href"] = url;
+		}
+		parser.addNode(anchor);
+		return true;
+	}
+	,__class__: markdown_AutolinkSyntaxWithoutBrackets
+});
+var markdown_TextSyntax = function(pattern,substitute) {
+	markdown_InlineSyntax.call(this,pattern);
+	this.substitute = substitute;
+};
+$hxClasses["markdown.TextSyntax"] = markdown_TextSyntax;
+markdown_TextSyntax.__name__ = ["markdown","TextSyntax"];
+markdown_TextSyntax.__super__ = markdown_InlineSyntax;
+markdown_TextSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		if(this.substitute == null) {
+			parser.advanceBy(this.pattern.matched(0).length);
+			return false;
+		}
+		parser.addNode(parser.createText(this.substitute));
+		return true;
+	}
+	,__class__: markdown_TextSyntax
+});
+var markdown_AutolinkSyntax = function() {
+	markdown_InlineSyntax.call(this,"<((http|https|ftp)://[^>]*)>");
+};
+$hxClasses["markdown.AutolinkSyntax"] = markdown_AutolinkSyntax;
+markdown_AutolinkSyntax.__name__ = ["markdown","AutolinkSyntax"];
+markdown_AutolinkSyntax.__super__ = markdown_InlineSyntax;
+markdown_AutolinkSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		var url = this.pattern.matched(1);
+		var anchor = markdown_ElementNode.text("a",StringTools.htmlEscape(url));
+		var _this = anchor.attributes;
+		if(__map_reserved["href"] != null) {
+			_this.setReserved("href",url);
+		} else {
+			_this.h["href"] = url;
+		}
+		parser.addNode(anchor);
+		return true;
+	}
+	,__class__: markdown_AutolinkSyntax
+});
+var markdown_TagSyntax = function(pattern,tag,end) {
+	markdown_InlineSyntax.call(this,pattern);
+	this.tag = tag;
+	this.endPattern = new EReg(end == null ? pattern : end,"m");
+};
+$hxClasses["markdown.TagSyntax"] = markdown_TagSyntax;
+markdown_TagSyntax.__name__ = ["markdown","TagSyntax"];
+markdown_TagSyntax.__super__ = markdown_InlineSyntax;
+markdown_TagSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		parser.stack.push(new markdown_TagState(parser.pos,parser.pos + this.pattern.matched(0).length,this));
+		return true;
+	}
+	,onMatchEnd: function(parser,state) {
+		parser.addNode(new markdown_ElementNode(this.tag,state.children));
+		return true;
+	}
+	,__class__: markdown_TagSyntax
+});
+var markdown_LinkSyntax = function(linkResolver) {
+	markdown_TagSyntax.call(this,"\\[",null,markdown_LinkSyntax.linkPattern);
+	this.linkResolver = linkResolver;
+};
+$hxClasses["markdown.LinkSyntax"] = markdown_LinkSyntax;
+markdown_LinkSyntax.__name__ = ["markdown","LinkSyntax"];
+markdown_LinkSyntax.__super__ = markdown_TagSyntax;
+markdown_LinkSyntax.prototype = $extend(markdown_TagSyntax.prototype,{
+	onMatchEnd: function(parser,state) {
+		var url;
+		var title;
+		if(this.endPattern.matched(1) == null || this.endPattern.matched(1) == "") {
+			if(this.linkResolver == null) {
+				return false;
+			}
+			if(state.children.length != 1) {
+				return false;
+			}
+			if(!(state.children[0] instanceof markdown_TextNode)) {
+				return false;
+			}
+			var node = this.linkResolver(state.children[0].text);
+			if(node == null) {
+				return false;
+			}
+			parser.addNode(node);
+			return true;
+		}
+		if(this.endPattern.matched(3) != null && this.endPattern.matched(3) != "") {
+			url = this.endPattern.matched(3);
+			title = this.endPattern.matched(4);
+			if(StringTools.startsWith(url,"<") && StringTools.endsWith(url,">")) {
+				url = url.substring(1,url.length - 1);
+			}
+		} else {
+			var id = this.endPattern.matched(2);
+			if(id == "") {
+				id = parser.source.substring(state.startPos + 1,parser.pos);
+			}
+			id = id.toLowerCase();
+			var _this = parser.document.refLinks;
+			var link = __map_reserved[id] != null ? _this.getReserved(id) : _this.h[id];
+			if(link == null) {
+				return false;
+			}
+			url = link.url;
+			title = link.title;
+		}
+		var anchor = new markdown_ElementNode("a",state.children);
+		var this1 = anchor.attributes;
+		var value = StringTools.htmlEscape(url);
+		var _this1 = this1;
+		if(__map_reserved["href"] != null) {
+			_this1.setReserved("href",value);
+		} else {
+			_this1.h["href"] = value;
+		}
+		if(title != null && title != "") {
+			var this11 = anchor.attributes;
+			var value1 = StringTools.htmlEscape(title);
+			var _this2 = this11;
+			if(__map_reserved["title"] != null) {
+				_this2.setReserved("title",value1);
+			} else {
+				_this2.h["title"] = value1;
+			}
+		}
+		parser.addNode(anchor);
+		return true;
+	}
+	,__class__: markdown_LinkSyntax
+});
+var markdown_ImgSyntax = function(linkResolver) {
+	markdown_TagSyntax.call(this,"!\\[",null,markdown_ImgSyntax.linkPattern);
+	this.linkResolver = linkResolver;
+};
+$hxClasses["markdown.ImgSyntax"] = markdown_ImgSyntax;
+markdown_ImgSyntax.__name__ = ["markdown","ImgSyntax"];
+markdown_ImgSyntax.__super__ = markdown_TagSyntax;
+markdown_ImgSyntax.prototype = $extend(markdown_TagSyntax.prototype,{
+	onMatchEnd: function(parser,state) {
+		var url;
+		var title;
+		if(this.endPattern.matched(1) == null || this.endPattern.matched(1) == "") {
+			if(this.linkResolver == null) {
+				return false;
+			}
+			if(state.children.length != 1) {
+				return false;
+			}
+			if(!(state.children[0] instanceof markdown_TextNode)) {
+				return false;
+			}
+			var node = this.linkResolver(state.children[0].text);
+			if(node == null) {
+				return false;
+			}
+			parser.addNode(node);
+			return true;
+		}
+		if(this.endPattern.matched(3) != null && this.endPattern.matched(3) != "") {
+			url = this.endPattern.matched(3);
+			title = this.endPattern.matched(4);
+			if(StringTools.startsWith(url,"<") && StringTools.endsWith(url,">")) {
+				url = url.substring(1,url.length - 1);
+			}
+		} else {
+			var id = this.endPattern.matched(2);
+			if(id == "") {
+				id = parser.source.substring(state.startPos + 1,parser.pos);
+			}
+			id = id.toLowerCase();
+			var _this = parser.document.refLinks;
+			var link = __map_reserved[id] != null ? _this.getReserved(id) : _this.h[id];
+			if(link == null) {
+				return false;
+			}
+			url = link.url;
+			title = link.title;
+		}
+		var img = new markdown_ElementNode("img",null);
+		var this1 = img.attributes;
+		var value = StringTools.htmlEscape(url);
+		var _this1 = this1;
+		if(__map_reserved["src"] != null) {
+			_this1.setReserved("src",value);
+		} else {
+			_this1.h["src"] = value;
+		}
+		if(state.children.length == 1 && (state.children[0] instanceof markdown_TextNode)) {
+			var value1 = state.children[0].text;
+			var _this2 = img.attributes;
+			if(__map_reserved["alt"] != null) {
+				_this2.setReserved("alt",value1);
+			} else {
+				_this2.h["alt"] = value1;
+			}
+		}
+		if(title != null && title != "") {
+			var this11 = img.attributes;
+			var value2 = StringTools.htmlEscape(title);
+			var _this3 = this11;
+			if(__map_reserved["title"] != null) {
+				_this3.setReserved("title",value2);
+			} else {
+				_this3.h["title"] = value2;
+			}
+		}
+		parser.addNode(img);
+		return true;
+	}
+	,__class__: markdown_ImgSyntax
+});
+var markdown_CodeSyntax = function(pattern) {
+	markdown_InlineSyntax.call(this,pattern);
+};
+$hxClasses["markdown.CodeSyntax"] = markdown_CodeSyntax;
+markdown_CodeSyntax.__name__ = ["markdown","CodeSyntax"];
+markdown_CodeSyntax.__super__ = markdown_InlineSyntax;
+markdown_CodeSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		parser.addNode(markdown_ElementNode.text("code",StringTools.htmlEscape(this.pattern.matched(1))));
+		return true;
+	}
+	,__class__: markdown_CodeSyntax
+});
+var markdown_InlineParser = function(source,document) {
+	this.start = 0;
+	this.pos = 0;
+	this.source = source;
+	this.document = document;
+	this.stack = [];
+	if(document.inlineSyntaxes != null) {
+		this.syntaxes = [];
+		var _g = 0;
+		var _g1 = document.inlineSyntaxes;
+		while(_g < _g1.length) this.syntaxes.push(_g1[_g++]);
+		var _g2 = 0;
+		var _g11 = markdown_InlineParser.defaultSyntaxes;
+		while(_g2 < _g11.length) this.syntaxes.push(_g11[_g2++]);
+	} else {
+		this.syntaxes = markdown_InlineParser.defaultSyntaxes;
+	}
+	var _this = this.syntaxes;
+	var x = new markdown_LinkSyntax(document.linkResolver);
+	_this.splice(1,0,x);
+};
+$hxClasses["markdown.InlineParser"] = markdown_InlineParser;
+markdown_InlineParser.__name__ = ["markdown","InlineParser"];
+markdown_InlineParser.prototype = {
+	parse: function() {
+		this.stack.push(new markdown_TagState(0,0,null));
+		while(!this.get_isDone()) {
+			var matched = false;
+			var _g1 = 1;
+			var _g = this.stack.length;
+			while(_g1 < _g) if(this.stack[this.stack.length - _g1++].tryMatch(this)) {
+				matched = true;
+				break;
+			}
+			if(matched) {
+				continue;
+			}
+			var _g2 = 0;
+			var _g11 = this.syntaxes;
+			while(_g2 < _g11.length) if(_g11[_g2++].tryMatch(this)) {
+				matched = true;
+				break;
+			}
+			if(matched) {
+				continue;
+			}
+			this.advanceBy(1);
+		}
+		return this.stack[0].close(this);
+	}
+	,writeText: function() {
+		this.writeTextRange(this.start,this.pos);
+		this.start = this.pos;
+	}
+	,writeTextRange: function(start,end) {
+		if(end > start) {
+			var text = this.source.substring(start,end);
+			var nodes = this.stack[this.stack.length - 1].children;
+			if(nodes.length > 0 && (nodes[nodes.length - 1] instanceof markdown_TextNode)) {
+				var newNode = this.createText("" + nodes[nodes.length - 1].text + text);
+				nodes[nodes.length - 1] = newNode;
+			} else {
+				nodes.push(this.createText(text));
+			}
+		}
+	}
+	,createText: function(text) {
+		return new markdown_TextNode(this.unescape(text));
+	}
+	,addNode: function(node) {
+		this.stack[this.stack.length - 1].children.push(node);
+	}
+	,get_currentSource: function() {
+		return this.source.substring(this.pos,this.source.length);
+	}
+	,get_isDone: function() {
+		return this.pos == this.source.length;
+	}
+	,advanceBy: function(length) {
+		this.pos += length;
+	}
+	,consume: function(length) {
+		this.pos += length;
+		this.start = this.pos;
+	}
+	,unescape: function(text) {
+		var _this_r = new RegExp("\\\\([\\\\`*_{}[\\]()#+-.!])","g".split("u").join(""));
+		text = text.replace(_this_r,"$1");
+		text = StringTools.replace(text,"\t","    ");
+		return text;
+	}
+	,__class__: markdown_InlineParser
+	,__properties__: {get_isDone:"get_isDone",get_currentSource:"get_currentSource"}
+};
+var markdown_TagState = function(startPos,endPos,syntax) {
+	this.startPos = startPos;
+	this.endPos = endPos;
+	this.syntax = syntax;
+	this.children = [];
+};
+$hxClasses["markdown.TagState"] = markdown_TagState;
+markdown_TagState.__name__ = ["markdown","TagState"];
+markdown_TagState.prototype = {
+	tryMatch: function(parser) {
+		if(this.syntax.endPattern.match(parser.get_currentSource()) && this.syntax.endPattern.matchedPos().pos == 0) {
+			this.close(parser);
+			return true;
+		}
+		return false;
+	}
+	,close: function(parser) {
+		var index = parser.stack.indexOf(this);
+		var unmatchedTags = parser.stack.splice(index + 1,parser.stack.length - index);
+		var _g = 0;
+		while(_g < unmatchedTags.length) {
+			var unmatched = unmatchedTags[_g];
+			++_g;
+			parser.writeTextRange(unmatched.startPos,unmatched.endPos);
+			var _g1 = 0;
+			var _g2 = unmatched.children;
+			while(_g1 < _g2.length) this.children.push(_g2[_g1++]);
+		}
+		parser.writeText();
+		parser.stack.pop();
+		if(parser.stack.length == 0) {
+			return this.children;
+		}
+		if(this.syntax.onMatchEnd(parser,this)) {
+			parser.consume(this.syntax.endPattern.matched(0).length);
+		} else {
+			parser.start = this.startPos;
+			parser.advanceBy(this.syntax.endPattern.matched(0).length);
+		}
+		return null;
+	}
+	,__class__: markdown_TagState
+};
+var markdown_MarkdownTools = function() { };
+$hxClasses["markdown.MarkdownTools"] = markdown_MarkdownTools;
+markdown_MarkdownTools.__name__ = ["markdown","MarkdownTools"];
+markdown_MarkdownTools.getBlocks = function(markdown1,additionalInlineSyntaxes) {
+	var document = new Document();
+	if(additionalInlineSyntaxes != null) {
+		var _g = 0;
+		while(_g < additionalInlineSyntaxes.length) document.inlineSyntaxes.push(additionalInlineSyntaxes[_g++]);
+	}
+	var blocks = null;
+	try {
+		var _this_r = new RegExp("(\r\n|\r)","g".split("u").join(""));
+		var lines = markdown1.replace(_this_r,"\n").split("\n");
+		document.parseRefLinks(lines);
+		blocks = document.parseLines(lines);
+		return blocks;
+	} catch( e ) {
+		console.log("src/markdown/MarkdownTools.hx:37:",(e instanceof js__$Boot_HaxeError) ? e.val : e);
+		return null;
+	}
+};
+var markdown_MithrilTools = function() { };
+$hxClasses["markdown.MithrilTools"] = markdown_MithrilTools;
+markdown_MithrilTools.__name__ = ["markdown","MithrilTools"];
+markdown_MithrilTools.markdownToView = function(md,additionalInlineSyntaxes) {
+	return markdown_MithrilTools.buildView(markdown_MarkdownTools.getBlocks(md,additionalInlineSyntaxes));
+};
+markdown_MithrilTools.buildView = function(mdNodes,parent) {
+	if(parent == null) {
+		parent = { tag : "div", attrs : { className : "markdown"}, children : []};
+	}
+	var _g = 0;
+	while(_g < mdNodes.length) {
+		var mdNode = mdNodes[_g];
+		++_g;
+		switch(mdNode == null ? null : js_Boot.getClass(mdNode)) {
+		case markdown_ElementNode:
+			var node = mdNode;
+			var attributes = { };
+			var _g1 = [];
+			var k = node.attributes.keys();
+			while(k.hasNext()) _g1.push(k.next());
+			var _g2 = 0;
+			while(_g2 < _g1.length) {
+				var name = _g1[_g2];
+				++_g2;
+				var _this = node.attributes;
+				attributes[name] = __map_reserved[name] != null ? _this.getReserved(name) : _this.h[name];
+			}
+			if(node.tag == "a") {
+				attributes["target"] = "_blank";
+			}
+			var child = { tag : node.tag, attrs : attributes, children : []};
+			parent.children.push(child);
+			markdown_MithrilTools.buildView(node.children,child);
+			break;
+		case markdown_TextNode:
+			parent.children.push({ tag : "span", text : mdNode.text});
+			break;
+		case markdown_ast_DataNode:
+			var node1 = mdNode;
+			var child1 = markdown_MithrilTools.cache.get(node1.data);
+			if(child1 == null) {
+				var child2 = "data-node: " + Std.string(node1.data);
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
+				markdown_MithrilTools.cache.set(node1.data,child1);
+			}
+			parent.children.push(child1);
+			break;
+		case markdown_ast_ErrorNode:
+			parent.children.push({ tag : "span", attrs : { className : "error"}, children : ["Error: " + mdNode.msg]});
+			break;
+		default:
+			console.log("src/markdown/MithrilTools.hx:97:","OTHER NODE");
+		}
+	}
+	return parent;
+};
+var markdown_ast_DataNode = function(tag,data) {
+	markdown_ElementNode.call(this,tag,[]);
+	this.data = data;
+};
+$hxClasses["markdown.ast.DataNode"] = markdown_ast_DataNode;
+markdown_ast_DataNode.__name__ = ["markdown","ast","DataNode"];
+markdown_ast_DataNode.__super__ = markdown_ElementNode;
+markdown_ast_DataNode.prototype = $extend(markdown_ElementNode.prototype,{
+	__class__: markdown_ast_DataNode
+});
+var markdown_ast_ErrorNode = function(tag,msg) {
+	markdown_ElementNode.call(this,tag,[]);
+	this.msg = msg;
+};
+$hxClasses["markdown.ast.ErrorNode"] = markdown_ast_ErrorNode;
+markdown_ast_ErrorNode.__name__ = ["markdown","ast","ErrorNode"];
+markdown_ast_ErrorNode.__super__ = markdown_ElementNode;
+markdown_ast_ErrorNode.prototype = $extend(markdown_ElementNode.prototype,{
+	__class__: markdown_ast_ErrorNode
+});
 var mithril__$M_M_$Impl_$ = function() { };
 $hxClasses["mithril._M.M_Impl_"] = mithril__$M_M_$Impl_$;
 mithril__$M_M_$Impl_$.__name__ = ["mithril","_M","M_Impl_"];
@@ -2128,12 +3408,124 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return new ui_Pages([new ui_content_HomeView().view(),new ui_content_ShelvesView().view(),new ui_content_BookView().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],ui_PagesModel.instance.pageIdx,null,null,ui_PagesModel.instance.pageWidth).view();
+		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),new ui_Bookpage().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],ui_PagesModel.instance.pageIdx,null,null,ui_PagesModel.instance.pageWidth).view();
 	}
 	,__class__: ui_UIContent
 };
+var ui_Bookpage = function() {
+};
+$hxClasses["ui.Bookpage"] = ui_Bookpage;
+ui_Bookpage.__name__ = ["ui","Bookpage"];
+ui_Bookpage.__interfaces__ = [mithril_Mithril];
+ui_Bookpage.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var book = data_FilterModel.instance.getBook();
+		var headerView = book != null ? [m.m("a",{ href : "/content" + data_FilterModel.instance.getShelf().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("span"," " + book.title)] : "No book selected";
+		var chapter = data_FilterModel.instance.getChapter();
+		var chapterView;
+		try {
+			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h3","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)];
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			chapterView = m.m("div","Chapter does not exist");
+		}
+		var chapters = data_FilterModel.instance.getChapters();
+		var chaptersView;
+		try {
+			chaptersView = [m.m("nav",chapters.map(function(chap) {
+				var selected = chap == data_FilterModel.instance.getChapter() ? ".selected" : "";
+				return m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title);
+			}))];
+		} catch( e2 ) {
+			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
+			chaptersView = m.m("div.border","No chapters");
+		}
+		var subchapter = data_FilterModel.instance.getSubchapter();
+		var subchapterView;
+		try {
+			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h3","" + subchapter.title),markdown_MithrilTools.markdownToView(subchapter.text)];
+		} catch( e4 ) {
+			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			subchapterView = m.m("div","Subchapter does not exist");
+		}
+		var subchapters = data_FilterModel.instance.getSubchapters();
+		var subchaptersView;
+		try {
+			subchaptersView = [m.m("nav",subchapters.map(function(sub) {
+				var selected1 = sub == data_FilterModel.instance.getSubchapter() ? ".selected" : "";
+				return m.m("a" + selected1,{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
+			}))];
+		} catch( e6 ) {
+			var e7 = (e6 instanceof js__$Boot_HaxeError) ? e6.val : e6;
+			subchaptersView = m.m("div.border","No subchapters");
+		}
+		return m.m("div.book",[m.m("header",headerView),m.m("nav",chaptersView),m.m("article",[chapterView,subchaptersView,subchapterView])]);
+	}
+	,__class__: ui_Bookpage
+};
+var ui_Shelvespage = function() {
+};
+$hxClasses["ui.Shelvespage"] = ui_Shelvespage;
+ui_Shelvespage.__name__ = ["ui","Shelvespage"];
+ui_Shelvespage.__interfaces__ = [mithril_Mithril];
+ui_Shelvespage.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var shelves = data_FilterModel.instance.getShelves().map(function(shelf) {
+			var books = shelf.books.map(function(book) {
+				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
+				return m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice4.png"}),m.m("div",book.title)]);
+			});
+			return m.m("section.home",[m.m("header",shelf.title),books]);
+		});
+		return [m.m("section.invisible",m.m("header",[m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path + "/shelves", oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")])),shelves];
+	}
+	,__class__: ui_Shelvespage
+};
+var ui_Homepage = function() {
+};
+$hxClasses["ui.Homepage"] = ui_Homepage;
+ui_Homepage.__name__ = ["ui","Homepage"];
+ui_Homepage.__interfaces__ = [mithril_Mithril];
+ui_Homepage.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var room = data_FilterModel.instance.getRoom();
+		var homeshelfView;
+		try {
+			homeshelfView = new ui_content_UIShelvesList([data_FilterModel.instance.getRoomHomeshelf()]).view();
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			homeshelfView = m.m("h3.error","404 - can not show homeshelf for room  " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		var othershelvesView;
+		try {
+			othershelvesView = m.m("nav",data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf) {
+				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
+				return m.m("a" + selected,{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
+			}));
+		} catch( e2 ) {
+			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
+			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		var homeView;
+		try {
+			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),homeshelfView,m.m("div","Other shelves:"),othershelvesView];
+		} catch( e4 ) {
+			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			homeView = m.m("h1.error","404 - can not show room " + Std.string(data_FilterModel.instance.filterContent));
+		}
+		var i = 0;
+		var items = data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf1) {
+			return m.m("a",{ href : "/content" + shelf1.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice3.png"}),m.m("div",shelf1.title)]);
+		});
+		return m.m("div.home",[m.m("section.home",homeshelfView),m.m("section.home-fullwidth","Sektion home"),m.m("section.home",items),m.m("section.home",othershelvesView)]);
+	}
+	,__class__: ui_Homepage
+};
 var ui_PagesModel = function() {
-	this.pageWidth = "25%";
+	this.pageWidth = "100%";
 	this.pageIdx = 0;
 };
 $hxClasses["ui.PagesModel"] = ui_PagesModel;
@@ -2664,6 +4056,22 @@ dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 js_Boot.__toStr = ({ }).toString;
+markdown_BlockSyntax.RE_EMPTY = new EReg("^([ \\t]*)$","");
+markdown_BlockSyntax.RE_SETEXT = new EReg("^((=+)|(-+))$","");
+markdown_BlockSyntax.RE_HEADER = new EReg("^(#{1,6})(.*?)#*$","");
+markdown_BlockSyntax.RE_BLOCKQUOTE = new EReg("^[ ]{0,3}>[ ]?(.*)$","");
+markdown_BlockSyntax.RE_INDENT = new EReg("^(?:    |\t)(.*)$","");
+markdown_BlockSyntax.RE_CODE = new EReg("^```(\\w*)\\s*$","");
+markdown_BlockSyntax.RE_HR = new EReg("^[ ]{0,3}((-+[ ]{0,2}){3,}|(_+[ ]{0,2}){3,}|(\\*+[ ]{0,2}){3,})$","");
+markdown_BlockSyntax.RE_HTML = new EReg("^<[ ]*\\w+[ >]","");
+markdown_BlockSyntax.RE_UL = new EReg("^[ ]{0,3}[*+-][ \\t]+(.*)$","");
+markdown_BlockSyntax.RE_OL = new EReg("^[ ]{0,3}\\d+\\.[ \\t]+(.*)$","");
+markdown_TableSyntax.TABLE_PATTERN = new EReg("^(.+? +:?\\|:? +)+(.+)$","");
+markdown_TableSyntax.CELL_PATTERN = new EReg("(\\|)?([^\\|]+)(\\|)?","g");
+markdown_LinkSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
+markdown_ImgSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
+markdown_InlineParser.defaultSyntaxes = [new markdown_AutolinkSyntaxWithoutBrackets(),new markdown_TextSyntax(" {2,}\n","<br />\n"),new markdown_TextSyntax("\\s*[A-Za-z0-9]+"),new markdown_AutolinkSyntax(),new markdown_LinkSyntax(),new markdown_ImgSyntax(),new markdown_TextSyntax(" \\* "),new markdown_TextSyntax(" _ "),new markdown_TextSyntax("&[#a-zA-Z0-9]*;"),new markdown_TextSyntax("&","&amp;"),new markdown_TextSyntax("</?\\w+.*?>"),new markdown_TextSyntax("<","&lt;"),new markdown_TagSyntax("\\*\\*","strong"),new markdown_TagSyntax("__","strong"),new markdown_TagSyntax("\\*","em"),new markdown_TagSyntax("\\b_","em","_\\b"),new markdown_CodeSyntax("``\\s?((?:.|\\n)*?)\\s?``"),new markdown_CodeSyntax("`([^`]*)`")];
+markdown_MithrilTools.cache = new cx_Cache(5);
 ui_ClientUI.instance = new ui_ClientUI();
 ui_PagesModel.instance = new ui_PagesModel();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");

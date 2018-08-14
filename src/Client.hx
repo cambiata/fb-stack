@@ -1,4 +1,5 @@
 
+import markdown.MithrilTools;
 import js.Promise;
 import firebase.Firebase;
 // import mithril.M;
@@ -17,7 +18,7 @@ class Client {
         
         FirebaseModel.instance.init();
         
-       
+        Routes.instance.init();
         js.Promise.all([
             UserLoader.instance.startup(),
             ContentLoader.instance.startup()
@@ -31,13 +32,14 @@ class Client {
             // UserLoader.instance.loadRealtimeUpdate();
             //ContentLoader.instance.loadRealtimeUpdate();   
                 ClientUI.instance.init();
-                Routes.instance.init();
+                
                                      
         })
         .catchError(e->{
             trace('Error:' + e);
         });       
 
+        
 
         // ContentitemLoader.instance.loadRealtimeDatabase();
     }

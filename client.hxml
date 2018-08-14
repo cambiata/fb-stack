@@ -6,6 +6,7 @@
 
 -lib mithril
 -lib dataclass
+-lib markdown
 
 -main Client
 
