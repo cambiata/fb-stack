@@ -1,4 +1,5 @@
 
+import js.Promise;
 import firebase.Firebase;
 // import mithril.M;
 // import mithril.M.m;
@@ -15,24 +16,28 @@ class Client {
     public function new() {
         
         FirebaseModel.instance.init();
-
+        
+       
         js.Promise.all([
             UserLoader.instance.startup(),
             ContentLoader.instance.startup()
+            .then(val->{
+
+                Promise.resolve(true);
+            }),
         ])
         .then(val->{
             trace('ALL STARTED');
             // UserLoader.instance.loadRealtimeUpdate();
-
-
-
-            ContentLoader.instance.loadRealtimeUpdate();            
+            //ContentLoader.instance.loadRealtimeUpdate();   
+                ClientUI.instance.init();
+                Routes.instance.init();
+                                     
         })
         .catchError(e->{
             trace('Error:' + e);
         });       
-        ClientUI.instance.init();
-        Routes.instance.init();
+
 
         // ContentitemLoader.instance.loadRealtimeDatabase();
     }

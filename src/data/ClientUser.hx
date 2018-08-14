@@ -11,16 +11,22 @@ class UserData implements DataClass {
 }
 
 class UserConfig implements DataClass {
-    public var domain:String;
+    public var domain:String = '';
 }
 
-class ClientUser implements DataClass {
-    public var userData:UserData;
-    public var userConfig:UserConfig;    
-}
-// 
+// class ClientUser implements DataClass {
+//     public var userData:UserData;
+//     //public var userConfig:UserConfig;    
+// }
+// // 
 
-class CurrentUser implements DataClass {
+// class CurrentUser implements DataClass {
+//     public var userData:UserData;
+//     public var userConfig:UserConfig;
+// }
+
+class UserResponse implements DataClass {
     public var userData:UserData;
-    public var userConfig:UserConfig;
+    //public var userConfig:UserConfig = null;
+    public var errors:Array<String> = [];
 }

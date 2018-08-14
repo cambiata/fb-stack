@@ -85,7 +85,7 @@ class FilterModel {
         return try {
             getBook().chapters;
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getChapters(): Cant not get chapters of book with ref ' + this.filterContent);
+            //ErrorsAndLogs.addError('FilterModel.getChapters(): Cant not get chapters of book with ref ' + this.filterContent);
             null;
         }
     }
@@ -99,7 +99,7 @@ class FilterModel {
                 getChapters().first();
             }
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getChapter(): Cant not get chapters of book with ref' + this.filterContent);
+            //ErrorsAndLogs.addError('FilterModel.getChapter(): Cant not get chapters of book with ref' + this.filterContent);
             null;
         }
     }
@@ -108,7 +108,7 @@ class FilterModel {
         return try {
             getChapter().subchapters;
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref' + this.filterContent);
+            //ErrorsAndLogs.addError('FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref' + this.filterContent);
             null;
         }
     }
@@ -122,7 +122,7 @@ class FilterModel {
                 getSubchapters().first();
             }
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref' + this.filterContent);
+            //ErrorsAndLogs.addError('FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref' + this.filterContent);
             null;
         }
     }   

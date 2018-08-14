@@ -11,10 +11,10 @@ class ErrorsAndLogs {
     static public var logs(default,null):Array<String> = [];
     static public function addLog(log:String) {
         logs.unshift(log);
-        // trace(log);
-        var el = Browser.document.createDivElement();
-        el.textContent = log;
-        element('#logs').appendChild(el);
+        trace(log);
+        // var el = Browser.document.createDivElement();
+        // el.textContent = log;
+        // element('#logs').appendChild(el);
     }
 
     static public var errors(default,null):Array<String> = [];
@@ -23,9 +23,10 @@ class ErrorsAndLogs {
     }
     static public function addError(e:String) {
         errors.unshift(e);
-        var el = Browser.document.createDivElement();
-        el.textContent = e;
-        element('#errors').appendChild(el);
+        trace(e);
+        // var el = Browser.document.createDivElement();
+        // el.textContent = e;
+        // element('#errors').appendChild(el);
     }
     static public function addErrorsIfAny(err:Array<String>) {
         if (err != null && err.length > 0) addErrors(err);

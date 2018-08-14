@@ -9,16 +9,17 @@ function $extend(from, fields) {
 }
 var Client = function() {
 	data_FirebaseModel.instance.init();
-	Promise.all([data_UserLoader.instance.startup(),data_ContentLoader.instance.startup()]).then(function(val) {
-		console.log("src/Client.hx:24:","ALL STARTED");
-		data_ContentLoader.instance.loadRealtimeUpdate();
+	Promise.all([data_UserLoader.instance.startup(),data_ContentLoader.instance.startup().then(function(val) {
+		return Promise.resolve(true);
+	})]).then(function(val1) {
+		console.log("src/Client.hx:30:","ALL STARTED");
+		ui_ClientUI.instance.init();
+		data_Routes.instance.init();
 		return;
 	})["catch"](function(e) {
-		console.log("src/Client.hx:32:","Error:" + e);
+		console.log("src/Client.hx:38:","Error:" + e);
 		return;
 	});
-	ui_ClientUI.instance.init();
-	data_Routes.instance.init();
 };
 $hxClasses["Client"] = Client;
 Client.__name__ = ["Client"];
@@ -196,6 +197,19 @@ HxOverrides.iter = function(a) {
 var Lambda = function() { };
 $hxClasses["Lambda"] = Lambda;
 Lambda.__name__ = ["Lambda"];
+Lambda.array = function(it) {
+	var a = [];
+	var i = $getIterator(it);
+	while(i.hasNext()) a.push(i.next());
+	return a;
+};
+Lambda.mapi = function(it,f) {
+	var l = new haxe_ds_List();
+	var i = 0;
+	var x = $getIterator(it);
+	while(x.hasNext()) l.add(f(i++,x.next()));
+	return l;
+};
 Lambda.has = function(it,elt) {
 	var x = $getIterator(it);
 	while(x.hasNext()) if(x.next() == elt) {
@@ -344,9 +358,6 @@ StringTools.lpad = function(s,c,l) {
 	while(s.length < l) s = c + s;
 	return s;
 };
-StringTools.replace = function(s,sub,by) {
-	return s.split(sub).join(by);
-};
 var Type = function() { };
 $hxClasses["Type"] = Type;
 Type.__name__ = ["Type"];
@@ -471,54 +482,6 @@ data_UserData.prototype = {
 	}
 	,__class__: data_UserData
 	,__properties__: {set_access:"set_access",set_domains:"set_domains",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
-};
-var data_UserConfig = function(data1) {
-	this.set_domain(data1.domain);
-};
-$hxClasses["data.UserConfig"] = data_UserConfig;
-data_UserConfig.__name__ = ["data","UserConfig"];
-data_UserConfig.__interfaces__ = [DataClass];
-data_UserConfig.validate = function(data1) {
-	var output = [];
-	if(!Object.prototype.hasOwnProperty.call(data1,"domain")) {
-		output.push("domain");
-	} else if(data1.domain == null) {
-		output.push("domain");
-	}
-	return output;
-};
-data_UserConfig.prototype = {
-	set_domain: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for UserConfig.domain.");
-		}
-		return this.domain = v;
-	}
-	,__class__: data_UserConfig
-	,__properties__: {set_domain:"set_domain"}
-};
-var data_ClientUser = function(data1) {
-	this.set_userData(data1.userData);
-	this.set_userConfig(data1.userConfig);
-};
-$hxClasses["data.ClientUser"] = data_ClientUser;
-data_ClientUser.__name__ = ["data","ClientUser"];
-data_ClientUser.__interfaces__ = [DataClass];
-data_ClientUser.prototype = {
-	set_userData: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for ClientUser.userData.");
-		}
-		return this.userData = v;
-	}
-	,set_userConfig: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for ClientUser.userConfig.");
-		}
-		return this.userConfig = v;
-	}
-	,__class__: data_ClientUser
-	,__properties__: {set_userConfig:"set_userConfig",set_userData:"set_userData"}
 };
 var data_Content = function(data1) {
 	this.rooms = [];
@@ -908,9 +871,10 @@ data_ContentLoader.prototype = {
 		firebase.database().ref("content-tree").on("value",function(snap,str) {
 			try {
 				console.log("src/data/ContentLoader.hx:33:","Realtime content loaded!");
-				return data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,snap.val()));
+				var val = snap.val();
+				return data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,val));
 			} catch( e ) {
-				console.log("src/data/ContentLoader.hx:36:","Could not insantiate content from loaded Realtime data " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+				console.log("src/data/ContentLoader.hx:39:","Could not insantiate content from loaded Realtime data " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
 				return null;
 			}
 		});
@@ -929,9 +893,7 @@ $hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
 data_ErrorsAndLogs.__name__ = ["data","ErrorsAndLogs"];
 data_ErrorsAndLogs.addLog = function(log) {
 	data_ErrorsAndLogs.logs.unshift(log);
-	var el = window.document.createElement("div");
-	el.textContent = log;
-	data_ErrorsAndLogs.element("#logs").appendChild(el);
+	console.log("src/data/ErrorsAndLogs.hx:14:",log);
 };
 data_ErrorsAndLogs.addErrors = function(err) {
 	Lambda.iter(err,function(e) {
@@ -941,9 +903,7 @@ data_ErrorsAndLogs.addErrors = function(err) {
 };
 data_ErrorsAndLogs.addError = function(e) {
 	data_ErrorsAndLogs.errors.unshift(e);
-	var el = window.document.createElement("div");
-	el.textContent = e;
-	data_ErrorsAndLogs.element("#errors").appendChild(el);
+	console.log("src/data/ErrorsAndLogs.hx:26:",e);
 };
 var data_ContentModel = function() {
 	data_ErrorsAndLogs.addLog("new content");
@@ -1081,6 +1041,7 @@ data_FilterModel.prototype = {
 				return room.id == _gthis.filterContent.roomId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return data_ContentModel.instance.content.rooms[0];
 		}
 	}
@@ -1088,6 +1049,7 @@ data_FilterModel.prototype = {
 		try {
 			return data_FilterTools.getShelvesOfType(this.getRoom().shelves,"homepage")[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			data_ErrorsAndLogs.addError("FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref " + Std.string(this.filterContent));
 			return null;
 		}
@@ -1096,6 +1058,7 @@ data_FilterModel.prototype = {
 		try {
 			return data_FilterTools.getShelvesExcludeType(this.getRoom().shelves,"homepage");
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			data_ErrorsAndLogs.addError("FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
 			return [];
 		}
@@ -1111,6 +1074,7 @@ data_FilterModel.prototype = {
 			}
 			return shelves;
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			data_ErrorsAndLogs.addError("FilterModel.getShelves(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
 			return [];
 		}
@@ -1122,6 +1086,7 @@ data_FilterModel.prototype = {
 				return shelf.id == _gthis.filterContent.shelfId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1132,6 +1097,7 @@ data_FilterModel.prototype = {
 				return book.id == _gthis.filterContent.bookId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1139,7 +1105,7 @@ data_FilterModel.prototype = {
 		try {
 			return this.getBook().chapters;
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("FilterModel.getChapters(): Cant not get chapters of book with ref " + Std.string(this.filterContent));
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1154,7 +1120,7 @@ data_FilterModel.prototype = {
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("FilterModel.getChapter(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1162,7 +1128,7 @@ data_FilterModel.prototype = {
 		try {
 			return this.getChapter().subchapters;
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref" + Std.string(this.filterContent));
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1177,7 +1143,7 @@ data_FilterModel.prototype = {
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
-			data_ErrorsAndLogs.addError("FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref" + Std.string(this.filterContent));
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1245,81 +1211,48 @@ var data_UserLoader = function() {
 $hxClasses["data.UserLoader"] = data_UserLoader;
 data_UserLoader.__name__ = ["data","UserLoader"];
 data_UserLoader.prototype = {
-	load: function() {
-		firebase.app().auth().onAuthStateChanged(function(user) {
-			if(user != null) {
-				data_ErrorsAndLogs.addLog("Browser session user found.");
-				data_UserModel.instance.setLoadingUser();
-				return data_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-					data_UserModel.instance.setLoadedUserFromData(data1);
-					data_ErrorsAndLogs.addErrors(data1.errors);
-					console.log("src/data/UserLoader.hx:23:","UserModelLoaded");
-					return;
-				})["catch"](function(error) {
-					data_ErrorsAndLogs.addError("Could not load userconfig for browser session user");
-					data_ErrorsAndLogs.addError(error);
-					return;
-				});
-			} else {
-				data_ErrorsAndLogs.addLog("No browser session user found.");
-				data_UserModel.instance.setAnonymousUser();
+	startup: function() {
+		data_UserModel.instance.set_userState(data_UserMode.Loading);
+		return data_UserLoader.instance.getCurrentBrowserUser().then(function(browserUser) {
+			if(browserUser == null) {
+				data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 				return null;
 			}
-		},function(error1) {
-			data_ErrorsAndLogs.addLog("Error: " + Std.string(error1));
-			data_UserModel.instance.setAnonymousUser();
-			return;
-		});
-	}
-	,loadRealtimeUpdate: function() {
-		try {
-			if(data_UserModel.instance.clientUser != null) {
-				var userEmail = data_UserModel.instance.clientUser.userData.email;
-				console.log("src/data/UserLoader.hx:43:",userEmail);
-				var dbpath = "users/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-				console.log("src/data/UserLoader.hx:46:","dbpath: " + dbpath);
-				firebase.database().ref(dbpath).on("value",function(snap,str) {
-					var userCopy = data_UserModel.instance.clientUser;
-					var data1 = snap.val();
-					data1.email = userEmail;
-					data_ErrorsAndLogs.addLog("UserModel UserData realtime update active");
-					userCopy.set_userData(dataclass_JsonConverter.fromJson(data_UserData,data1));
-					return data_UserModel.instance.set_clientUser(userCopy);
-				});
-				var dbpath1 = "user-config/" + utils__$UserEmail_UserEmail_$Impl_$.toPiped(userEmail);
-				firebase.database().ref(dbpath1).on("value",function(snap1,str1) {
-					data_ErrorsAndLogs.addLog("UserModel User Config realtime update active");
-					var data2 = snap1.val();
-					var userCopy1 = data_UserModel.instance.clientUser;
-					userCopy1.set_userConfig(dataclass_JsonConverter.fromJson(data_UserConfig,data2));
-					return data_UserModel.instance.set_clientUser(userCopy1);
-				});
-				return;
-			} else {
-				data_ErrorsAndLogs.addLog("Can not use Realtime data for anonymous user.");
+			console.log("src/data/UserLoader.hx:25:","Browser user found");
+			return data_ApiCalls.getAuthRequest("/api/userconfig");
+		}).then(function(dataResponse) {
+			console.log("src/data/UserLoader.hx:29:",dataResponse);
+			if(dataResponse == null) {
 				return;
 			}
-		} catch( e ) {
-			data_ErrorsAndLogs.addError("initRealtimeDatabase error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+			data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
+			console.log("src/data/UserLoader.hx:34:","------------------------------------");
+			console.log("src/data/UserLoader.hx:35:","UserModelLoaded");
 			return;
-		}
+		}).then(function(val) {
+			return data_UserLoader.instance.setupOnAuthChange();
+		}).then(function(val1) {
+			console.log("src/data/UserLoader.hx:42:","finished User loading!");
+			return Promise.resolve(true);
+		});
 	}
 	,signIn: function(email,password) {
 		this.validate(email,password).then(function(valid) {
-			data_UserModel.instance.setLoadingUser();
+			data_UserModel.instance.set_userState(data_UserMode.Loading);
 			return firebase.auth().signInWithEmailAndPassword(email,password);
 		}).then(function(user) {
-			console.log("src/data/UserLoader.hx:83:","USER " + user);
+			console.log("src/data/UserLoader.hx:57:","USER " + user);
 			return null;
 		})["catch"](function(error) {
-			console.log("src/data/UserLoader.hx:87:","ERROR" + error);
+			console.log("src/data/UserLoader.hx:61:","ERROR" + error);
 			data_ErrorsAndLogs.addError("error:" + error);
-			data_UserModel.instance.setAnonymousUser();
+			data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 			return;
 		});
 	}
 	,signOut: function() {
 		firebase.auth().signOut();
+		data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 	}
 	,validate: function(email,password) {
 		return new Promise(function(res,rej) {
@@ -1348,115 +1281,103 @@ data_UserLoader.prototype = {
 			return unsubscribe;
 		});
 	}
-	,setUserStateLoading: function() {
-		data_UserModel.instance.setLoadingUser();
+	,setupOnAuthChange: function() {
+		haxe_Timer.delay(function() {
+			return firebase.app().auth().onAuthStateChanged(function(user) {
+				if(user != null) {
+					console.log("src/data/UserLoader.hx:103:","--- Browser session user found.");
+					console.log("src/data/UserLoader.hx:105:","compare:" + user.email + " " + data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email);
+					var address = user.email;
+					if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
+						throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
+					}
+					if(address.toLowerCase() == data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email) {
+						return;
+					}
+					data_UserModel.instance.set_userState(data_UserMode.Loading);
+					data_ApiCalls.getAuthRequest("/api/userconfig").then(function(dataResponse) {
+						console.log("src/data/UserLoader.hx:113:","------------------------------------");
+						console.log("src/data/UserLoader.hx:114:","UserModelLoaded : onAuthStateChanged");
+						console.log("src/data/UserLoader.hx:115:","" + Std.string(dataResponse));
+						return data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
+					})["catch"](function(error) {
+						console.log("src/data/UserLoader.hx:121:","--- Could not load userconfig for browser session user");
+						console.log("src/data/UserLoader.hx:122:",error);
+						return;
+					});
+					return;
+				} else {
+					console.log("src/data/UserLoader.hx:128:","--- No browser session user found.");
+					data_UserModel.instance.set_userState(data_UserMode.Anonymous);
+					return;
+				}
+			},function(error1) {
+				console.log("src/data/UserLoader.hx:133:","--- Error: " + Std.string(error1));
+				return data_UserModel.instance.set_userState(data_UserMode.Anonymous);
+			});
+		},2000);
 		return Promise.resolve(true);
 	}
-	,setupOnAuthChange: function() {
+	,load: function() {
 		firebase.app().auth().onAuthStateChanged(function(user) {
 			if(user != null) {
-				console.log("src/data/UserLoader.hx:131:","--- Browser session user found.");
-				console.log("src/data/UserLoader.hx:133:","compare:" + user.email + " " + data_UserModel.instance.clientUser.userData.email);
-				var address = user.email;
-				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
-					throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
-				}
-				if(address.toLowerCase() == data_UserModel.instance.clientUser.userData.email) {
-					return;
-				}
-				data_UserModel.instance.setLoadingUser();
-				data_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-					data_UserModel.instance.setLoadedUserFromData(data1);
-					console.log("src/data/UserLoader.hx:140:",data1.errors);
-					console.log("src/data/UserLoader.hx:141:","--- UserModelLoaded");
+				data_UserModel.instance.set_userState(data_UserMode.Loading);
+				return data_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
+					console.log("src/data/UserLoader.hx:151:","------------------------------------");
+					console.log("src/data/UserLoader.hx:152:","UserModelLoaded");
+					console.log("src/data/UserLoader.hx:153:","" + Std.string(data1));
 					return;
 				})["catch"](function(error) {
-					console.log("src/data/UserLoader.hx:143:","--- Could not load userconfig for browser session user");
-					console.log("src/data/UserLoader.hx:144:",error);
+					console.log("src/data/UserLoader.hx:156:","Could not load userconfig for browser session user");
+					console.log("src/data/UserLoader.hx:157:",error);
 					return;
 				});
-				return;
 			} else {
-				console.log("src/data/UserLoader.hx:150:","--- No browser session user found.");
-				data_UserModel.instance.setAnonymousUser();
-				return;
-			}
-		},function(error1) {
-			console.log("src/data/UserLoader.hx:155:","--- Error: " + Std.string(error1));
-			data_UserModel.instance.setAnonymousUser();
-			return;
-		});
-		return Promise.resolve(true);
-	}
-	,startup: function() {
-		data_UserModel.instance.init();
-		return data_UserLoader.instance.setUserStateLoading().then(function(val) {
-			return data_UserLoader.instance.getCurrentBrowserUser();
-		}).then(function(browserUser) {
-			if(browserUser == null) {
-				data_UserModel.instance.setAnonymousUser();
+				console.log("src/data/UserLoader.hx:160:","No browser session user found.");
+				data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 				return null;
 			}
-			console.log("src/data/UserLoader.hx:174:","Browser user found");
-			return data_ApiCalls.getAuthRequest("/api/userconfig");
-		}).then(function(dataResponse) {
-			console.log("src/data/UserLoader.hx:178:",dataResponse);
-			if(dataResponse == null) {
-				return;
-			}
-			data_UserModel.instance.setLoadedUserFromData(dataResponse);
-			return;
-		}).then(function(val1) {
-			return data_UserLoader.instance.setupOnAuthChange();
-		}).then(function(val2) {
-			console.log("src/data/UserLoader.hx:187:","finished User loading!");
-			return Promise.resolve(true);
+		},function(error1) {
+			console.log("src/data/UserLoader.hx:165:","Error: " + Std.string(error1));
+			return data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 		});
 	}
 	,__class__: data_UserLoader
 };
 var data_UserModel = function() {
+	this.userState = data_UserMode.Anonymous;
 };
 $hxClasses["data.UserModel"] = data_UserModel;
 data_UserModel.__name__ = ["data","UserModel"];
 data_UserModel.prototype = {
-	set_clientUser: function(val) {
-		this.clientUser = val;
-		data_ErrorsAndLogs.addLog("ClientUser:" + Std.string(this.clientUser));
+	get_user: function() {
+		return data__$UserModel_UserState_$Impl_$.toData(this.userState);
+	}
+	,set_userState: function(state) {
+		this.userState = state;
 		m.redraw();
-		return this.clientUser;
-	}
-	,init: function() {
-		data_ErrorsAndLogs.addLog("UserModel.instance.init()");
-		this.setAnonymousUser();
-	}
-	,setAnonymousUser: function() {
-		this.clientUserState = data_ClientUserState.Anonymous;
-		this.set_clientUser(new data_ClientUser(this.anonymousUser()));
-	}
-	,setLoadedUserFromData: function(data1) {
-		try {
-			this.set_clientUser(new data_ClientUser(data1));
-			this.clientUserState = data_ClientUserState.User;
-		} catch( e ) {
-			data_ErrorsAndLogs.addError("Could not create ClientUser from data: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-			this.setAnonymousUser();
-		}
-	}
-	,setLoadingUser: function() {
-		this.clientUserState = data_ClientUserState.Loading;
-		m.redraw();
-	}
-	,anonymousUser: function() {
-		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+		return this.userState;
 	}
 	,__class__: data_UserModel
-	,__properties__: {set_clientUser:"set_clientUser"}
+	,__properties__: {set_userState:"set_userState",get_user:"get_user"}
 };
-var data_ClientUserState = $hxEnums["data.ClientUserState"] = { __ename__ : true, __constructs__ : ["Anonymous","Loading","User"]
-	,Anonymous: {_hx_index:0,__enum__:"data.ClientUserState",toString:$estr}
-	,Loading: {_hx_index:1,__enum__:"data.ClientUserState",toString:$estr}
-	,User: {_hx_index:2,__enum__:"data.ClientUserState",toString:$estr}
+var data__$UserModel_UserState_$Impl_$ = {};
+$hxClasses["data._UserModel.UserState_Impl_"] = data__$UserModel_UserState_$Impl_$;
+data__$UserModel_UserState_$Impl_$.__name__ = ["data","_UserModel","UserState_Impl_"];
+data__$UserModel_UserState_$Impl_$.toData = function(this1) {
+	switch(this1._hx_index) {
+	case 0:
+		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+	case 1:
+		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+	case 2:
+		return this1.user;
+	}
+};
+var data_UserMode = $hxEnums["data.UserMode"] = { __ename__ : true, __constructs__ : ["Anonymous","Loading","User"]
+	,Anonymous: {_hx_index:0,__enum__:"data.UserMode",toString:$estr}
+	,Loading: {_hx_index:1,__enum__:"data.UserMode",toString:$estr}
+	,User: ($_=function(user) { return {_hx_index:2,user:user,__enum__:"data.UserMode",toString:$estr}; },$_.__params__ = ["user"],$_)
 };
 var dataclass_CircularReferenceHandling = $hxEnums["dataclass.CircularReferenceHandling"] = { __ename__ : true, __constructs__ : ["ThrowException","SetToNull","TrackReferences"]
 	,ThrowException: {_hx_index:0,__enum__:"dataclass.CircularReferenceHandling",toString:$estr}
@@ -1847,6 +1768,52 @@ haxe_ds_IntMap.prototype = {
 	}
 	,__class__: haxe_ds_IntMap
 };
+var haxe_ds_List = function() {
+	this.length = 0;
+};
+$hxClasses["haxe.ds.List"] = haxe_ds_List;
+haxe_ds_List.__name__ = ["haxe","ds","List"];
+haxe_ds_List.prototype = {
+	add: function(item) {
+		var x = new haxe_ds__$List_ListNode(item,null);
+		if(this.h == null) {
+			this.h = x;
+		} else {
+			this.q.next = x;
+		}
+		this.q = x;
+		this.length++;
+	}
+	,iterator: function() {
+		return new haxe_ds__$List_ListIterator(this.h);
+	}
+	,__class__: haxe_ds_List
+};
+var haxe_ds__$List_ListNode = function(item,next) {
+	this.item = item;
+	this.next = next;
+};
+$hxClasses["haxe.ds._List.ListNode"] = haxe_ds__$List_ListNode;
+haxe_ds__$List_ListNode.__name__ = ["haxe","ds","_List","ListNode"];
+haxe_ds__$List_ListNode.prototype = {
+	__class__: haxe_ds__$List_ListNode
+};
+var haxe_ds__$List_ListIterator = function(head) {
+	this.head = head;
+};
+$hxClasses["haxe.ds._List.ListIterator"] = haxe_ds__$List_ListIterator;
+haxe_ds__$List_ListIterator.__name__ = ["haxe","ds","_List","ListIterator"];
+haxe_ds__$List_ListIterator.prototype = {
+	hasNext: function() {
+		return this.head != null;
+	}
+	,next: function() {
+		var val = this.head.item;
+		this.head = this.head.next;
+		return val;
+	}
+	,__class__: haxe_ds__$List_ListIterator
+};
 var haxe_ds_ObjectMap = function() {
 	this.h = { __keys__ : { }};
 };
@@ -2124,10 +2091,34 @@ ui_ClientUI.prototype = {
 	init: function() {
 		var element = ($_=window.document,$bind($_,$_.querySelector));
 		m.mount(element("header"),new ui_UIHeader());
-		m.mount(element("main#develop"),new ui_UIDevelop());
-		m.mount(element("main#content"),new ui_UIContent());
+		m.mount(element("main"),new ui_UIContent());
+		m.mount(element("footer"),new ui_UIFooter());
 	}
 	,__class__: ui_ClientUI
+};
+var ui_UIFooter = function() {
+};
+$hxClasses["ui.UIFooter"] = ui_UIFooter;
+ui_UIFooter.__name__ = ["ui","UIFooter"];
+ui_UIFooter.__interfaces__ = [mithril_Mithril];
+ui_UIFooter.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("button",{ onclick : function(e) {
+			return ui_PagesModel.instance.set_pageIdx(0);
+		}},"Page 0"),m.m("button",{ onclick : function(e1) {
+			return ui_PagesModel.instance.set_pageIdx(1);
+		}},"Page 1"),m.m("button",{ onclick : function(e2) {
+			return ui_PagesModel.instance.set_pageIdx(2);
+		}},"Page 2"),m.m("button",{ onclick : function(e3) {
+			return ui_PagesModel.instance.set_pageIdx(3);
+		}},"Page 3"),m.m("button",{ onclick : function(e4) {
+			return ui_PagesModel.instance.set_pageWidth("100%");
+		}},"Width 100%"),m.m("button",{ onclick : function(e5) {
+			return ui_PagesModel.instance.set_pageWidth("25%");
+		}},"Width 25%")];
+	}
+	,__class__: ui_UIFooter
 };
 var ui_UIContent = function() {
 };
@@ -2137,9 +2128,76 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [new ui_content_HomeView().view(),new ui_content_ShelvesView().view(),new ui_content_BookView().view()];
+		return new ui_Pages([new ui_content_HomeView().view(),new ui_content_ShelvesView().view(),new ui_content_BookView().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],ui_PagesModel.instance.pageIdx,null,null,ui_PagesModel.instance.pageWidth).view();
 	}
 	,__class__: ui_UIContent
+};
+var ui_PagesModel = function() {
+	this.pageWidth = "25%";
+	this.pageIdx = 0;
+};
+$hxClasses["ui.PagesModel"] = ui_PagesModel;
+ui_PagesModel.__name__ = ["ui","PagesModel"];
+ui_PagesModel.prototype = {
+	set_pageIdx: function(val) {
+		this.pageIdx = val;
+		m.redraw();
+		return this.pageIdx;
+	}
+	,set_pageWidth: function(val) {
+		this.pageWidth = val;
+		m.redraw();
+		return this.pageWidth;
+	}
+	,__class__: ui_PagesModel
+	,__properties__: {set_pageWidth:"set_pageWidth",set_pageIdx:"set_pageIdx"}
+};
+var ui_Pages = function(views,shift,pageTop,pageBottom,pageWidth) {
+	if(pageWidth == null) {
+		pageWidth = "30%";
+	}
+	if(pageBottom == null) {
+		pageBottom = "100px";
+	}
+	if(pageTop == null) {
+		pageTop = "60px";
+	}
+	if(shift == null) {
+		shift = 0;
+	}
+	this.views = views;
+	this.shift = shift;
+	this.pageTop = pageTop;
+	this.pageBottom = pageBottom;
+	this.pageWidth = pageWidth;
+};
+$hxClasses["ui.Pages"] = ui_Pages;
+ui_Pages.__name__ = ["ui","Pages"];
+ui_Pages.__interfaces__ = [mithril_Mithril];
+ui_Pages.prototype = {
+	view: function() {
+		var _gthis = this;
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div",Lambda.array(Lambda.mapi(this.views,function(i,v) {
+			var pos = i + -_gthis.shift;
+			var style = "\r\n                    position:absolute; \r\n                    width: " + _gthis.pageWidth + ";\r\n                    top: " + _gthis.pageTop + ";\r\n                    bottom:  " + _gthis.pageBottom + ";\r\n                    border: 1px solid gray;\r\n                    transition-duration: 200ms;        \r\n                    transform: translate3d(" + pos * 100 + "%, 0, 1px);\r\n                    overflow-y:scroll;\r\n                ";
+			return m.m("div#page" + i,{ style : style},v);
+		})));
+	}
+	,__class__: ui_Pages
+};
+var ui_Testpage = function(msg) {
+	this.msg = msg;
+};
+$hxClasses["ui.Testpage"] = ui_Testpage;
+ui_Testpage.__name__ = ["ui","Testpage"];
+ui_Testpage.__interfaces__ = [mithril_Mithril];
+ui_Testpage.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("h1",this.msg)];
+	}
+	,__class__: ui_Testpage
 };
 var ui_UIContentSearch = function() {
 };
@@ -2180,21 +2238,18 @@ ui_UIDevbuttons.prototype = {
 			data_UserLoader.instance.signIn("jonasnys@gmail.com","123456");
 			return;
 		}},"Log in as Jonas"),m.m("button[type=button]",{ onclick : function(e1) {
+			data_UserLoader.instance.load();
+			return;
+		}},"UserLoader.load()"),m.m("button[type=button]",{ onclick : function(e2) {
 			m.redraw();
 			return;
-		}},"M.redraw()"),m.m("button[type=button]",{ onclick : function(e2) {
+		}},"M.redraw()"),m.m("button[type=button]",{ onclick : function(e3) {
 			data_ContentLoader.instance.load();
 			return haxe_Timer.delay(function() {
 				data_ContentLoader.instance.loadRealtimeUpdate();
 				return;
 			},3000);
-		}},"Load Content"),m.m("button[type=button]",{ onclick : function(e3) {
-			data_UserLoader.instance.load();
-			return haxe_Timer.delay(function() {
-				data_UserLoader.instance.loadRealtimeUpdate();
-				return;
-			},3000);
-		}},"Load User"),m.m("button[type=button]",{ onclick : function(e4) {
+		}},"Load Content"),m.m("button[type=button]",{ onclick : function(e4) {
 			return data_ContentitemLoader.instance.load(["a"]);
 		}},"Load contentitem")];
 	}
@@ -2224,141 +2279,46 @@ ui_StateMonitor.prototype = {
 	}
 	,__class__: ui_StateMonitor
 };
-var ui_MInputEmail = function(state) {
-	this.state = state;
-};
-$hxClasses["ui.MInputEmail"] = ui_MInputEmail;
-ui_MInputEmail.__name__ = ["ui","MInputEmail"];
-ui_MInputEmail.__interfaces__ = [mithril_Mithril];
-ui_MInputEmail.prototype = {
-	view: function() {
-		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("input[type=input][placeholder='Email']#email",{ style : { backgroundColor : this.state.validEmail ? "" + "#dfd" : "" + "white"}, onkeyup : function(e) {
-			return _gthis.validate(e);
-		}, onchange : function(e1) {
-			return _gthis.validate(e1);
-		}, autofill : function(e2) {
-			return _gthis.validate(e2);
-		}});
-	}
-	,validate: function(e) {
-		var str = e.target.value;
-		var valid = utils__$UserEmail_UserEmail_$Impl_$.isValid(str);
-		this.state.email = str;
-		this.state.validEmail = valid;
-		m.redraw();
-		return valid;
-	}
-	,__class__: ui_MInputEmail
-};
-var ui_MInputPassword = function(state) {
-	this.state = state;
-};
-$hxClasses["ui.MInputPassword"] = ui_MInputPassword;
-ui_MInputPassword.__name__ = ["ui","MInputPassword"];
-ui_MInputPassword.__interfaces__ = [mithril_Mithril];
-ui_MInputPassword.prototype = {
-	view: function() {
-		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("input[type=password][placeholder='Password']#password",{ style : { backgroundColor : this.state.validPassword ? "" + "#dfd" : "" + "white"}, onkeyup : function(e) {
-			return _gthis.validate(e);
-		}, onchange : function(e1) {
-			return _gthis.validate(e1);
-		}, autofill : function(e2) {
-			return _gthis.validate(e2);
-		}});
-	}
-	,validate: function(e) {
-		var str = e.target.value;
-		var valid = utils__$UserPassword_UserPassword_$Impl_$.isValid(str);
-		this.state.password = str;
-		this.state.validPassword = valid;
-		m.redraw();
-		return valid;
-	}
-	,__class__: ui_MInputPassword
-};
-var ui_MLoginForm = function() {
-	this.submitCallback = function(email,password) {
-		console.log("src/ui/UIHeader.hx:62:","callback " + email + ", " + password);
-		return;
-	};
-	this.state = null;
-	this.state = { email : "", validEmail : false, password : "", validPassword : false};
-};
-$hxClasses["ui.MLoginForm"] = ui_MLoginForm;
-ui_MLoginForm.__name__ = ["ui","MLoginForm"];
-ui_MLoginForm.__interfaces__ = [mithril_Mithril];
-ui_MLoginForm.prototype = {
-	view: function() {
-		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var enabled = this.state.validEmail && this.state.validPassword;
-		var disabledString = enabled ? "" : "[disabled]";
-		return m.m("form",[new ui_MInputEmail(this.state).view(),new ui_MInputPassword(this.state).view(),m.m("button[type=button]" + disabledString,{ onclick : function(e) {
-			_gthis.submitCallback(_gthis.state.email,_gthis.state.password);
-			return;
-		}},"Logga in")]);
-	}
-	,__class__: ui_MLoginForm
-};
-var ui_MLogoutForm = function(clientUser) {
-	this.clientUser = clientUser;
-};
-$hxClasses["ui.MLogoutForm"] = ui_MLogoutForm;
-ui_MLogoutForm.__name__ = ["ui","MLogoutForm"];
-ui_MLogoutForm.__interfaces__ = [mithril_Mithril];
-ui_MLogoutForm.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		if(this.clientUser == null) {
-			return m.m("div","clientUser == null");
-		}
-		var userData = this.clientUser.userData;
-		return m.m("form",[m.m("div","Välkommen, " + userData.firstname + " " + userData.lastname + "!" + " access:" + userData.access + " active domain:" + this.clientUser.userConfig.domain),m.m("button[type=button]",{ onclick : function(e) {
-			data_UserLoader.instance.signOut();
-			return;
-		}},"Logga ut")]);
-	}
-	,setUser: function(u) {
-		this.clientUser = u;
-		return this;
-	}
-	,__class__: ui_MLogoutForm
-};
 var ui_UIHeader = function() {
-	this.logoutform = null;
-	this.loginform = null;
-	this.loginform = new ui_MLoginForm();
-	this.logoutform = new ui_MLogoutForm();
-	this.loginform.submitCallback = function(email,password) {
-		data_UserLoader.instance.signIn(email,password);
-		return;
-	};
+	this.pass = "";
+	this.email = "";
+	this.email = "";
+	this.pass = "";
 };
 $hxClasses["ui.UIHeader"] = ui_UIHeader;
 ui_UIHeader.__name__ = ["ui","UIHeader"];
 ui_UIHeader.__interfaces__ = [mithril_Mithril];
 ui_UIHeader.prototype = {
 	view: function() {
+		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var loginView = m.m("form",[m.m("input[type=input][placeholder='Email']",{ oninput : function(e) {
+			return _gthis.email = e.target.value;
+		}, value : this.email}),m.m("input[type=password][placeholder='Password']",{ oninput : function(e1) {
+			return _gthis.pass = e1.target.value;
+		}, value : this.pass}),m.m("button[type=button]",{ onclick : function(e2) {
+			data_UserLoader.instance.signIn(_gthis.email,_gthis.pass);
+			return;
+		}},"Logga in")]);
+		var logoutView = m.m("form",[m.m("div","Välkommen, " + data_UserModel.instance.get_user().firstname + " " + data_UserModel.instance.get_user().lastname),m.m("button[type=button]",{ onclick : function(e3) {
+			data_UserLoader.instance.signOut();
+			return;
+		}},"Logga ut")]);
 		var userView;
-		var _g = data_UserModel.instance.clientUserState;
+		var _g = data_UserModel.instance.userState;
 		switch(_g._hx_index) {
 		case 0:
-			userView = this.loginform.view();
+			userView = m.m("div",[loginView]);
 			break;
 		case 1:
-			userView = m.m("div","Loading user data...");
+			userView = m.m("div","Loading...");
 			break;
 		case 2:
-			var user = data_UserModel.instance.clientUser;
-			userView = this.logoutform.setUser(user).view();
+			var user = _g.user;
+			userView = m.m("div",[logoutView]);
 			break;
 		}
-		return [m.m("h3","" + Std.string(data_UserModel.instance.clientUser.userData)),userView];
+		return [m.m("h3","" + Std.string(data_UserModel.instance.userState)),userView];
 	}
 	,__class__: ui_UIHeader
 };
@@ -2621,12 +2581,6 @@ utils__$UserEmail_UserEmail_$Impl_$.__name__ = ["utils","_UserEmail","UserEmail_
 utils__$UserEmail_UserEmail_$Impl_$.isValid = function(address) {
 	return utils__$UserEmail_UserEmail_$Impl_$.ereg.match(address);
 };
-utils__$UserEmail_UserEmail_$Impl_$.makePiped = function(email) {
-	return StringTools.replace(StringTools.replace(email,"@","||"),".","|");
-};
-utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
-	return utils__$UserEmail_UserEmail_$Impl_$.makePiped(this1);
-};
 var utils__$UserPassword_UserPassword_$Impl_$ = {};
 $hxClasses["utils._UserPassword.UserPassword_Impl_"] = utils__$UserPassword_UserPassword_$Impl_$;
 utils__$UserPassword_UserPassword_$Impl_$.__name__ = ["utils","_UserPassword","UserPassword_Impl_"];
@@ -2690,15 +2644,12 @@ DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Frida
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
-data_UserConfig.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
-data_ClientUser.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<data.UserData>", userConfig : "DataClass<data.UserConfig>"}]}};
 data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}}};
 data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int"}]}, fields : { path : { exclude : null}}};
 data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}}};
 data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}}};
 data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", text : "String", subchapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}}};
 data_ContentLoader.instance = new data_ContentLoader();
-data_ErrorsAndLogs.element = ($_=window.document,$bind($_,$_.querySelector));
 data_ErrorsAndLogs.logs = [];
 data_ErrorsAndLogs.errors = [];
 data_ContentModel.instance = new data_ContentModel();
@@ -2714,6 +2665,7 @@ dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 js_Boot.__toStr = ({ }).toString;
 ui_ClientUI.instance = new ui_ClientUI();
+ui_PagesModel.instance = new ui_PagesModel();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
 Client.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

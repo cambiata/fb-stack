@@ -10,6 +10,7 @@ using data.Content.ContentFilters;
 using cx.ArrayTools;
 using dataclass.JsonConverter;
 using data.FilterModel.FilterTools;
+using Lambda;
 
 class ClientUI implements Mithril { 
     public static var instance(default, null):ClientUI = new ClientUI();
@@ -18,10 +19,40 @@ class ClientUI implements Mithril {
         var element = js.Browser.document.querySelector;       
         M.mount(element('header'), new UIHeader());
         // M.mount(element('div#buttons'), new UIDevbuttons());
-        M.mount(element('main#develop'), new UIDevelop());
-        M.mount(element('main#content'), new UIContent());
+        // M.mount(element('main#develop'), new UIDevelop());
+        // M.mount(element('main#content'), new UIContent());
+        M.mount(element('main'), new UIContent());
+
+        M.mount(element('footer'), new UIFooter());
     }    
 }
+
+class UIFooter implements Mithril {
+    public function new() {}
+    public function view() {
+        return [
+            m('button', {onclick: e->{
+                PagesModel.instance.pageIdx = 0;
+            }}, 'Page 0'),
+            m('button', {onclick: e->{
+                PagesModel.instance.pageIdx = 1;
+            }}, 'Page 1'),
+            m('button', {onclick: e->{
+                PagesModel.instance.pageIdx = 2;
+            }}, 'Page 2'),
+            m('button', {onclick: e->{
+                PagesModel.instance.pageIdx = 3;
+            }}, 'Page 3'),
+            m('button', {onclick: e->{
+                PagesModel.instance.pageWidth = '100%';
+            }}, 'Width 100%'),
+            m('button', {onclick: e->{
+                PagesModel.instance.pageWidth = '25%';
+            }}, 'Width 25%'),
+        ];
+    }
+}
+
 
 class UIContent implements Mithril {
     public function new() { //(state:T) {
@@ -29,13 +60,94 @@ class UIContent implements Mithril {
     }
 
     public function view() {
-        return [
+        new Pages([
             new HomeView().view(),
             new ShelvesView().view(),
             new BookView().view(),
+            [
+                new ui.content.ContentTreeView(ContentModel.instance.content).view(),
+                new UIFilters().view(),
+            ]            
+        ], PagesModel.instance.pageIdx, null, null, PagesModel.instance.pageWidth).view();
+    }
+}
+
+class PagesModel {
+
+
+    private function new() {}
+    public static var instance(default, null): PagesModel = new PagesModel();
+
+    public var pageIdx(default, set):Int = 0;
+    function set_pageIdx(val:Int) {
+        this.pageIdx = val;
+        M.redraw();
+        return this.pageIdx;
+    }
+
+    public var pageWidth(default, set):String = '25%';
+    function set_pageWidth(val:String) {
+        this.pageWidth = val;
+        M.redraw();
+        return this.pageWidth;
+    }
+
+}
+
+
+class Pages implements Mithril {
+    public function new(views:Array<mithril.Vnodes>, shift:Int=0, pageTop='60px', pageBottom='100px', pageWidth='30%') {
+        this.views = views;
+        this.shift = shift;
+        this.pageTop = pageTop;
+        this.pageBottom = pageBottom;
+        this.pageWidth = pageWidth;
+    }
+
+    var views:Array<mithril.Vnodes>;
+    var shift: Int;
+    var pageTop:String;
+    var pageBottom:String;
+    var pageWidth:String;
+
+    public function view() {   
+        return m('div', 
+            this.views.mapi((i, v)->{
+                var pos = i + -this.shift;
+                var style = '
+                    position:absolute; 
+                    width: ${this.pageWidth};
+                    top: ${this.pageTop};
+                    bottom:  ${this.pageBottom};
+                    border: 1px solid gray;
+                    transition-duration: 200ms;        
+                    transform: translate3d(${pos*100}%, 0, 1px);
+                    overflow-y:scroll;
+                ';
+                m('div#page' + i, {style:style}, v);            
+            }).array()
+        );
+    }
+
+    public function setShift(shift:Int) {
+        shift = cast Math.max(0, Math.min(shift, this.views.length-1));
+        this.shift = shift;
+    }
+}
+
+class Testpage implements Mithril {
+    public function new(msg:String) {
+        this.msg = msg;
+    }
+    var msg:String;
+
+    public function view() {
+        return [
+            m('h1', msg),
         ];
     }
 }
+
 
 /*
 class UIContentHomepage implements Mithril {
@@ -315,6 +427,10 @@ class UIDevbuttons implements Mithril {
             m("button[type=button]", {onclick:e->{
                 data.UserLoader.instance.signIn('jonasnys@gmail.com', '123456');
             }}, 'Log in as Jonas'),
+
+            m("button[type=button]", {onclick:e->{
+                data.UserLoader.instance.load();
+            }}, 'UserLoader.load()'),            
             // m("button[type=button]", {onclick:e->{
             //     FilterModel.instance.setFilterRoom({treeId:null, roomId:'room1'});
             // }}, 'Set room as room1'),
@@ -335,12 +451,14 @@ class UIDevbuttons implements Mithril {
                 }, 3000);                
             }}, 'Load Content'),
 
+            /*           
             m("button[type=button]", {onclick:e->{
                 UserLoader.instance.load();
                 haxe.Timer.delay(()->{  
                     UserLoader.instance.loadRealtimeUpdate();
                 }, 3000);                
             }}, 'Load User'),   
+            */
 
             m("button[type=button]", {onclick:e->{
                 data.ContentitemLoader.instance.load(['a']);

@@ -4,7 +4,9 @@ import utils.*;
 import Client;
 import data.*;
 import data.ClientUser;
+import data.UserModel;
 
+/*
 class MInputEmail<T:{email:String, validEmail:Bool}> implements Mithril {
     public var state:T;
     public function new(state:T) {
@@ -77,7 +79,7 @@ class MLogoutForm implements Mithril {
         return m('form', [
 
 
-            m('div', 'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
+            m('div', 'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access),
             // m('h3', {style:{color:homeroom.textcolor}},'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
 			m("button[type=button]", { onclick: e -> {
 				UserLoader.instance.signOut();
@@ -91,16 +93,22 @@ class MLogoutForm implements Mithril {
         return this;
     }
 }
+*/
 
 class UIHeader implements Mithril {
 
-    var loginform:MLoginForm = null;
-    var logoutform:MLogoutForm = null;
+    // var loginform:MLoginForm = null;
+    // var logoutform:MLogoutForm = null;
     public function new() {
-        this.loginform = new MLoginForm();
-        this.logoutform = new MLogoutForm();
-        this.loginform.submitCallback = (email, password)->UserLoader.instance.signIn(email, password);
+        // this.loginform = new MLoginForm();
+        // this.logoutform = new MLogoutForm();
+        // this.loginform.submitCallback = (email, password)->UserLoader.instance.signIn(email, password);
+        this.email = '';
+        this.pass = '';        
     }
+
+    var email:String = '';
+    var pass:String = '';
 
     public function view() {
 
@@ -109,15 +117,48 @@ class UIHeader implements Mithril {
         // var elHeader:js.html.Element = element('header');
         // elHeader.style.backgroundColor = homeroom.color;
 
-        var userView = switch UserModel.instance.clientUserState {
-                case User: 
-                    var user = UserModel.instance.clientUser;
-                    cast this.logoutform.setUser(user).view() ;
-                case Loading: m('div', 'Loading user data...');
-                case Anonymous: cast this.loginform.view();
-            };
+        // var userView = switch UserModel.instance.userState {
+        //         case User(user): 
+        //             var user = UserModel.instance.clientUser;
+        //             cast this.logoutform.setUser(user).view() ;
+        //         case Loading: m('div', 'Loading user data...');
+        //         case Anonymous: cast this.loginform.view();
+        //     };
+
+        var loginView = m('form', [
+            m("input[type=input][placeholder='Email']", {
+                oninput: e->this.email = e.target.value,
+                value: this.email,
+            }),
+            m("input[type=password][placeholder='Password']", {
+                oninput: e->this.pass = e.target.value,
+                value: this.pass,
+            }),
+			m("button[type=button]", { onclick: e -> {
+				UserLoader.instance.signIn(this.email, this.pass);
+			}}, 'Logga in')
+        ]);
+
+        var logoutView = m('form', [
+           m('div', 'Välkommen, ' + UserModel.instance.user.firstname + ' ' + UserModel.instance.user.lastname),
+            // m('h3', {style:{color:homeroom.textcolor}},'Välkommen, ' + userData.firstname + ' ' + userData.lastname + '!' + ' access:' + userData.access + ' active domain:' + this.clientUser.userConfig.domain),
+			m("button[type=button]", { onclick: e -> {
+				UserLoader.instance.signOut();
+			}}, 'Logga ut'), 
+        ]);
+
+        var userView = switch UserModel.instance.userState {
+            case Loading: m('div', 'Loading...');
+            case Anonymous: m('div', [
+                loginView,
+            ]);
+            case User(user): m('div', [
+                logoutView,
+            ]);
+        }
+
         return [
-            m('h3', '' + UserModel.instance.clientUser.userData),
+            m('h3', '' + UserModel.instance.userState),
             userView,
         ];
     }
