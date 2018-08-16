@@ -11,7 +11,7 @@ class UserLoader {
     
     private function new () {}  // private constructor
 
-    public function startup() {
+    public function startSession() {
         
         UserModel.instance.userState = Loading;
 
@@ -59,7 +59,7 @@ class UserLoader {
         })
         .catchError(error->{
             trace('ERROR' + error);
-            ErrorsAndLogs.addError('error:' + error);
+            trace('error:' + error);
             UserModel.instance.userState = Anonymous;
             return null;
         });
@@ -189,11 +189,11 @@ class XUserLoader {
                 ApiCalls.getAuthRequest('/api/userconfig')
                 .then(data->{
                      UserModel.instance.setLoadedUserFromData(data);
-                    ErrorsAndLogs.addErrors(data.errors);
+                    traces(data.errors);
                     trace('UserModelLoaded');
                 }).catchError(error->{
-                    ErrorsAndLogs.addError('Could not load userconfig for browser session user');
-                    ErrorsAndLogs.addError(error);
+                    trace('Could not load userconfig for browser session user');
+                    trace(error);
                 });
             } else {
                 ErrorsAndLogs.addLog('No browser session user found.');
@@ -238,7 +238,7 @@ class XUserLoader {
             }
             
         } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('initRealtimeDatabase error: ' + e);
+            trace('initRealtimeDatabase error: ' + e);
             return null;    
         }
     }    
@@ -255,7 +255,7 @@ class XUserLoader {
         })
         .catchError(error->{
             trace('ERROR' + error);
-            ErrorsAndLogs.addError('error:' + error);
+            trace('error:' + error);
             UserModel.instance.setAnonymousUser();
             return null;
         });

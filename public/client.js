@@ -10,16 +10,11 @@ function $extend(from, fields) {
 var Client = function() {
 	data_FirebaseModel.instance.init();
 	data_Routes.instance.init();
-	Promise.all([data_UserLoader.instance.startup(),data_ContentLoader.instance.startup().then(function(val) {
-		return Promise.resolve(true);
-	})]).then(function(val1) {
-		console.log("src/Client.hx:31:","ALL STARTED");
-		ui_ClientUI.instance.init();
-		return;
-	})["catch"](function(e) {
-		console.log("src/Client.hx:39:","Error:" + e);
-		return;
-	});
+	data_ContentModel.instance.init();
+	ui_ClientUI.instance.init();
+	data_UserModel.instance.init();
+	data_ContentLoader.instance.loadContent();
+	data_UserLoader.instance.startSession();
 };
 $hxClasses["Client"] = Client;
 Client.__name__ = ["Client"];
@@ -684,6 +679,7 @@ data_UserData.prototype = {
 };
 var data_Content = function(data1) {
 	this.rooms = [];
+	this.dbpath = "content-tree";
 	this.path = "";
 	this.set_id(data1.id);
 	if(Object.prototype.hasOwnProperty.call(data1,"rooms")) {
@@ -719,10 +715,12 @@ data_Content.prototype = {
 	,__properties__: {set_rooms:"set_rooms",set_id:"set_id"}
 };
 var data_Room = function(data1) {
+	this.home = null;
 	this.sort = 0;
 	this.title = "defaultRoomTitle";
 	this.shelves = [];
 	this.id = "defaultRoomId";
+	this.dbpath = "";
 	this.path = "";
 	if(data1 != null) {
 		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
@@ -736,6 +734,9 @@ var data_Room = function(data1) {
 		}
 		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
 			this.set_sort(data1.sort);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"home")) {
+			this.set_home(data1.home);
 		}
 	}
 };
@@ -767,8 +768,126 @@ data_Room.prototype = {
 		}
 		return this.sort = v;
 	}
+	,set_home: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Room.home.");
+		}
+		return this.home = v;
+	}
 	,__class__: data_Room
-	,__properties__: {set_sort:"set_sort",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
+	,__properties__: {set_home:"set_home",set_sort:"set_sort",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
+};
+var data_Home = function(data1) {
+	this.title = "Home title";
+	this.children = [];
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"children")) {
+			this.set_children(data1.children);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+	}
+};
+$hxClasses["data.Home"] = data_Home;
+data_Home.__name__ = ["data","Home"];
+data_Home.__interfaces__ = [DataClass];
+data_Home.prototype = {
+	set_children: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Home.children.");
+		}
+		return this.children = v;
+	}
+	,set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Home.title.");
+		}
+		return this.title = v;
+	}
+	,__class__: data_Home
+	,__properties__: {set_title:"set_title",set_children:"set_children"}
+};
+var data_DomItem = function(data1) {
+	this.children = [];
+	this.text = "text...";
+	this.attrs = "";
+	this.data = "";
+	this.style = "{\"color\":\"white\", \"background-color\":\"purple\"}";
+	this.cls = "home";
+	this.tag = "div";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"tag")) {
+			this.set_tag(data1.tag);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"cls")) {
+			this.set_cls(data1.cls);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"style")) {
+			this.set_style(data1.style);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"data")) {
+			this.set_data(data1.data);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"attrs")) {
+			this.set_attrs(data1.attrs);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
+			this.set_text(data1.text);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"children")) {
+			this.set_children(data1.children);
+		}
+	}
+};
+$hxClasses["data.DomItem"] = data_DomItem;
+data_DomItem.__name__ = ["data","DomItem"];
+data_DomItem.__interfaces__ = [DataClass];
+data_DomItem.prototype = {
+	set_tag: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.tag.");
+		}
+		return this.tag = v;
+	}
+	,set_cls: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.cls.");
+		}
+		return this.cls = v;
+	}
+	,set_style: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.style.");
+		}
+		return this.style = v;
+	}
+	,set_data: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.data.");
+		}
+		return this.data = v;
+	}
+	,set_attrs: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.attrs.");
+		}
+		return this.attrs = v;
+	}
+	,set_text: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.text.");
+		}
+		return this.text = v;
+	}
+	,set_children: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.children.");
+		}
+		return this.children = v;
+	}
+	,__class__: data_DomItem
+	,__properties__: {set_children:"set_children",set_text:"set_text",set_attrs:"set_attrs",set_data:"set_data",set_style:"set_style",set_cls:"set_cls",set_tag:"set_tag"}
 };
 var data_Shelf = function(data1) {
 	this.type = "content";
@@ -778,6 +897,7 @@ var data_Shelf = function(data1) {
 	this.access = 0;
 	this.title = "defaultShelfTitle";
 	this.id = "defaultShelfId";
+	this.dbpath = "";
 	this.path = "";
 	if(data1 != null) {
 		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
@@ -860,6 +980,7 @@ var data_Book = function(data1) {
 	this.access = 0;
 	this.title = "defaultBookTitle";
 	this.id = "defaultBookId";
+	this.dbpath = "";
 	this.path = "";
 	if(data1 != null) {
 		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
@@ -943,6 +1064,7 @@ var data_Chapter = function(data1) {
 	this.access = 0;
 	this.title = "defaultChapterTitle";
 	this.id = "defaultChapterId";
+	this.dbpath = "";
 	this.path = "";
 	if(data1 != null) {
 		if(Object.prototype.hasOwnProperty.call(data1,"id")) {
@@ -1055,31 +1177,7 @@ var data_ContentLoader = function() {
 $hxClasses["data.ContentLoader"] = data_ContentLoader;
 data_ContentLoader.__name__ = ["data","ContentLoader"];
 data_ContentLoader.prototype = {
-	load: function() {
-		data_ApiCalls.getRequest("/api/content-tree").then(function(item) {
-			data_ErrorsAndLogs.addErrors(item.errors);
-			data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,item.data));
-			data_ErrorsAndLogs.addLog("Content-tree loaded ");
-			return null;
-		})["catch"](function(error) {
-			data_ErrorsAndLogs.addError("Content-tree error: " + error);
-			return;
-		});
-	}
-	,loadRealtimeUpdate: function() {
-		firebase.database().ref("content-tree").on("value",function(snap,str) {
-			try {
-				console.log("src/data/ContentLoader.hx:33:","Realtime content loaded!");
-				var val = snap.val();
-				return data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,val));
-			} catch( e ) {
-				console.log("src/data/ContentLoader.hx:39:","Could not insantiate content from loaded Realtime data " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
-				return null;
-			}
-		});
-	}
-	,startup: function() {
-		data_ContentModel.instance.init();
+	loadContent: function() {
 		return data_ApiCalls.getRequest("/api/content-tree").then(function(item) {
 			data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,item.data));
 			return Promise.resolve(true);
@@ -1087,25 +1185,8 @@ data_ContentLoader.prototype = {
 	}
 	,__class__: data_ContentLoader
 };
-var data_ErrorsAndLogs = function() { };
-$hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
-data_ErrorsAndLogs.__name__ = ["data","ErrorsAndLogs"];
-data_ErrorsAndLogs.addLog = function(log) {
-	data_ErrorsAndLogs.logs.unshift(log);
-	console.log("src/data/ErrorsAndLogs.hx:14:",log);
-};
-data_ErrorsAndLogs.addErrors = function(err) {
-	Lambda.iter(err,function(e) {
-		data_ErrorsAndLogs.addError(e);
-		return;
-	});
-};
-data_ErrorsAndLogs.addError = function(e) {
-	data_ErrorsAndLogs.errors.unshift(e);
-	console.log("src/data/ErrorsAndLogs.hx:26:",e);
-};
 var data_ContentModel = function() {
-	data_ErrorsAndLogs.addLog("new content");
+	console.log("src/data/ContentModel.hx:12:","new content");
 };
 $hxClasses["data.ContentModel"] = data_ContentModel;
 data_ContentModel.__name__ = ["data","ContentModel"];
@@ -1133,111 +1214,60 @@ data_ContentModel.prototype = {
 				return;
 			});
 		};
+		var updateDbPaths = function(tree1) {
+			tree1.dbpath = "content-tree";
+			Lambda.iter(tree1.rooms,function(room1) {
+				var updateDbPaths1 = tree1.dbpath + "/rooms/";
+				var updateDbPaths2 = tree1.rooms.indexOf(room1);
+				room1.dbpath = updateDbPaths1 + updateDbPaths2;
+				Lambda.iter(room1.shelves,function(shelf1) {
+					var updateDbPaths3 = room1.dbpath + "/shelves/";
+					var updateDbPaths4 = room1.shelves.indexOf(shelf1);
+					shelf1.dbpath = updateDbPaths3 + updateDbPaths4;
+					Lambda.iter(shelf1.books,function(book1) {
+						var updateDbPaths5 = shelf1.dbpath + "/books/";
+						var updateDbPaths6 = shelf1.books.indexOf(book1);
+						book1.dbpath = updateDbPaths5 + updateDbPaths6;
+						Lambda.iter(book1.chapters,function(chapter1) {
+							var updateDbPaths7 = book1.dbpath + "/chapters/";
+							var updateDbPaths8 = book1.chapters.indexOf(chapter1);
+							chapter1.dbpath = updateDbPaths7 + updateDbPaths8;
+							Lambda.iter(chapter1.subchapters,function(sub1) {
+								return sub1.dbpath = chapter1.dbpath + "/subchapters/" + chapter1.subchapters.indexOf(sub1);
+							});
+							return;
+						});
+						return;
+					});
+					return;
+				});
+				return;
+			});
+		};
 		this.content = u;
-		data_ErrorsAndLogs.addLog("Content:" + Std.string(this.content));
+		console.log("src/data/ContentModel.hx:59:","Content:" + Std.string(this.content));
 		updatePaths(this.content);
+		updateDbPaths(this.content);
 		m.redraw();
 		return u;
 	}
 	,init: function() {
-		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room0", type : "homepage", access : 0, books : []}),new data_Shelf({ id : "sh0", title : "Shelf01", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]}),new data_Chapter({ id : "chapter1", title : "Kapitel 2", access : 0, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0}),new data_Chapter({ id : "sub2", title : "Sub2", access : 0})]}),new data_Chapter({ id : "chapter3", title : "Kapitel 3", access : 0, subchapters : []})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "sh1", title : "Shelf1", access : 1, books : []}),new data_Shelf({ id : "sh2", title : "Shelf2", access : 0, books : [new data_Book({ id : "book0", title : "Book 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]}),new data_Shelf({ id : "home", title : "Home shelf", type : "homepage", access : 999, books : [new data_Book({ id : "homebook0", title : "Home Book 0", access : 999, chapters : []}),new data_Book({ id : "homebook1", title : "Home Book 1", access : 999, chapters : []})]})]}),new data_Room({ id : "room1", title : "Room1", shelves : [new data_Shelf({ id : "home", title : "Homeshelf Room1", type : "homepage", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]}),new data_Shelf({ id : "sh0", title : "Shelf0 of Room1", access : 0, books : [new data_Book({ id : "b0", title : "Book0", access : 0, chapters : []}),new data_Book({ id : "b1", title : "Book1", access : 0, chapters : []})]})]})]}));
-		console.log("src/data/ContentModel.hx:94:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
+		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ children : [new data_DomItem({ tag : "section", text : "Hello div"}),new data_DomItem({ tag : "section", text : "", children : [new data_DomItem({ tag : "a", text : "Hello A"})]})]}), shelves : [new data_Shelf({ id : "home", title : "Välkommen till Körakademin", info : "Här är information om Körakademin", type : "homepage", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : []})]}),new data_Shelf({ id : "sh0", title : "Other shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]})]})]}));
+		console.log("src/data/ContentModel.hx:135:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
 	}
 	,__class__: data_ContentModel
 	,__properties__: {set_content:"set_content"}
 };
-var data_ContentitemLoader = function() {
+var data_ErrorsAndLogs = function() { };
+$hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
+data_ErrorsAndLogs.__name__ = ["data","ErrorsAndLogs"];
+data_ErrorsAndLogs.addLog = function(log) {
+	data_ErrorsAndLogs.logs.unshift(log);
+	console.log("src/data/ErrorsAndLogs.hx:14:",log);
 };
-$hxClasses["data.ContentitemLoader"] = data_ContentitemLoader;
-data_ContentitemLoader.__name__ = ["data","ContentitemLoader"];
-data_ContentitemLoader.prototype = {
-	load: function(ids) {
-		var idsParameter = ids.map(function(id) {
-			return StringTools.trim(id);
-		}).join(",");
-		console.log("src/data/ContentitemLoader.hx:18:",idsParameter);
-		data_ApiCalls.getRequest("/api/test/" + idsParameter).then(function(d) {
-			console.log("src/data/ContentitemLoader.hx:22:",d);
-			var a = d.items;
-			console.log("src/data/ContentitemLoader.hx:24:",a);
-			console.log("src/data/ContentitemLoader.hx:26:",a.map(function(item) {
-				return { id : item.id, content : item.content};
-			}));
-			return null;
-		})["catch"](function(e) {
-			data_ErrorsAndLogs.addError(e);
-			console.log("src/data/ContentitemLoader.hx:34:","ERror" + e);
-			return;
-		});
-		return null;
-	}
-	,__class__: data_ContentitemLoader
-};
-var haxe_IMap = function() { };
-$hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = ["haxe","IMap"];
-var haxe_ds_StringMap = function() {
-	this.h = { };
-};
-$hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
-haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
-haxe_ds_StringMap.prototype = {
-	setReserved: function(key,value) {
-		if(this.rh == null) {
-			this.rh = { };
-		}
-		this.rh["$" + key] = value;
-	}
-	,getReserved: function(key) {
-		if(this.rh == null) {
-			return null;
-		} else {
-			return this.rh["$" + key];
-		}
-	}
-	,existsReserved: function(key) {
-		if(this.rh == null) {
-			return false;
-		}
-		return this.rh.hasOwnProperty("$" + key);
-	}
-	,remove: function(key) {
-		if(__map_reserved[key] != null) {
-			key = "$" + key;
-			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.rh[key]);
-			return true;
-		} else {
-			if(!this.h.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.h[key]);
-			return true;
-		}
-	}
-	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
-	}
-	,arrayKeys: function() {
-		var out = [];
-		for( var key in this.h ) {
-		if(this.h.hasOwnProperty(key)) {
-			out.push(key);
-		}
-		}
-		if(this.rh != null) {
-			for( var key in this.rh ) {
-			if(key.charCodeAt(0) == 36) {
-				out.push(key.substr(1));
-			}
-			}
-		}
-		return out;
-	}
-	,__class__: haxe_ds_StringMap
+data_ErrorsAndLogs.addError = function(e) {
+	data_ErrorsAndLogs.errors.unshift(e);
+	console.log("src/data/ErrorsAndLogs.hx:26:",e);
 };
 var data_FilterModel = function() {
 };
@@ -1247,20 +1277,7 @@ data_FilterModel.prototype = {
 	setFilterContent: function(ref) {
 		this.filterContent = ref;
 		console.log("src/data/FilterModel.hx:18:",this.filterContent);
-		var pageIndex = 0;
-		if(this.filterContent.subchapterId != null) {
-			pageIndex = 2;
-		} else if(this.filterContent.chapterId != null) {
-			pageIndex = 2;
-		} else if(this.filterContent.bookId != null) {
-			pageIndex = 2;
-		} else if(this.filterContent.shelfId != null) {
-			pageIndex = 1;
-		} else if(this.filterContent.roomId != null) {
-			pageIndex = 0;
-		}
-		ui_PagesModel.instance.set_pageIdx(pageIndex);
-		console.log("src/data/FilterModel.hx:35:",pageIndex);
+		data_PagesModel.instance.setPageFromContentRef(ref);
 		m.redraw();
 	}
 	,getRoom: function() {
@@ -1274,28 +1291,10 @@ data_FilterModel.prototype = {
 			return data_ContentModel.instance.content.rooms[0];
 		}
 	}
-	,getRoomHomeshelf: function() {
-		try {
-			return data_FilterTools.getShelvesOfType(this.getRoom().shelves,"homepage")[0];
-		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getRoomHomeShelf(): Cant not get home shelf of room with ref " + Std.string(this.filterContent));
-			return null;
-		}
-	}
-	,getRoomShelvesExceptHomeshelf: function() {
-		try {
-			return data_FilterTools.getShelvesExcludeType(this.getRoom().shelves,"homepage");
-		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getRoomShelvesExceptHomeshelf(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
-			return [];
-		}
-	}
 	,getShelves: function() {
 		var _gthis = this;
 		try {
-			var shelves = this.getRoomShelvesExceptHomeshelf();
+			var shelves = this.getRoom().shelves;
 			if(this.filterContent != null && this.filterContent.shelfId != null) {
 				shelves = shelves.filter(function(shelf) {
 					return shelf.id == _gthis.filterContent.shelfId;
@@ -1304,7 +1303,7 @@ data_FilterModel.prototype = {
 			return shelves;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			data_ErrorsAndLogs.addError("FilterModel.getShelves(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
+			console.log("src/data/FilterModel.hx:54:","FilterModel.getShelves(): Cant not get shelves of room with ref " + Std.string(this.filterContent));
 			return [];
 		}
 	}
@@ -1316,6 +1315,7 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:63:","FilterModel.getShelf(): Cant not get shelf with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1327,6 +1327,7 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:72:","FilterModel.getBook(): Cant not get book with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1335,6 +1336,7 @@ data_FilterModel.prototype = {
 			return this.getBook().chapters;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:81:","FilterModel.getChapters(): Cant not get chapters of book with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1346,10 +1348,12 @@ data_FilterModel.prototype = {
 					return chapter.id == _gthis.filterContent.chapterId;
 				})[0];
 			} else {
+				console.log("src/data/FilterModel.hx:91:","Fallback to first chapter");
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:95:","FilterModel.getChapter(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1358,6 +1362,7 @@ data_FilterModel.prototype = {
 			return this.getChapter().subchapters;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:104:","FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1369,27 +1374,16 @@ data_FilterModel.prototype = {
 					return sub.id == _gthis.filterContent.subchapterId;
 				})[0];
 			} else {
+				console.log("src/data/FilterModel.hx:114:","Fallback to first subchapter");
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
+			console.log("src/data/FilterModel.hx:118:","FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
 	,__class__: data_FilterModel
-};
-var data_FilterTools = function() { };
-$hxClasses["data.FilterTools"] = data_FilterTools;
-data_FilterTools.__name__ = ["data","FilterTools"];
-data_FilterTools.getShelvesOfType = function(shelves,type) {
-	return shelves.filter(function(shelf) {
-		return shelf.type == type;
-	});
-};
-data_FilterTools.getShelvesExcludeType = function(shelves,type) {
-	return shelves.filter(function(shelf) {
-		return shelf.type != type;
-	});
 };
 var data_FirebaseModel = function() {
 	this.app = null;
@@ -1401,6 +1395,41 @@ data_FirebaseModel.prototype = {
 		this.app = firebase.initializeApp({ apiKey : "AIzaSyBGLErhUSfQHA4wOtkid206KVE-96QEN04", authDomain : "fb-stack.firebaseapp.com", databaseURL : "https://fb-stack.firebaseio.com", projectId : "fb-stack", storageBucket : "fb-stack.appspot.com", messagingSenderId : "665827748546"});
 	}
 	,__class__: data_FirebaseModel
+};
+var data_PagesModel = function() {
+	this.pageWidth = "50%";
+	this.pageIdx = 0;
+};
+$hxClasses["data.PagesModel"] = data_PagesModel;
+data_PagesModel.__name__ = ["data","PagesModel"];
+data_PagesModel.prototype = {
+	set_pageIdx: function(val) {
+		this.pageIdx = val;
+		m.redraw();
+		return this.pageIdx;
+	}
+	,set_pageWidth: function(val) {
+		this.pageWidth = val;
+		m.redraw();
+		return this.pageWidth;
+	}
+	,setPageFromContentRef: function(ref) {
+		var pageIndex = 0;
+		if(ref.subchapterId != null) {
+			pageIndex = 2;
+		} else if(ref.chapterId != null) {
+			pageIndex = 2;
+		} else if(ref.bookId != null) {
+			pageIndex = 2;
+		} else if(ref.shelfId != null) {
+			pageIndex = 1;
+		} else if(ref.roomId != null) {
+			pageIndex = 0;
+		}
+		this.set_pageIdx(pageIndex);
+	}
+	,__class__: data_PagesModel
+	,__properties__: {set_pageWidth:"set_pageWidth",set_pageIdx:"set_pageIdx"}
 };
 var data_Routes = function() {
 	this.homeHandler = { onmatch : function(args,path) {
@@ -1418,7 +1447,7 @@ var data_Routes = function() {
 		try {
 			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
 			data_FilterModel.instance.setFilterContent(args1);
-			ui_PagesModel.instance.set_pageIdx(1);
+			data_PagesModel.instance.set_pageIdx(1);
 		} catch( e1 ) {
 			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
 		}
@@ -1452,7 +1481,7 @@ var data_UserLoader = function() {
 $hxClasses["data.UserLoader"] = data_UserLoader;
 data_UserLoader.__name__ = ["data","UserLoader"];
 data_UserLoader.prototype = {
-	startup: function() {
+	startSession: function() {
 		data_UserModel.instance.set_userState(data_UserMode.Loading);
 		return data_UserLoader.instance.getCurrentBrowserUser().then(function(browserUser) {
 			if(browserUser == null) {
@@ -1486,7 +1515,7 @@ data_UserLoader.prototype = {
 			return null;
 		})["catch"](function(error) {
 			console.log("src/data/UserLoader.hx:61:","ERROR" + error);
-			data_ErrorsAndLogs.addError("error:" + error);
+			console.log("src/data/UserLoader.hx:62:","error:" + error);
 			data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 			return;
 		});
@@ -1559,30 +1588,6 @@ data_UserLoader.prototype = {
 		},2000);
 		return Promise.resolve(true);
 	}
-	,load: function() {
-		firebase.app().auth().onAuthStateChanged(function(user) {
-			if(user != null) {
-				data_UserModel.instance.set_userState(data_UserMode.Loading);
-				return data_ApiCalls.getAuthRequest("/api/userconfig").then(function(data1) {
-					console.log("src/data/UserLoader.hx:151:","------------------------------------");
-					console.log("src/data/UserLoader.hx:152:","UserModelLoaded");
-					console.log("src/data/UserLoader.hx:153:","" + Std.string(data1));
-					return;
-				})["catch"](function(error) {
-					console.log("src/data/UserLoader.hx:156:","Could not load userconfig for browser session user");
-					console.log("src/data/UserLoader.hx:157:",error);
-					return;
-				});
-			} else {
-				console.log("src/data/UserLoader.hx:160:","No browser session user found.");
-				data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-				return null;
-			}
-		},function(error1) {
-			console.log("src/data/UserLoader.hx:165:","Error: " + Std.string(error1));
-			return data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-		});
-	}
 	,__class__: data_UserLoader
 };
 var data_UserModel = function() {
@@ -1598,6 +1603,9 @@ data_UserModel.prototype = {
 		this.userState = state;
 		m.redraw();
 		return this.userState;
+	}
+	,init: function() {
+		this.set_userState(data_UserMode.Anonymous);
 	}
 	,__class__: data_UserModel
 	,__properties__: {set_userState:"set_userState",get_user:"get_user"}
@@ -1630,6 +1638,72 @@ $hxClasses["dataclass.Rtti"] = dataclass_Rtti;
 dataclass_Rtti.__name__ = ["dataclass","Rtti"];
 dataclass_Rtti.rttiData = function(cls) {
 	return haxe_rtti_Meta.getType(cls)["dataClassRtti"][0];
+};
+var haxe_IMap = function() { };
+$hxClasses["haxe.IMap"] = haxe_IMap;
+haxe_IMap.__name__ = ["haxe","IMap"];
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+$hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
+haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	setReserved: function(key,value) {
+		if(this.rh == null) {
+			this.rh = { };
+		}
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) {
+			return null;
+		} else {
+			return this.rh["$" + key];
+		}
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) {
+			return false;
+		}
+		return this.rh.hasOwnProperty("$" + key);
+	}
+	,remove: function(key) {
+		if(__map_reserved[key] != null) {
+			key = "$" + key;
+			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.rh[key]);
+			return true;
+		} else {
+			if(!this.h.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.h[key]);
+			return true;
+		}
+	}
+	,keys: function() {
+		return HxOverrides.iter(this.arrayKeys());
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) {
+			out.push(key);
+		}
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) {
+				out.push(key.substr(1));
+			}
+			}
+		}
+		return out;
+	}
+	,__class__: haxe_ds_StringMap
 };
 var dataclass_Converter = function(options) {
 	this.useClassInfo = false;
@@ -2799,8 +2873,7 @@ markdown_TableSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
 		if(alignLine != null) {
 			markdown_TableSyntax.CELL_PATTERN.map(alignLine,function(e) {
 				var text = e.matched(2);
-				var align = text.charAt(0) == ":" ? text.charAt(text.length - 1) == ":" ? "center" : "left" : text.charAt(text.length - 1) == ":" ? "right" : "left";
-				aligns.push(align);
+				aligns.push(text.charAt(0) == ":" ? text.charAt(text.length - 1) == ":" ? "center" : "left" : text.charAt(text.length - 1) == ":" ? "right" : "left");
 				return "";
 			});
 		}
@@ -3010,9 +3083,9 @@ markdown_LinkSyntax.prototype = $extend(markdown_TagSyntax.prototype,{
 			_this1.h["href"] = value;
 		}
 		if(title != null && title != "") {
-			var this11 = anchor.attributes;
+			var this2 = anchor.attributes;
 			var value1 = StringTools.htmlEscape(title);
-			var _this2 = this11;
+			var _this2 = this2;
 			if(__map_reserved["title"] != null) {
 				_this2.setReserved("title",value1);
 			} else {
@@ -3091,9 +3164,9 @@ markdown_ImgSyntax.prototype = $extend(markdown_TagSyntax.prototype,{
 			}
 		}
 		if(title != null && title != "") {
-			var this11 = img.attributes;
+			var this2 = img.attributes;
 			var value2 = StringTools.htmlEscape(title);
-			var _this3 = this11;
+			var _this3 = this2;
 			if(__map_reserved["title"] != null) {
 				_this3.setReserved("title",value2);
 			} else {
@@ -3385,17 +3458,17 @@ ui_UIFooter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		return [m.m("button",{ onclick : function(e) {
-			return ui_PagesModel.instance.set_pageIdx(0);
+			return data_PagesModel.instance.set_pageIdx(0);
 		}},"Page 0"),m.m("button",{ onclick : function(e1) {
-			return ui_PagesModel.instance.set_pageIdx(1);
+			return data_PagesModel.instance.set_pageIdx(1);
 		}},"Page 1"),m.m("button",{ onclick : function(e2) {
-			return ui_PagesModel.instance.set_pageIdx(2);
+			return data_PagesModel.instance.set_pageIdx(2);
 		}},"Page 2"),m.m("button",{ onclick : function(e3) {
-			return ui_PagesModel.instance.set_pageIdx(3);
+			return data_PagesModel.instance.set_pageIdx(3);
 		}},"Page 3"),m.m("button",{ onclick : function(e4) {
-			return ui_PagesModel.instance.set_pageWidth("100%");
+			return data_PagesModel.instance.set_pageWidth("100%");
 		}},"Width 100%"),m.m("button",{ onclick : function(e5) {
-			return ui_PagesModel.instance.set_pageWidth("25%");
+			return data_PagesModel.instance.set_pageWidth("25%");
 		}},"Width 25%")];
 	}
 	,__class__: ui_UIFooter
@@ -3408,7 +3481,7 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),new ui_Bookpage().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],ui_PagesModel.instance.pageIdx,null,null,ui_PagesModel.instance.pageWidth).view();
+		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),new ui_Bookpage().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],data_PagesModel.instance.pageIdx,null,null,data_PagesModel.instance.pageWidth).view();
 	}
 	,__class__: ui_UIContent
 };
@@ -3421,46 +3494,61 @@ ui_Bookpage.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var book = data_FilterModel.instance.getBook();
-		var headerView = book != null ? [m.m("a",{ href : "/content" + data_FilterModel.instance.getShelf().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("span"," " + book.title)] : "No book selected";
+		var headerView = book != null ? [m.m("div",book.title)] : "No book selected";
 		var chapter = data_FilterModel.instance.getChapter();
 		var chapterView;
 		try {
-			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h3","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)];
+			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)];
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
 			chapterView = m.m("div","Chapter does not exist");
 		}
+		var editChapterView;
+		try {
+			editChapterView = m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e2) {
+				return chapter.set_text(e2.target.value);
+			}, value : chapter.text}),m.m("button",{ onclick : function(e3) {
+				console.log("src/ui/ClientUI.hx:114:",chapter.dbpath);
+				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e4) {
+					console.log("src/ui/ClientUI.hx:116:","after update " + Std.string(e4));
+					return;
+				});
+			}},"Save")]);
+		} catch( e5 ) {
+			var e6 = (e5 instanceof js__$Boot_HaxeError) ? e5.val : e5;
+			editChapterView = null;
+		}
 		var chapters = data_FilterModel.instance.getChapters();
 		var chaptersView;
 		try {
-			chaptersView = [m.m("nav",chapters.map(function(chap) {
+			chaptersView = m.m("nav",[m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getShelf().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("h3","Innehåll:"),m.m("ul",chapters.map(function(chap) {
 				var selected = chap == data_FilterModel.instance.getChapter() ? ".selected" : "";
-				return m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title);
-			}))];
-		} catch( e2 ) {
-			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
-			chaptersView = m.m("div.border","No chapters");
+				return m.m("li",m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title));
+			}))]);
+		} catch( e7 ) {
+			var e8 = (e7 instanceof js__$Boot_HaxeError) ? e7.val : e7;
+			chaptersView = m.m("nav","No chapters");
 		}
 		var subchapter = data_FilterModel.instance.getSubchapter();
 		var subchapterView;
 		try {
-			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h3","" + subchapter.title),markdown_MithrilTools.markdownToView(subchapter.text)];
-		} catch( e4 ) {
-			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h2","" + subchapter.title),markdown_MithrilTools.markdownToView(subchapter.text)];
+		} catch( e9 ) {
+			var e10 = (e9 instanceof js__$Boot_HaxeError) ? e9.val : e9;
 			subchapterView = m.m("div","Subchapter does not exist");
 		}
 		var subchapters = data_FilterModel.instance.getSubchapters();
 		var subchaptersView;
 		try {
-			subchaptersView = [m.m("nav",subchapters.map(function(sub) {
+			subchaptersView = subchapters.map(function(sub) {
 				var selected1 = sub == data_FilterModel.instance.getSubchapter() ? ".selected" : "";
 				return m.m("a" + selected1,{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
-			}))];
-		} catch( e6 ) {
-			var e7 = (e6 instanceof js__$Boot_HaxeError) ? e6.val : e6;
+			});
+		} catch( e11 ) {
+			var e12 = (e11 instanceof js__$Boot_HaxeError) ? e11.val : e11;
 			subchaptersView = m.m("div.border","No subchapters");
 		}
-		return m.m("div.book",[m.m("header",headerView),m.m("nav",chaptersView),m.m("article",[chapterView,subchaptersView,subchapterView])]);
+		return m.m("div.book",[m.m("header",headerView),chaptersView,m.m("article",[m.m("section",chapterView),editChapterView,m.m("menu",subchaptersView),m.m("section",subchapterView)])]);
 	}
 	,__class__: ui_Bookpage
 };
@@ -3475,11 +3563,17 @@ ui_Shelvespage.prototype = {
 		var shelves = data_FilterModel.instance.getShelves().map(function(shelf) {
 			var books = shelf.books.map(function(book) {
 				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
-				return m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice4.png"}),m.m("div",book.title)]);
+				return m.m("nav" + selected,m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice4.png"}),m.m("div",book.title)]));
 			});
-			return m.m("section.home",[m.m("header",shelf.title),books]);
+			return m.m("section",[m.m("header",m.m("h1",shelf.title)),books]);
 		});
-		return [m.m("section.invisible",m.m("header",[m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path + "/shelves", oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")])),shelves];
+		var view;
+		try {
+			view = m.m("div.shelves",[m.m("section",m.m("header",[m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getRoom().path + "/shelves", oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")])),shelves]);
+		} catch( e ) {
+			view = m.m("div","error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+		return view;
 	}
 	,__class__: ui_Shelvespage
 };
@@ -3491,58 +3585,28 @@ ui_Homepage.__interfaces__ = [mithril_Mithril];
 ui_Homepage.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var room = data_FilterModel.instance.getRoom();
-		var homeshelfView;
+		var homeView;
 		try {
-			homeshelfView = new ui_content_UIShelvesList([data_FilterModel.instance.getRoomHomeshelf()]).view();
+			var room = data_FilterModel.instance.getRoom();
+			homeView = [m.m("section",[m.m("article","Article"),m.m("nav","Nav"),m.m("article","Article"),m.m("nav","Nav")])];
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			homeshelfView = m.m("h3.error","404 - can not show homeshelf for room  " + Std.string(data_FilterModel.instance.filterContent));
+			console.log("src/ui/ClientUI.hx:280:","error: " + Std.string(e1));
+			homeView = m.m("div.error","Error:" + Std.string(e1));
 		}
 		var othershelvesView;
 		try {
-			othershelvesView = m.m("nav",data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf) {
+			othershelvesView = [m.m("section",[m.m("header",m.m("h1","Sectionheader")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
 				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
-				return m.m("a" + selected,{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
-			}));
+				return m.m("nav" + selected,m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice3.png"}),m.m("div",[m.m("h3",shelf.title),m.m("p",shelf.info)])]));
+			})])];
 		} catch( e2 ) {
 			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
 			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
 		}
-		var homeView;
-		try {
-			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),homeshelfView,m.m("div","Other shelves:"),othershelvesView];
-		} catch( e4 ) {
-			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
-			homeView = m.m("h1.error","404 - can not show room " + Std.string(data_FilterModel.instance.filterContent));
-		}
-		var i = 0;
-		var items = data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf1) {
-			return m.m("a",{ href : "/content" + shelf1.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice3.png"}),m.m("div",shelf1.title)]);
-		});
-		return m.m("div.home",[m.m("section.home",homeshelfView),m.m("section.home-fullwidth","Sektion home"),m.m("section.home",items),m.m("section.home",othershelvesView)]);
+		return m.m("div.home",[homeView,othershelvesView]);
 	}
 	,__class__: ui_Homepage
-};
-var ui_PagesModel = function() {
-	this.pageWidth = "100%";
-	this.pageIdx = 0;
-};
-$hxClasses["ui.PagesModel"] = ui_PagesModel;
-ui_PagesModel.__name__ = ["ui","PagesModel"];
-ui_PagesModel.prototype = {
-	set_pageIdx: function(val) {
-		this.pageIdx = val;
-		m.redraw();
-		return this.pageIdx;
-	}
-	,set_pageWidth: function(val) {
-		this.pageWidth = val;
-		m.redraw();
-		return this.pageWidth;
-	}
-	,__class__: ui_PagesModel
-	,__properties__: {set_pageWidth:"set_pageWidth",set_pageIdx:"set_pageIdx"}
 };
 var ui_Pages = function(views,shift,pageTop,pageBottom,pageWidth) {
 	if(pageWidth == null) {
@@ -3572,7 +3636,7 @@ ui_Pages.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		return m.m("div",Lambda.array(Lambda.mapi(this.views,function(i,v) {
 			var pos = i + -_gthis.shift;
-			var style = "\r\n                    position:absolute; \r\n                    width: " + _gthis.pageWidth + ";\r\n                    top: " + _gthis.pageTop + ";\r\n                    bottom:  " + _gthis.pageBottom + ";\r\n                    border: 1px solid gray;\r\n                    transition-duration: 200ms;        \r\n                    transform: translate3d(" + pos * 100 + "%, 0, 1px);\r\n                    overflow-y:scroll;\r\n                ";
+			var style = "\r\n                    position:absolute; \r\n                    width: " + _gthis.pageWidth + ";\r\n                    top: " + _gthis.pageTop + ";\r\n                    bottom:  " + _gthis.pageBottom + ";\r\n                    border: 0px solid gray;\r\n                    transition-duration: 200ms;        \r\n                    transform: translate3d(" + pos * 100 + "%, 0, 1px);\r\n                    overflow-y:scroll;\r\n                    \r\n                ";
 			return m.m("div#page" + i,{ style : style},v);
 		})));
 	}
@@ -3618,35 +3682,6 @@ ui_UIFilters.prototype = {
 	}
 	,__class__: ui_UIFilters
 };
-var ui_UIDevbuttons = function() {
-};
-$hxClasses["ui.UIDevbuttons"] = ui_UIDevbuttons;
-ui_UIDevbuttons.__name__ = ["ui","UIDevbuttons"];
-ui_UIDevbuttons.__interfaces__ = [mithril_Mithril];
-ui_UIDevbuttons.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("button[type=button]",{ onclick : function(e) {
-			data_UserLoader.instance.signIn("jonasnys@gmail.com","123456");
-			return;
-		}},"Log in as Jonas"),m.m("button[type=button]",{ onclick : function(e1) {
-			data_UserLoader.instance.load();
-			return;
-		}},"UserLoader.load()"),m.m("button[type=button]",{ onclick : function(e2) {
-			m.redraw();
-			return;
-		}},"M.redraw()"),m.m("button[type=button]",{ onclick : function(e3) {
-			data_ContentLoader.instance.load();
-			return haxe_Timer.delay(function() {
-				data_ContentLoader.instance.loadRealtimeUpdate();
-				return;
-			},3000);
-		}},"Load Content"),m.m("button[type=button]",{ onclick : function(e4) {
-			return data_ContentitemLoader.instance.load(["a"]);
-		}},"Load contentitem")];
-	}
-	,__class__: ui_UIDevbuttons
-};
 var ui_UIDevelop = function() {
 };
 $hxClasses["ui.UIDevelop"] = ui_UIDevelop;
@@ -3658,18 +3693,6 @@ ui_UIDevelop.prototype = {
 		return [new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_content_ContentTreeView(data_ContentFilters.sort(data_ContentModel.instance.content)).view(),new ui_UIFilters().view()];
 	}
 	,__class__: ui_UIDevelop
-};
-var ui_StateMonitor = function() {
-};
-$hxClasses["ui.StateMonitor"] = ui_StateMonitor;
-ui_StateMonitor.__name__ = ["ui","StateMonitor"];
-ui_StateMonitor.__interfaces__ = [mithril_Mithril];
-ui_StateMonitor.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",[m.m("div","Statemonitor")]);
-	}
-	,__class__: ui_StateMonitor
 };
 var ui_UIHeader = function() {
 	this.pass = "";
@@ -3723,28 +3746,21 @@ ui_content_HomeView.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var room = data_FilterModel.instance.getRoom();
-		var homeshelfView;
-		try {
-			homeshelfView = new ui_content_UIShelvesList([data_FilterModel.instance.getRoomHomeshelf()]).view();
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			homeshelfView = m.m("h3.error","404 - can not show homeshelf for room  " + Std.string(data_FilterModel.instance.filterContent));
-		}
 		var othershelvesView;
 		try {
-			othershelvesView = m.m("nav",data_FilterModel.instance.getRoomShelvesExceptHomeshelf().map(function(shelf) {
+			othershelvesView = m.m("nav",data_FilterModel.instance.getShelves().map(function(shelf) {
 				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
 				return m.m("a" + selected,{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
 			}));
-		} catch( e2 ) {
-			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
 			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
 		}
 		var homeView;
 		try {
-			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),homeshelfView,m.m("div","Other shelves:"),othershelvesView];
-		} catch( e4 ) {
-			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
+			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),m.m("div","Other shelves:"),othershelvesView];
+		} catch( e2 ) {
+			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
 			homeView = m.m("h1.error","404 - can not show room " + Std.string(data_FilterModel.instance.filterContent));
 		}
 		return m.m("div.border",[m.m("h1","homepage"),homeView]);
@@ -4036,18 +4052,20 @@ DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Frida
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
-data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}}};
-data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int"}]}, fields : { path : { exclude : null}}};
-data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}}};
-data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}}};
-data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", text : "String", subchapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}}};
+data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int", home : "DataClass<data.Home>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_Home.__meta__ = { obj : { dataClassRtti : [{ children : "Array<DataClass<data.DomItem>>", title : "String"}]}};
+data_DomItem.__meta__ = { obj : { dataClassRtti : [{ tag : "String", cls : "String", style : "String", data : "String", attrs : "String", text : "String", children : "Array<DataClass<data.DomItem>>"}]}};
+data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", text : "String", subchapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_ContentLoader.instance = new data_ContentLoader();
+data_ContentModel.instance = new data_ContentModel();
 data_ErrorsAndLogs.logs = [];
 data_ErrorsAndLogs.errors = [];
-data_ContentModel.instance = new data_ContentModel();
-data_ContentitemLoader.instance = new data_ContentitemLoader();
 data_FilterModel.instance = new data_FilterModel();
 data_FirebaseModel.instance = new data_FirebaseModel();
+data_PagesModel.instance = new data_PagesModel();
 data_Routes.instance = new data_Routes();
 data_UserLoader.instance = new data_UserLoader();
 data_UserModel.instance = new data_UserModel();
@@ -4073,7 +4091,6 @@ markdown_ImgSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?
 markdown_InlineParser.defaultSyntaxes = [new markdown_AutolinkSyntaxWithoutBrackets(),new markdown_TextSyntax(" {2,}\n","<br />\n"),new markdown_TextSyntax("\\s*[A-Za-z0-9]+"),new markdown_AutolinkSyntax(),new markdown_LinkSyntax(),new markdown_ImgSyntax(),new markdown_TextSyntax(" \\* "),new markdown_TextSyntax(" _ "),new markdown_TextSyntax("&[#a-zA-Z0-9]*;"),new markdown_TextSyntax("&","&amp;"),new markdown_TextSyntax("</?\\w+.*?>"),new markdown_TextSyntax("<","&lt;"),new markdown_TagSyntax("\\*\\*","strong"),new markdown_TagSyntax("__","strong"),new markdown_TagSyntax("\\*","em"),new markdown_TagSyntax("\\b_","em","_\\b"),new markdown_CodeSyntax("``\\s?((?:.|\\n)*?)\\s?``"),new markdown_CodeSyntax("`([^`]*)`")];
 markdown_MithrilTools.cache = new cx_Cache(5);
 ui_ClientUI.instance = new ui_ClientUI();
-ui_PagesModel.instance = new ui_PagesModel();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
 Client.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

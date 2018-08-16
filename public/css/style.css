@@ -1,0 +1,135 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box; 
+}
+
+html {
+    height: 100%;
+}
+
+body {    
+    font-family: "Roboto", sans-serif;    
+    display: grid;
+    min-height: 100%;
+    grid-template-rows: 60px auto 100px;
+    grid-template-columns: 100px auto;
+    overflow:hidden;
+}
+
+body > header {
+    /* background: rgb(115, 115, 192); */
+    background-color: #fff;    
+    grid-column: 1/3;
+    grid-row: 1/2;
+    padding: 1em;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    border-bottom: 1px solid #aaa;
+}
+
+header form {
+    /* background-color: red; */
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+header form div {
+    margin-right: 1em;
+}
+
+body > footer {
+    background: rgb(115, 115, 192);
+    grid-row: 3/4;
+    grid-column: 1/3;
+}
+
+main {
+    grid-row: 2/3;
+    grid-column: 1/3;
+}
+
+a {
+    text-decoration: none;
+    color:inherit;
+    cursor: pointer;
+}
+
+h1 {
+    font-size: 200%;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 150%;
+    font-weight: normal;
+}
+
+h3 {
+    font-size: 120%;
+    font-weight: normal;
+}
+
+.selected {
+    border : 3px solid skyblue;
+}
+
+a.btn {
+    background-color: #eee;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    padding: 0.5em;
+    display: inline-block;
+    margin-right: 0.5em;
+    font-size: 1.5em;
+}
+
+a.btn:hover {
+    border: 2px solid skyblue;
+}
+
+
+ul {
+    list-style: none;
+}
+
+details {
+    padding-left: 1em;
+    border: 1px solid #aaa;
+
+}
+
+input {
+    padding: 0.5em;
+    border: 2px solid #ccc;
+    margin-right: 0.5em;
+}
+
+button {
+    background-color: #eee;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    padding: 0.2em 0.5em 0.2em 0.5em;
+    padding: 0.5em;
+    cursor: pointer;
+    color:inherit;
+}
+
+.home {
+    max-width: 1200px;
+    margin: 0 auto; 
+}
+
+.shelves {
+    max-width: 1200px;
+    margin: 0 auto;     
+}
+
+.book {
+    max-width: 1200px;
+    margin: 0 auto;     
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
+}
+

@@ -21,65 +21,13 @@ class UserModel {
         return this.userState;
     }
 
-
-    /*
-    public var clientUser(default, set):ClientUser;
-    function set_clientUser(val:ClientUser) {
-        this.clientUser = val;
-        ErrorsAndLogs.addLog('ClientUser:' + this.clientUser);
-        mithril.M.redraw();
-        return this.clientUser;
-    }
-
-    public var clientUserState(default, null):ClientUserState;
-    */
-
     public function init() {
-        //ErrorsAndLogs.addLog('UserModel.instance.init()');
-        // this.clientUser = new ClientUser(anonymousUser());
-        // this.setLoadingUser();
-        //this.setAnonymousUser();
+        this.userState = Anonymous;
+        #if start_user
+        this.userState = User(new UserData({lastname:'Nyström', firstname:'Jonas', email:'jonasnys@gmail.com', domains:['kak'], access:2}));
+        #end
     }
-
-    /*
-    public function setAnonymousUser() {
-        this.clientUserState = Anonymous;
-        this.clientUser = new ClientUser(anonymousUser());
-    }
-
-    public function setLoadedUserFromData(data:Dynamic) {
-        try {
-            this.clientUser = new ClientUser(cast data);
-            this.clientUserState = User;
-        } catch (e:Dynamic) {
-            ErrorsAndLogs.addError('Could not create ClientUser from data: ' + e);
-            this.setAnonymousUser();
-        }
-    }
-
-    public function setLoadingUser() {
-        this.clientUserState = Loading;
-        mithril.M.redraw();
-    }
-    */
-
-    // function anonymousUser():Dynamic {
-    //     return {
-    //             userData: {
-    //                 firstname:'Anonymous',
-    //                 lastname:'Anonymousson',
-    //                 email:'anon@anon.abc',
-    //                 domains: ['domain1'],
-    //                 access: 0,
-    //             },
-    //             userConfig: {
-    //                 domain: 'domain1',
-    //             }
-    //     };
-    // }
-    
 }
-
 
 abstract UserState(UserMode) from UserMode to UserMode {
     

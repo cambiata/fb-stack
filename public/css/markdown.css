@@ -1,0 +1,38 @@
+
+.markdown {
+    font-size: 1.2em;
+    line-height: 1.4em;
+    border: 1px dashed gray;
+}
+
+.markdown  h1 {
+    font-size: 2.5em;
+    margin-bottom: 1em;
+    margin-top: 0.5em;
+}
+
+.markdown  h2 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+    margin-top: 1em;
+}
+
+.markdown  h3 {
+    font-size: 1.4em;
+    margin-bottom: 0.3em;
+    margin-top: 1em;
+}
+
+.markdown p {
+    margin-bottom: 0.3em;
+}
+
+.markdown ul {
+    list-style: disc;
+    margin-left: 1em;
+}
+
+.markdown li {
+    margin-bottom: 0.3em;
+}
+

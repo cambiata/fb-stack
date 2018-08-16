@@ -13,14 +13,14 @@ class HomeView implements Mithril {
 
         var room = FilterModel.instance.getRoom();
 
-        var homeshelfView = try {
-            new UIShelvesList([FilterModel.instance.getRoomHomeshelf()]).view();
-        } catch (e:Dynamic) {
-            m('h3.error', '404 - can not show homeshelf for room  ' + FilterModel.instance.filterContent);
-        } 
+        // var homeshelfView = try {
+        //     new UIShelvesList([FilterModel.instance.getRoomHomeshelf()]).view();
+        // } catch (e:Dynamic) {
+        //     m('h3.error', '404 - can not show homeshelf for room  ' + FilterModel.instance.filterContent);
+        // } 
 
         var othershelvesView = try {
-            m('nav', FilterModel.instance.getRoomShelvesExceptHomeshelf().map(shelf->{
+            m('nav', FilterModel.instance.getShelves().map(shelf->{
                 var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';
                 m('a$selected', {href:'/content'+shelf.path, oncreate: M.routeLink}, '' + shelf.title);
             }));
@@ -32,7 +32,7 @@ class HomeView implements Mithril {
             [
                 m('a.border', {href:'/content' + room.path, oncreate:M.routeLink},  'Room: ' + FilterModel.instance.getRoom().title),
                 m('div', 'Homeshelf:'),
-                homeshelfView,
+                // homeshelfView,
                 m('div', 'Other shelves:'),
                 othershelvesView,
 

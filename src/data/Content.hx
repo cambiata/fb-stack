@@ -1,5 +1,6 @@
 package data;
 
+import haxe.DynamicAccess;
 import haxe.crypto.Adler32;
 using dataclass.JsonConverter;
 using cx.ArrayTools;
@@ -9,6 +10,7 @@ class Content implements DataClass {
     public var    id:String; 
     public var    rooms:Array<Room> = [];
     @exclude public var path:String = '';
+    @exclude public var dbpath:String = 'content-tree';
 }
 
 class Room implements DataClass {
@@ -16,7 +18,38 @@ class Room implements DataClass {
     public var      shelves:Array<Shelf> = [];
     public var      title:String = 'defaultRoomTitle';
     public var      sort:Int = 0;
+    public var      home:Home = null;
+    
     @exclude public var path:String = '';
+    @exclude public var dbpath:String = '';
+}
+
+class Home implements DataClass {
+    public var      children:Array<DomItem> = [];
+    public var      title:String = 'Home title';
+        
+    public function vnodes() return this.children.map(c->c.vnode());
+
+}
+
+class DomItem implements DataClass {
+    public var      tag:String = 'div';
+    public var      cls:String = 'home';
+    public var      style:String = '{"color":"white", "background-color":"purple"}';
+    public var      data:String = '';
+    public var      attrs:String = '';
+
+    
+    public var      text:String = 'text...';
+    public var      children:Array<DomItem> = [];
+	public function vnode() : Dynamic {
+        var vchildren = this.children.map(c->c.vnode());
+		return { 
+			tag: this.tag, key: null, attrs: {className:cls, style:haxe.Json.parse(style)}, children: vchildren, text: this.text, 
+			dom: null, domSize: 0,
+			state: {}, events: null, instance: null, skip: false			
+		}
+	}
 }
 
 enum abstract Shelftype(String) to String from String {
@@ -33,6 +66,7 @@ class Shelf implements DataClass {
     public var    sort:Int = 0;
     public var    type:Shelftype = 'content';
     @exclude public var path:String = '';
+    @exclude public var dbpath:String = '';
 }
 
 enum abstract Booktype(String) {
@@ -49,6 +83,7 @@ class Book implements DataClass {
     public var    chapters:Array<Chapter> = [];
     public var    sort:Int = 0;
     @exclude public var path:String = '';
+    @exclude public var dbpath:String = '';
 }
 
 enum abstract Chaptertype(String) {
@@ -68,6 +103,7 @@ class Chapter implements DataClass {
     public var    subchapters:Array<Chapter> = [];
     public var    sort:Int = 0;
     @exclude public var path:String = '';
+    @exclude public var dbpath:String = '';
 }
 
 // typedef TreeRef = {treeId:String}

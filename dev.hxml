@@ -3,8 +3,8 @@
 
 -cp src
 
--lib json2object
-
 -main utils.Dev
+
+-lib dataclass
 
 --interp

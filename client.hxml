@@ -7,6 +7,11 @@
 -lib mithril
 -lib dataclass
 -lib markdown
+-lib compiletime
+
+# -D no_page_scrolling
+# -D local_content
+# -D start_user
 
 -main Client
 

@@ -10,38 +10,17 @@ import data.*;
 
 class Client {
     
-    static public function main() {
-        new Client();
-    }
+    static public function main() new Client();
 
     public function new() {
+        FirebaseModel.instance.init();        
+        Routes.instance.init();        
+        ContentModel.instance.init();
+        ClientUI.instance.init();
+        UserModel.instance.init();
         
-        FirebaseModel.instance.init();
-        
-        Routes.instance.init();
-        js.Promise.all([
-            UserLoader.instance.startup(),
-            ContentLoader.instance.startup()
-            .then(val->{
-
-                Promise.resolve(true);
-            }),
-        ])
-        .then(val->{
-            trace('ALL STARTED');
-            // UserLoader.instance.loadRealtimeUpdate();
-            //ContentLoader.instance.loadRealtimeUpdate();   
-                ClientUI.instance.init();
-                
-                                     
-        })
-        .catchError(e->{
-            trace('Error:' + e);
-        });       
-
-        
-
-        // ContentitemLoader.instance.loadRealtimeDatabase();
+        ContentLoader.instance.loadContent();
+        UserLoader.instance.startSession();
     }
 }
 
