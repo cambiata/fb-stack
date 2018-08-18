@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        canvas {
+            border: 1px solid #eef;
+            margin: 1em;
+        }
+    </style>
+</head>
+<body>
+    <main>
+
+
+    </main>
+
+    <div>
+        <button id="prev">Previous</button>
+        <button id="next">Next</button>
+        &nbsp; &nbsp;
+        <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+    </div>
+
+    <canvas id='the-canvas'></canvas>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>    
+    <script src="test-pdfjs.js"></script>
+
+    
+</body>
+</html>
