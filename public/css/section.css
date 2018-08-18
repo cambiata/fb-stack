@@ -12,6 +12,17 @@ main section {
     padding: 0 1em;
 }
 
+main section.shelves {
+    border: 1px solid #ddd;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+    /* grid-template-rows: 1em repeat(auto-fit); */
+    grid-gap: 1em;
+    margin-top: 1em;
+    padding: 0 1em;
+}
+
+
 main section div.home {
     width: 800px;
     margin: 0 auto; 
@@ -42,7 +53,7 @@ main section article.fullwidth {
 
 main section nav {
     background-color: #eee;
-    min-height: 10em;
+    min-height: 12em;
     border-radius: 3px;
     border-color: #ccc;
 }

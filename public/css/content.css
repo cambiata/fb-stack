@@ -54,6 +54,15 @@ div.book > nav  h3 {
     margin-top: 1em;
 }
 
+div.book > nav img {
+    width: 100%;
+    height: 10em;
+    object-fit: cover;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-top: 1em;
+}
+
 
 
 div.book > article {

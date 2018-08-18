@@ -1,0 +1,1 @@
+{"name":"This is a book","classtype":"Book","chapters":[{"markdown":"markdown","classtype":"ComplexChapter","number":123,"info":"complex info"},{"text":"simple","classtype":"SimpleChapter","info":"simple info"}]}

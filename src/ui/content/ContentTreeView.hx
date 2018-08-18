@@ -84,7 +84,7 @@ class UIChapter implements Mithril {
     public function view() {
         var chapters = (this.item.subchapters != null) ? this.item.subchapters : [];
         var css = 'access' + item.access;
-        var anchor = m('a', {href:'/content' + this.item.path, oncreate: M.routeLink }, 'Chapter:' + this.item.title + ':' + this.item.path);
+        var anchor = m('a', {href:'/content' + this.item.path, oncreate: M.routeLink }, 'Chapter:' + this.item.title + ':' + this.item.path + ' ' + this.item.type);
         return m('details[openx].$css', [m('summary', [anchor])].concat(chapters.map(child-> cast new UISubchapter(child).view() )) );
     }
 }
@@ -98,7 +98,7 @@ class UISubchapter implements Mithril {
     public function view() {
         var chapters = (this.item.subchapters != null) ? this.item.subchapters : [];
         var css = 'access' + item.access;
-        var anchor = m('a', {href:'/content' + this.item.path, oncreate: M.routeLink }, 'Subhapter:' + this.item.title + ':' + this.item.path);     
+        var anchor = m('a', {href:'/content' + this.item.path, oncreate: M.routeLink }, 'Subhapter:' + this.item.title + ':' + this.item.path + ' ' + this.item.type);     
         return m('details[open].$css', [m('summary', [anchor])].concat(chapters.map(child-> cast new UIChapter(child).view() )) );
     }
 }

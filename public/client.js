@@ -10,7 +10,6 @@ function $extend(from, fields) {
 var Client = function() {
 	data_FirebaseModel.instance.init();
 	data_Routes.instance.init();
-	data_ContentModel.instance.init();
 	ui_ClientUI.instance.init();
 	data_UserModel.instance.init();
 	data_ContentLoader.instance.loadContent();
@@ -808,87 +807,10 @@ data_Home.prototype = {
 	,__class__: data_Home
 	,__properties__: {set_title:"set_title",set_children:"set_children"}
 };
-var data_DomItem = function(data1) {
-	this.children = [];
-	this.text = "text...";
-	this.attrs = "";
-	this.data = "";
-	this.style = "{\"color\":\"white\", \"background-color\":\"purple\"}";
-	this.cls = "home";
-	this.tag = "div";
-	if(data1 != null) {
-		if(Object.prototype.hasOwnProperty.call(data1,"tag")) {
-			this.set_tag(data1.tag);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"cls")) {
-			this.set_cls(data1.cls);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"style")) {
-			this.set_style(data1.style);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"data")) {
-			this.set_data(data1.data);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"attrs")) {
-			this.set_attrs(data1.attrs);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
-			this.set_text(data1.text);
-		}
-		if(Object.prototype.hasOwnProperty.call(data1,"children")) {
-			this.set_children(data1.children);
-		}
-	}
-};
-$hxClasses["data.DomItem"] = data_DomItem;
-data_DomItem.__name__ = ["data","DomItem"];
-data_DomItem.__interfaces__ = [DataClass];
-data_DomItem.prototype = {
-	set_tag: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.tag.");
-		}
-		return this.tag = v;
-	}
-	,set_cls: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.cls.");
-		}
-		return this.cls = v;
-	}
-	,set_style: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.style.");
-		}
-		return this.style = v;
-	}
-	,set_data: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.data.");
-		}
-		return this.data = v;
-	}
-	,set_attrs: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.attrs.");
-		}
-		return this.attrs = v;
-	}
-	,set_text: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.text.");
-		}
-		return this.text = v;
-	}
-	,set_children: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for DomItem.children.");
-		}
-		return this.children = v;
-	}
-	,__class__: data_DomItem
-	,__properties__: {set_children:"set_children",set_text:"set_text",set_attrs:"set_attrs",set_data:"set_data",set_style:"set_style",set_cls:"set_cls",set_tag:"set_tag"}
-};
+var data_IHomeItem = function() { };
+$hxClasses["data.IHomeItem"] = data_IHomeItem;
+data_IHomeItem.__name__ = ["data","IHomeItem"];
+data_IHomeItem.__interfaces__ = [DataClass];
 var data_Shelf = function(data1) {
 	this.type = "content";
 	this.sort = 0;
@@ -1056,11 +978,11 @@ data_Book.prototype = {
 	,__properties__: {set_sort:"set_sort",set_chapters:"set_chapters",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
 };
 var data_Chapter = function(data1) {
-	this.sort = 0;
+	this.type = null;
 	this.subchapters = [];
+	this.sort = 0;
 	this.text = "defaultChapterText";
 	this.info = "defaultChapterInfo";
-	this.type = "article";
 	this.access = 0;
 	this.title = "defaultChapterTitle";
 	this.id = "defaultChapterId";
@@ -1076,20 +998,20 @@ var data_Chapter = function(data1) {
 		if(Object.prototype.hasOwnProperty.call(data1,"access")) {
 			this.set_access(data1.access);
 		}
-		if(Object.prototype.hasOwnProperty.call(data1,"type")) {
-			this.set_type(data1.type);
-		}
 		if(Object.prototype.hasOwnProperty.call(data1,"info")) {
 			this.set_info(data1.info);
 		}
 		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
 			this.set_text(data1.text);
 		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
 		if(Object.prototype.hasOwnProperty.call(data1,"subchapters")) {
 			this.set_subchapters(data1.subchapters);
 		}
-		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
-			this.set_sort(data1.sort);
+		if(Object.prototype.hasOwnProperty.call(data1,"type")) {
+			this.set_type(data1.type);
 		}
 	}
 };
@@ -1115,12 +1037,6 @@ data_Chapter.prototype = {
 		}
 		return this.access = v;
 	}
-	,set_type: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.type.");
-		}
-		return this.type = v;
-	}
 	,set_info: function(v) {
 		if(v == null) {
 			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.info.");
@@ -1133,20 +1049,93 @@ data_Chapter.prototype = {
 		}
 		return this.text = v;
 	}
-	,set_subchapters: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.subchapters.");
-		}
-		return this.subchapters = v;
-	}
 	,set_sort: function(v) {
 		if(v == null) {
 			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.sort.");
 		}
 		return this.sort = v;
 	}
+	,set_subchapters: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.subchapters.");
+		}
+		return this.subchapters = v;
+	}
+	,set_type: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Chapter.type.");
+		}
+		return this.type = v;
+	}
 	,__class__: data_Chapter
-	,__properties__: {set_sort:"set_sort",set_subchapters:"set_subchapters",set_text:"set_text",set_info:"set_info",set_type:"set_type",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+	,__properties__: {set_type:"set_type",set_subchapters:"set_subchapters",set_sort:"set_sort",set_text:"set_text",set_info:"set_info",set_access:"set_access",set_title:"set_title",set_id:"set_id"}
+};
+var data_IChaptertype = function() { };
+$hxClasses["data.IChaptertype"] = data_IChaptertype;
+data_IChaptertype.__name__ = ["data","IChaptertype"];
+data_IChaptertype.__interfaces__ = [DataClass];
+var data_VideoChapter = function(data1) {
+	this.url = "/url/to/video";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"url")) {
+			this.set_url(data1.url);
+		}
+	}
+};
+$hxClasses["data.VideoChapter"] = data_VideoChapter;
+data_VideoChapter.__name__ = ["data","VideoChapter"];
+data_VideoChapter.__interfaces__ = [data_IChaptertype];
+data_VideoChapter.prototype = {
+	set_url: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoChapter.url.");
+		}
+		return this.url = v;
+	}
+	,__class__: data_VideoChapter
+	,__properties__: {set_url:"set_url"}
+};
+var data_RosettaChapter = function(data1) {
+	this.data = "{xyz:123}";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"data")) {
+			this.set_data(data1.data);
+		}
+	}
+};
+$hxClasses["data.RosettaChapter"] = data_RosettaChapter;
+data_RosettaChapter.__name__ = ["data","RosettaChapter"];
+data_RosettaChapter.__interfaces__ = [data_IChaptertype];
+data_RosettaChapter.prototype = {
+	set_data: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for RosettaChapter.data.");
+		}
+		return this.data = v;
+	}
+	,__class__: data_RosettaChapter
+	,__properties__: {set_data:"set_data"}
+};
+var data_PdfChapter = function(data1) {
+	this.filename = "/test.pdf";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"filename")) {
+			this.set_filename(data1.filename);
+		}
+	}
+};
+$hxClasses["data.PdfChapter"] = data_PdfChapter;
+data_PdfChapter.__name__ = ["data","PdfChapter"];
+data_PdfChapter.__interfaces__ = [data_IChaptertype];
+data_PdfChapter.prototype = {
+	set_filename: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for PdfChapter.filename.");
+		}
+		return this.filename = v;
+	}
+	,__class__: data_PdfChapter
+	,__properties__: {set_filename:"set_filename"}
 };
 var data_ContentFilters = function() { };
 $hxClasses["data.ContentFilters"] = data_ContentFilters;
@@ -1179,14 +1168,21 @@ data_ContentLoader.__name__ = ["data","ContentLoader"];
 data_ContentLoader.prototype = {
 	loadContent: function() {
 		return data_ApiCalls.getRequest("/api/content-tree").then(function(item) {
-			data_ContentModel.instance.set_content(dataclass_JsonConverter.fromJson(data_Content,item.data));
+			data_ContentModel.instance.set_content(dataclass_TypedJsonConverter.fromTypedJson(data_Content,item.data));
 			return Promise.resolve(true);
 		});
 	}
 	,__class__: data_ContentLoader
 };
+var data_ContentUtils = function() { };
+$hxClasses["data.ContentUtils"] = data_ContentUtils;
+data_ContentUtils.__name__ = ["data","ContentUtils"];
+data_ContentUtils.getContentInit = function() {
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", children : []}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Subkapitel 0", access : 0}),new data_Chapter({ id : "ros0", title : "Rosettakapitel", access : 0, type : new data_RosettaChapter({ data : "{abc:\"ABC\"}"})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChapter({ url : "/video/kap/1"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChapter()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+};
 var data_ContentModel = function() {
-	console.log("src/data/ContentModel.hx:12:","new content");
+	console.log("src/data/ContentModel.hx:15:","new content");
+	this.set_content(data_ContentUtils.getContentInit());
 };
 $hxClasses["data.ContentModel"] = data_ContentModel;
 data_ContentModel.__name__ = ["data","ContentModel"];
@@ -1245,15 +1241,11 @@ data_ContentModel.prototype = {
 			});
 		};
 		this.content = u;
-		console.log("src/data/ContentModel.hx:59:","Content:" + Std.string(this.content));
+		console.log("src/data/ContentModel.hx:63:","Content:" + Std.string(this.content));
 		updatePaths(this.content);
 		updateDbPaths(this.content);
 		m.redraw();
 		return u;
-	}
-	,init: function() {
-		this.set_content(new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ children : [new data_DomItem({ tag : "section", text : "Hello div"}),new data_DomItem({ tag : "section", text : "", children : [new data_DomItem({ tag : "a", text : "Hello A"})]})]}), shelves : [new data_Shelf({ id : "home", title : "Välkommen till Körakademin", info : "Här är information om Körakademin", type : "homepage", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : []})]}),new data_Shelf({ id : "sh0", title : "Other shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]})]})]}));
-		console.log("src/data/ContentModel.hx:135:",JSON.stringify(dataclass_JsonConverter.toJson(this.content)));
 	}
 	,__class__: data_ContentModel
 	,__properties__: {set_content:"set_content"}
@@ -1315,7 +1307,6 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:63:","FilterModel.getShelf(): Cant not get shelf with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1327,7 +1318,6 @@ data_FilterModel.prototype = {
 			})[0];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:72:","FilterModel.getBook(): Cant not get book with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1336,7 +1326,6 @@ data_FilterModel.prototype = {
 			return this.getBook().chapters;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:81:","FilterModel.getChapters(): Cant not get chapters of book with ref " + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1353,7 +1342,6 @@ data_FilterModel.prototype = {
 			}
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:95:","FilterModel.getChapter(): Cant not get chapters of book with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1362,7 +1350,6 @@ data_FilterModel.prototype = {
 			return this.getChapter().subchapters;
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:104:","FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1379,7 +1366,6 @@ data_FilterModel.prototype = {
 			}
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
-			console.log("src/data/FilterModel.hx:118:","FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref" + Std.string(this.filterContent));
 			return null;
 		}
 	}
@@ -1858,7 +1844,7 @@ dataclass_Converter.prototype = {
 			if(StringTools.startsWith(data,"Interface<") && !this.useClassInfo) {
 				throw new js__$Boot_HaxeError("Cannot instantiate interface " + data.substring(10,data.length - 1) + ", please use TypedJsonConverter instead.");
 			}
-			var classT = this.useClassInfo ? dataclass_Converter.classType(Reflect.field(value,"$class")) : dataclass_Converter.classType(data.substring(10,data.length - 1));
+			var classT = this.useClassInfo ? dataclass_Converter.classType(Reflect.field(value,dataclass_Converter.typedClassFieldName)) : dataclass_Converter.classType(data.substring(10,data.length - 1));
 			if(toDataClass) {
 				return this._toDataClass(classT,value,refCount,refAssign);
 			} else {
@@ -1931,7 +1917,7 @@ dataclass_Converter.prototype = {
 			refs.remove(dataClass);
 		}
 		if(this.useClassInfo) {
-			outputData["$class"] = Type.getClassName(dataClass == null ? null : js_Boot.getClass(dataClass));
+			outputData[dataclass_Converter.typedClassFieldName] = Type.getClassName(dataClass == null ? null : js_Boot.getClass(dataClass));
 		}
 		return outputData;
 	}
@@ -2032,12 +2018,25 @@ dataclass_JsonConverter.__name__ = ["dataclass","JsonConverter"];
 dataclass_JsonConverter.fromJson = function(cls,json) {
 	return dataclass_JsonConverter.current.toDataClass(cls,json);
 };
-dataclass_JsonConverter.toJson = function(cls) {
-	return dataclass_JsonConverter.current.fromDataClass(cls);
-};
 dataclass_JsonConverter.__super__ = dataclass_Converter;
 dataclass_JsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_JsonConverter
+});
+var dataclass_TypedJsonConverter = function(options) {
+	dataclass_Converter.call(this,options);
+	this.useClassInfo = true;
+};
+$hxClasses["dataclass.TypedJsonConverter"] = dataclass_TypedJsonConverter;
+dataclass_TypedJsonConverter.__name__ = ["dataclass","TypedJsonConverter"];
+dataclass_TypedJsonConverter.fromTypedJson = function(cls,json) {
+	return dataclass_TypedJsonConverter.current.toDataClass(cls,json);
+};
+dataclass_TypedJsonConverter.toTypedJson = function(cls) {
+	return dataclass_TypedJsonConverter.current.fromDataClass(cls);
+};
+dataclass_TypedJsonConverter.__super__ = dataclass_Converter;
+dataclass_TypedJsonConverter.prototype = $extend(dataclass_Converter.prototype,{
+	__class__: dataclass_TypedJsonConverter
 });
 var haxe_Timer = function(time_ms) {
 	var me = this;
@@ -3391,8 +3390,7 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			var node1 = mdNode;
 			var child1 = markdown_MithrilTools.cache.get(node1.data);
 			if(child1 == null) {
-				var child2 = "data-node: " + Std.string(node1.data);
-				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : "data-node: " + Std.string(node1.data)}]};
 				markdown_MithrilTools.cache.set(node1.data,child1);
 			}
 			parent.children.push(child1);
@@ -3457,19 +3455,78 @@ ui_UIFooter.__interfaces__ = [mithril_Mithril];
 ui_UIFooter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("button",{ onclick : function(e) {
+		var values_0_0 = "aaa";
+		var values_0_1 = "Alt A";
+		var values_1_0 = "ccc";
+		var values_1_1 = "Alt B";
+		var tmp = m.m("button",{ onclick : function(e) {
 			return data_PagesModel.instance.set_pageIdx(0);
-		}},"Page 0"),m.m("button",{ onclick : function(e1) {
+		}},"Page 0");
+		var tmp1 = m.m("button",{ onclick : function(e1) {
 			return data_PagesModel.instance.set_pageIdx(1);
-		}},"Page 1"),m.m("button",{ onclick : function(e2) {
+		}},"Page 1");
+		var tmp2 = m.m("button",{ onclick : function(e2) {
 			return data_PagesModel.instance.set_pageIdx(2);
-		}},"Page 2"),m.m("button",{ onclick : function(e3) {
+		}},"Page 2");
+		var tmp3 = m.m("button",{ onclick : function(e3) {
 			return data_PagesModel.instance.set_pageIdx(3);
-		}},"Page 3"),m.m("button",{ onclick : function(e4) {
+		}},"Page 3");
+		var tmp4 = m.m("button",{ onclick : function(e4) {
 			return data_PagesModel.instance.set_pageWidth("100%");
-		}},"Width 100%"),m.m("button",{ onclick : function(e5) {
+		}},"Width 100%");
+		var tmp5 = m.m("button",{ onclick : function(e5) {
 			return data_PagesModel.instance.set_pageWidth("25%");
-		}},"Width 25%")];
+		}},"Width 25%");
+		var tmp6 = data_ContentModel.instance.content.rooms.map(function(room) {
+			return m.m("option",{ value : room.id, key : room.id},room.title);
+		});
+		return [tmp,tmp1,tmp2,tmp3,tmp4,tmp5,m.m("select",{ onchange : function(e6) {
+			console.log("src/ui/ClientUI.hx:60:",e6.target.selectedIndex);
+			var roomIdx = e6.target.selectedIndex;
+			var roomId = data_ContentModel.instance.content.rooms[roomIdx].id;
+			data_FilterModel.instance.setFilterContent({ roomId : roomId, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
+			return;
+		}},tmp6),m.m("button",{ onclick : function(e7) {
+			return data_ApiCalls.getRequest("/api/content-tree").then(function(result) {
+				var content = result.data;
+				console.log("src/ui/ClientUI.hx:73:",content.rooms);
+				content.rooms.map(function(room1) {
+					console.log("src/ui/ClientUI.hx:77:","-" + room1.classtype);
+					if(room1.shelves != null) {
+						room1.shelves.map(function(shelf) {
+							console.log("src/ui/ClientUI.hx:79:","- -" + shelf.classtype);
+							if(shelf.books != null) {
+								shelf.books.map(function(book) {
+									console.log("src/ui/ClientUI.hx:81:","- - -" + book.classtype);
+									if(book.chapters != null) {
+										book.chapters.map(function(chapter) {
+											console.log("src/ui/ClientUI.hx:83:","- - - -" + chapter.classtype);
+											if(chapter.subchapters != null) {
+												chapter.subchapters.map(function(sub) {
+													console.log("src/ui/ClientUI.hx:85:","- - - - -" + sub.classtype);
+													return;
+												});
+											}
+											return;
+										});
+									}
+									return;
+								});
+							}
+							return;
+						});
+					}
+					return;
+				});
+				var c = dataclass_JsonConverter.fromJson(data_Content,content);
+				console.log("src/ui/ClientUI.hx:104:","---------------------");
+				console.log("src/ui/ClientUI.hx:106:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)));
+				return;
+			})["catch"](function(e8) {
+				console.log("src/ui/ClientUI.hx:109:",e8);
+				return;
+			});
+		}},"ClickMe")];
 	}
 	,__class__: ui_UIFooter
 };
@@ -3491,64 +3548,81 @@ $hxClasses["ui.Bookpage"] = ui_Bookpage;
 ui_Bookpage.__name__ = ["ui","Bookpage"];
 ui_Bookpage.__interfaces__ = [mithril_Mithril];
 ui_Bookpage.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var book = data_FilterModel.instance.getBook();
-		var headerView = book != null ? [m.m("div",book.title)] : "No book selected";
-		var chapter = data_FilterModel.instance.getChapter();
-		var chapterView;
+	chapterView: function(chapter) {
 		try {
-			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)];
+			if(chapter == null) {
+				return m.m("div","No chapter selected");
+			} else {
+				return m.m("section",[m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)]);
+			}
 		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			chapterView = m.m("div","Chapter does not exist");
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("div","Chapter does not exist");
 		}
-		var editChapterView;
+	}
+	,chaptersView: function(chapters,book) {
 		try {
-			editChapterView = m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e2) {
-				return chapter.set_text(e2.target.value);
-			}, value : chapter.text}),m.m("button",{ onclick : function(e3) {
-				console.log("src/ui/ClientUI.hx:114:",chapter.dbpath);
-				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e4) {
-					console.log("src/ui/ClientUI.hx:116:","after update " + Std.string(e4));
+			return m.m("nav",[m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getShelf().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("img",{ src : "/assets/books/" + book.id + ".jpg"}),m.m("h3","Innehåll:"),m.m("ul",chapters.map(function(chap) {
+				return m.m("li",m.m("a" + (chap == data_FilterModel.instance.getChapter() ? ".selected" : ""),{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title));
+			}))]);
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("nav","No chapters");
+		}
+	}
+	,subchapterView: function(subchapter) {
+		try {
+			if(subchapter == null) {
+				return m.m("div","No subchapter selected");
+			} else {
+				return m.m("section",[m.m("h2","" + subchapter.title),markdown_MithrilTools.markdownToView(subchapter.text)]);
+			}
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("div","Subchapter does not exist");
+		}
+	}
+	,subchaptersView: function(subchapters) {
+		try {
+			return m.m("menu",[subchapters.map(function(sub) {
+				return m.m("a" + (sub == data_FilterModel.instance.getSubchapter() ? ".selected" : ""),{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
+			})]);
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("div.border","No subchapters");
+		}
+	}
+	,editChapterView: function(chapter) {
+		try {
+			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
+				return chapter.set_text(e.target.value);
+			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
+				console.log("src/ui/ClientUI.hx:216:",chapter.dbpath);
+				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
+					console.log("src/ui/ClientUI.hx:218:","after update " + Std.string(e2));
 					return;
 				});
 			}},"Save")]);
-		} catch( e5 ) {
-			var e6 = (e5 instanceof js__$Boot_HaxeError) ? e5.val : e5;
-			editChapterView = null;
+		} catch( e3 ) {
+			(e3 instanceof js__$Boot_HaxeError);
+			return null;
 		}
+	}
+	,headerView: function(book) {
+		if(book != null) {
+			return m.m("header",[m.m("div",book.title)]);
+		} else {
+			return "No book selected";
+		}
+	}
+	,view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var book = data_FilterModel.instance.getBook();
+		var chapter = data_FilterModel.instance.getChapter();
 		var chapters = data_FilterModel.instance.getChapters();
-		var chaptersView;
-		try {
-			chaptersView = m.m("nav",[m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getShelf().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("h3","Innehåll:"),m.m("ul",chapters.map(function(chap) {
-				var selected = chap == data_FilterModel.instance.getChapter() ? ".selected" : "";
-				return m.m("li",m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title));
-			}))]);
-		} catch( e7 ) {
-			var e8 = (e7 instanceof js__$Boot_HaxeError) ? e7.val : e7;
-			chaptersView = m.m("nav","No chapters");
-		}
 		var subchapter = data_FilterModel.instance.getSubchapter();
-		var subchapterView;
-		try {
-			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h2","" + subchapter.title),markdown_MithrilTools.markdownToView(subchapter.text)];
-		} catch( e9 ) {
-			var e10 = (e9 instanceof js__$Boot_HaxeError) ? e9.val : e9;
-			subchapterView = m.m("div","Subchapter does not exist");
-		}
 		var subchapters = data_FilterModel.instance.getSubchapters();
-		var subchaptersView;
-		try {
-			subchaptersView = subchapters.map(function(sub) {
-				var selected1 = sub == data_FilterModel.instance.getSubchapter() ? ".selected" : "";
-				return m.m("a" + selected1,{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
-			});
-		} catch( e11 ) {
-			var e12 = (e11 instanceof js__$Boot_HaxeError) ? e11.val : e11;
-			subchaptersView = m.m("div.border","No subchapters");
-		}
-		return m.m("div.book",[m.m("header",headerView),chaptersView,m.m("article",[m.m("section",chapterView),editChapterView,m.m("menu",subchaptersView),m.m("section",subchapterView)])]);
+		return m.m("div.book",[this.headerView(book),this.chaptersView(chapters,book),m.m("article",[this.editChapterView(chapter),this.chapterView(chapter),this.subchaptersView(subchapters),this.editChapterView(subchapter),this.subchapterView(subchapter)])]);
 	}
 	,__class__: ui_Bookpage
 };
@@ -3563,7 +3637,7 @@ ui_Shelvespage.prototype = {
 		var shelves = data_FilterModel.instance.getShelves().map(function(shelf) {
 			var books = shelf.books.map(function(book) {
 				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
-				return m.m("nav" + selected,m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice4.png"}),m.m("div",book.title)]));
+				return m.m("nav" + selected,m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/books/" + book.id + ".jpg"}),m.m("div",book.title)]));
 			});
 			return m.m("section",[m.m("header",m.m("h1",shelf.title)),books]);
 		});
@@ -3591,14 +3665,14 @@ ui_Homepage.prototype = {
 			homeView = [m.m("section",[m.m("article","Article"),m.m("nav","Nav"),m.m("article","Article"),m.m("nav","Nav")])];
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			console.log("src/ui/ClientUI.hx:280:","error: " + Std.string(e1));
+			console.log("src/ui/ClientUI.hx:367:","error: " + Std.string(e1));
 			homeView = m.m("div.error","Error:" + Std.string(e1));
 		}
 		var othershelvesView;
 		try {
-			othershelvesView = [m.m("section",[m.m("header",m.m("h1","Sectionheader")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
+			othershelvesView = [m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
 				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
-				return m.m("nav" + selected,m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/slice3.png"}),m.m("div",[m.m("h3",shelf.title),m.m("p",shelf.info)])]));
+				return m.m("nav" + selected,m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
 			})])];
 		} catch( e2 ) {
 			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
@@ -3957,7 +4031,7 @@ ui_content_UIChapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Chapter:" + this.item.title + ":" + this.item.path + " " + Std.string(this.item.type));
 		return m.m("details[openx]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UISubchapter(child).view();
 		})));
@@ -3976,7 +4050,7 @@ ui_content_UISubchapter.prototype = {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
 		var chapters = this.item.subchapters != null ? this.item.subchapters : [];
 		var css = "access" + this.item.access;
-		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path);
+		var anchor = m.m("a",{ href : "/content" + this.item.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Subhapter:" + this.item.title + ":" + this.item.path + " " + Std.string(this.item.type));
 		return m.m("details[open]." + css,[m.m("summary",[anchor])].concat(chapters.map(function(child) {
 			return new ui_content_UIChapter(child).view();
 		})));
@@ -4054,11 +4128,13 @@ DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
 data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int", home : "DataClass<data.Home>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
-data_Home.__meta__ = { obj : { dataClassRtti : [{ children : "Array<DataClass<data.DomItem>>", title : "String"}]}};
-data_DomItem.__meta__ = { obj : { dataClassRtti : [{ tag : "String", cls : "String", style : "String", data : "String", attrs : "String", text : "String", children : "Array<DataClass<data.DomItem>>"}]}};
+data_Home.__meta__ = { obj : { dataClassRtti : [{ children : "Array<Interface<data.IHomeItem>>", title : "String"}]}};
 data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
-data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", text : "String", subchapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", text : "String", sort : "Int", subchapters : "Array<DataClass<data.Chapter>>", type : "Interface<data.IChaptertype>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
+data_VideoChapter.__meta__ = { obj : { dataClassRtti : [{ url : "String"}]}};
+data_RosettaChapter.__meta__ = { obj : { dataClassRtti : [{ data : "String"}]}};
+data_PdfChapter.__meta__ = { obj : { dataClassRtti : [{ filename : "String"}]}};
 data_ContentLoader.instance = new data_ContentLoader();
 data_ContentModel.instance = new data_ContentModel();
 data_ErrorsAndLogs.logs = [];
@@ -4069,10 +4145,12 @@ data_PagesModel.instance = new data_PagesModel();
 data_Routes.instance = new data_Routes();
 data_UserLoader.instance = new data_UserLoader();
 data_UserModel.instance = new data_UserModel();
+dataclass_Converter.typedClassFieldName = "classtype";
 dataclass_Converter.directConversions = ["Int","Bool","Float","String"];
 dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
+dataclass_TypedJsonConverter.current = new dataclass_TypedJsonConverter();
 js_Boot.__toStr = ({ }).toString;
 markdown_BlockSyntax.RE_EMPTY = new EReg("^([ \\t]*)$","");
 markdown_BlockSyntax.RE_SETEXT = new EReg("^((=+)|(-+))$","");

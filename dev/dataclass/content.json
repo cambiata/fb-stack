@@ -1,0 +1,74 @@
+{
+    "classtype": "datax.Content",
+    "rooms": [
+        {
+            "title": "TestRoom",
+            "classtype": "datax.Room",
+            "id": "room0",
+            "shelves": [
+                {
+                    "books": [
+                        {
+                            "title": "Bok 0",
+                            "classtype": "datax.Book",
+                            "info": "defaultBookInfo",
+                            "id": "book0",
+                            "access": 0,
+                            "chapters": [
+                                {
+                                    "text": "defaultChapterText",
+                                    "title": "Kapitel 1",
+                                    "classtype": "datax.Chapter",
+                                    "info": "defaultChapterInfo",
+                                    "id": "chapter0",
+                                    "access": 1,
+                                    "subchapters": [
+                                        {
+                                            "text": "defaultChapterText",
+                                            "title": "Sub0",
+                                            "classtype": "datax.Chapter",
+                                            "info": "defaultChapterInfo",
+                                            "id": "sub0",
+                                            "access": 0,
+                                            "subchapters": [],
+                                            "type": null,
+                                            "sort": 0
+                                        },
+                                        {
+                                            "text": "defaultChapterText",
+                                            "title": "Sub1",
+                                            "classtype": "datax.Chapter",
+                                            "info": "defaultChapterInfo",
+                                            "id": "sub1",
+                                            "access": 0,
+                                            "subchapters": [],
+                                            "type": {
+                                                "classtype": "datax.Video",
+                                                "url": "/url/to/video"
+                                            },
+                                            "sort": 0
+                                        }
+                                    ],
+                                    "type": null,
+                                    "sort": 0
+                                }
+                            ],
+                            "type": "standard",
+                            "sort": 0
+                        }
+                    ],
+                    "title": "Other shelves",
+                    "classtype": "datax.Shelf",
+                    "info": "defaultShelfInfo",
+                    "id": "sh0",
+                    "access": 0,
+                    "type": "content",
+                    "sort": 0
+                }
+            ],
+            "home": null,
+            "sort": 0
+        }
+    ],
+    "id": "tree0"
+}

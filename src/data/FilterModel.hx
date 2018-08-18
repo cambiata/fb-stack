@@ -60,7 +60,7 @@ class FilterModel {
         return try {
             getRoom().shelves.filter(shelf->shelf.id == this.filterContent.shelfId).first();
         } catch (e:Dynamic) {
-            trace('FilterModel.getShelf(): Cant not get shelf with ref ' + this.filterContent);
+            //trace('FilterModel.getShelf(): Cant not get shelf with ref ' + this.filterContent);
             null;
         }
     }
@@ -69,7 +69,7 @@ class FilterModel {
         return try {
             getShelf().books.filter(book->book.id == this.filterContent.bookId).first();
         } catch (e:Dynamic) {
-            trace('FilterModel.getBook(): Cant not get book with ref ' + this.filterContent);
+            //trace('FilterModel.getBook(): Cant not get book with ref ' + this.filterContent);
             null;            
         }
     }
@@ -78,7 +78,7 @@ class FilterModel {
         return try {
             getBook().chapters;
         } catch (e:Dynamic) {
-            trace('FilterModel.getChapters(): Cant not get chapters of book with ref ' + this.filterContent);
+            //trace('FilterModel.getChapters(): Cant not get chapters of book with ref ' + this.filterContent);
             null;
         }
     }
@@ -92,7 +92,7 @@ class FilterModel {
                 getChapters().first();
             }
         } catch (e:Dynamic) {
-            trace('FilterModel.getChapter(): Cant not get chapters of book with ref' + this.filterContent);
+            //trace('FilterModel.getChapter(): Cant not get chapters of book with ref' + this.filterContent);
             null;
         }
     }
@@ -101,7 +101,7 @@ class FilterModel {
         return try {
             getChapter().subchapters;
         } catch (e:Dynamic) {
-            trace('FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref' + this.filterContent);
+            //trace('FilterModel.getSubchapters(): Cant not get subchapters of chapter with ref' + this.filterContent);
             null;
         }
     }
@@ -115,26 +115,18 @@ class FilterModel {
                 getSubchapters().first();
             }
         } catch (e:Dynamic) {
-            trace('FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref' + this.filterContent);
+            //trace('FilterModel.getSubchapter(): Cant not get subchapter of chapter with ref' + this.filterContent);
             null;
         }
     }   
 }
 
 class FilterTools {
-
-
-
-    static public function getShelvesOfType(shelves:Array<Shelf>, type:data.Content.Shelftype) {
+    static public function getShelvesOfType(shelves:Array<Shelf>, type:String) {
         return shelves.filter(shelf->shelf.type == type);         
     }
 
-    static public function getShelvesExcludeType(shelves:Array<Shelf>, type:data.Content.Shelftype) {
+    static public function getShelvesExcludeType(shelves:Array<Shelf>, type:String) {
         return shelves.filter(shelf->shelf.type != type);         
     }
-
- 
-
-
-
 }

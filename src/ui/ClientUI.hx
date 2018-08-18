@@ -11,6 +11,7 @@ import markdown.MithrilTools;
 
 using data.Content.ContentFilters;
 using cx.ArrayTools;
+using dataclass.TypedJsonConverter;
 using dataclass.JsonConverter;
 using data.FilterModel.FilterTools;
 using Lambda;
@@ -33,6 +34,8 @@ class ClientUI implements Mithril {
 class UIFooter implements Mithril {
     public function new() {}
     public function view() {
+        var values = [['aaa', 'Alt A'],['ccc', 'Alt B'],];
+        
         return [
             m('button', {onclick: e->{
                 PagesModel.instance.pageIdx = 0;
@@ -52,6 +55,61 @@ class UIFooter implements Mithril {
             m('button', {onclick: e->{
                 PagesModel.instance.pageWidth = '25%';
             }}, 'Width 25%'),
+
+            m('select', {onchange:e->{                    
+                    trace(e.target.selectedIndex);
+                    var roomIdx = e.target.selectedIndex;
+                    var roomId = ContentModel.instance.content.rooms[roomIdx].id;
+                    FilterModel.instance.setFilterContent({roomId:roomId, bookId:null, shelfId:null, chapterId:null, subchapterId:null});
+                }}, ContentModel.instance.content.rooms.map(room->{                
+                m('option', {value:room.id, key:room.id}, room.title);
+            })),
+
+            m('button', {onclick: e->{
+                return ApiCalls.getRequest('/api/content-tree')
+                .then(result->{
+                    var content:Dynamic = result.data;              
+
+                    trace(content.rooms);
+
+
+                    content.rooms.map(room->{
+                        trace('-' + room.classtype);
+                        if (room.shelves != null) room.shelves.map(shelf->{
+                            trace('- -' + shelf.classtype);
+                            if (shelf.books != null) shelf.books.map(book->{
+                                trace('- - -' + book.classtype);
+                                     if (book.chapters != null) book.chapters.map(chapter->{
+                                        trace('- - - -' + chapter.classtype);
+                                        if (chapter.subchapters != null) chapter.subchapters.map(sub->{
+                                            trace('- - - - -' + sub.classtype);
+                    
+
+                                        });       
+                
+
+                                    });       
+
+                            });
+
+                        });
+
+                    });
+
+
+
+                    var c:Content = Content.fromJson(content);
+
+
+                    trace('---------------------');
+                    // trace(c.toTypedJson());
+                    trace(haxe.Json.stringify(c.toTypedJson()));
+                })
+                .catchError(e->{
+                    trace(e);
+                });
+            }}, 'ClickMe'),
+
         ];
     }
 }
@@ -84,28 +142,72 @@ class Bookpage implements Mithril {
 
     }
     
-    public function view() {
-
-        var book = FilterModel.instance.getBook();
-
-        var headerView = (book != null) ?  [m('div', book.title)] : cast 'No book selected';
-        
-
-        var chapter = FilterModel.instance.getChapter();
-        var chapterView = try {
+    function chapterView(chapter:Chapter) {
+        return try {
             if (chapter == null) m('div', 'No chapter selected') else
-            [
+            m('section', [
                 m('h1', '' + chapter.title),
                 // m('p', '' + chapter.text),
                 MithrilTools.markdownToView(chapter.text),
-            ];
+            ]);
         } catch (e:Dynamic) {
             m('div', 'Chapter does not exist');
         }
+    }
 
-        var editChapterView = try {
+    function chaptersView(chapters:Array<Chapter>, book:Book) {
+        return try {            
+            m('nav',
+            [
+                m('a.btn', {href:'/content' + FilterModel.instance.getShelf().path, oncreate:M.routeLink}, '<<'),
+                m('img', {src:'/assets/books/${book.id}.jpg'}),
+                m('h3', 'Innehåll:'),
+                // m('div.border', 'Chapters length:' + chapters.length),
+                m('ul', chapters.map(chap->{
+                    var selected = (chap == FilterModel.instance.getChapter()) ? '.selected' : '';
+                    m('li',
+                        m('a$selected', {href:'/content' + chap.path, oncreate:M.routeLink}, '' + chap.title)
+                    );
+                })),
+            ]);
+        } catch (e:Dynamic) {
+            m('nav', 'No chapters');
+        }
+    }
+
+    function subchapterView(subchapter:Chapter) {
+        return try {
+            if (subchapter == null) m('div', 'No subchapter selected') else
+            m('section', [
+                m('h2', '' + subchapter.title),
+                // m('p', '' + subchapter.text),
+                MithrilTools.markdownToView(subchapter.text),
+                
+
+            ]);
+        } catch (e:Dynamic) {
+            m('div', 'Subchapter does not exist');
+            
+        }
+    }
+
+    function subchaptersView(subchapters:Array<Chapter>) {
+        return try {            
+                m('menu', [
+                    subchapters.map(sub->{
+                        var selected = (sub == FilterModel.instance.getSubchapter()) ? '.selected' : '';
+                        m('a$selected', {href:'/content' + sub.path, oncreate:M.routeLink}, '' + sub.title);
+                    }),
+                ]);
+
+        } catch (e:Dynamic) {
+            m('div.border', 'No subchapters');
+        }
+    }
+
+    function editChapterView(chapter:Chapter) {
+       return try {
             m('details', [
-                // m('texarea', {val:chapter.text}),
                 m('textarea', {style:{width:"100%", height:"300px"}, 
                     oninput: e->chapter.text = e.target.value,
                     value: chapter.text
@@ -120,61 +222,47 @@ class Bookpage implements Mithril {
         } catch(e:Dynamic) {
             null;
         }
+    }
 
-        var chapters = FilterModel.instance.getChapters();
-        var chaptersView = try {
-            
-            m('nav',
-            [
-                m('a.btn', {href:'/content' + FilterModel.instance.getShelf().path, oncreate:M.routeLink}, '<<'),
-                m('h3', 'Innehåll:'),
-                // m('div.border', 'Chapters length:' + chapters.length),
-                m('ul', chapters.map(chap->{
-                    var selected = (chap == FilterModel.instance.getChapter()) ? '.selected' : '';
-                    m('li',
-                        m('a$selected', {href:'/content' + chap.path, oncreate:M.routeLink}, '' + chap.title)
-                    );
-                })),
+    function editSubchapterView(chapter:Chapter) {
+       return try {
+            m('details', [
+                m('textarea', {style:{width:"100%", height:"300px"}, 
+                    oninput: e->chapter.text = e.target.value,
+                    value: chapter.text
+                }),
+                m('button', {onclick: e->{
+                    trace(chapter.dbpath);
+                    Firebase.database().ref(chapter.dbpath).update({text:chapter.text}, e->{
+                        trace('after update ' + e);
+                    });
+                }}, 'Save'),
             ]);
-        } catch (e:Dynamic) {
-            m('nav', 'No chapters');
+        } catch(e:Dynamic) {
+            null;
         }
+    }    
 
+    function headerView(book:Book) {
+        return (book != null) ?  m('header', [m('div', book.title)]) : cast 'No book selected';        
+    }
+
+    public function view() {
+        var book = FilterModel.instance.getBook();
+        var chapter = FilterModel.instance.getChapter();
+        var chapters = FilterModel.instance.getChapters();
         var subchapter = FilterModel.instance.getSubchapter();
-        var subchapterView = try {
-            if (subchapter == null) m('div', 'No subchapter selected') else
-            [
-                m('h2', '' + subchapter.title),
-                // m('p', '' + subchapter.text),
-                MithrilTools.markdownToView(subchapter.text),
-                
-
-            ];
-        } catch (e:Dynamic) {
-            m('div', 'Subchapter does not exist');
-            
-        }
         var subchapters = FilterModel.instance.getSubchapters();
-        var subchaptersView = try {            
-                subchapters.map(sub->{
-                    var selected = (sub == FilterModel.instance.getSubchapter()) ? '.selected' : '';
-                    m('a$selected', {href:'/content' + sub.path, oncreate:M.routeLink}, '' + sub.title);
-                });
-
-        } catch (e:Dynamic) {
-            m('div.border', 'No subchapters');
-        }
 
         return m('div.book', [
-            m('header', headerView),
-            chaptersView,
+            headerView(book),
+            chaptersView(chapters, book),
             m('article', [
-                m('section', chapterView),
-                editChapterView,
-                m('menu', subchaptersView),
-                m('section', subchapterView),
-                // subchaptersView,
-                // subchapterView,
+                editChapterView(chapter),
+                chapterView(chapter),
+                subchaptersView(subchapters),
+                editChapterView(subchapter),
+                subchapterView(subchapter),
             ]),
         ]);
     }
@@ -194,9 +282,8 @@ class Shelvespage implements Mithril {
                     var selected = book == FilterModel.instance.getBook() ? '.selected' : '';
                     m('nav$selected', 
                         m('a', {href:'/content'+book.path, oncreate: M.routeLink}, [
-                            m('img', {src:"/assets/slice4.png"}),
+                            m('img', {src:'/assets/books/${book.id}.jpg'}),
                             m('div', book.title),
-
                         ])
                     );
                 });
@@ -284,15 +371,15 @@ class Homepage implements Mithril {
 
         var othershelvesView = try {
             [
-                m('section', [
-                    m('header', m('h1', 'Sectionheader')),
+                m('section.shelves', [
+                    m('header', m('h1', 'Innehåll')),
                     FilterModel.instance.getRoom().shelves.map(shelf->{
                         var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';                        
                         m('nav$selected', 
                             m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, [
-                                m('img', {src:'/assets/slice3.png'}),
+                                m('img', {src:'/assets/shelves/${shelf.id}.jpg'}),
                                 m('div', [
-                                    m('h3', shelf.title),
+                                    m('h2', shelf.title),
                                     m('p', shelf.info),
                                 ]),
                             ])

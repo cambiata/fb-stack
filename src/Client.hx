@@ -15,7 +15,9 @@ class Client {
     public function new() {
         FirebaseModel.instance.init();        
         Routes.instance.init();        
-        ContentModel.instance.init();
+        
+        // ContentModel.instance.init();
+        
         ClientUI.instance.init();
         UserModel.instance.init();
         

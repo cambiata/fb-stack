@@ -79,7 +79,35 @@ class PDFDoc {
             });
         });
     }
-
-
-
 }
+
+/*
+class PdfJs implements Mithril {
+    public function new() {
+        var url = 'test.pdf'; 
+        this.canvases = [];
+        var pdfdoc:PDFDoc = new PDFDoc('test.pdf');
+        js.Promise.all([
+            pdfdoc.renderPage(1),
+            pdfdoc.renderPage(2),
+            pdfdoc.renderPage(3),
+        ])
+        .then(canvases->{
+            var cs:Array<js.html.CanvasElement> = cast canvases;
+            this.canvases = cs;  
+            M.redraw();          
+            return null;
+        });
+    }
+
+    var canvases:Array<js.html.CanvasElement>;
+    
+    public function view() {
+        return [
+            m('h1', 'PdfJs' ),  
+            m('div', this.canvases.length),
+            this.canvases.map(c->m('img', {src: c.toDataURL()})),
+        ];
+    }
+}
+*/

@@ -1,0 +1,10 @@
+# -cp ../../src
+-cp src
+-D analyzer-optimize
+-main Main
+# -lib mithril
+-lib dataclass
+
+
+# -js public/test.js
+--interp
