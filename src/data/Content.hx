@@ -26,22 +26,52 @@ class Room implements DataClass {
 }
 
 class Home implements DataClass {
-    public var      children:Array<IHomeItem> = [];
-    public var      title:String = 'Home title';
-        
-    // public function vnodes() return this.children.map(c->c.vnode());
+    public var      title: String = 'Titel för hemsidan';
+    public var      sections:Array<IHomeSection> = [];
 }
 
 
-interface IHomeItem extends DataClass {
-
+interface IHomeSection extends DataClass {
+    var     title(default, set):String;
+    var     sort(default, set):Int; 
 }
 
-class HomeItem implements IHomeItem {
-
-
+class SectionShelves implements IHomeSection {
+    public var title:String = 'Shelves section';
+    public var sort:Int = 200;
 }
 
+class SectionCells implements IHomeSection {
+    public var title:String = ''; // only shown if not empty string
+    public var sort:Int = 100;    
+    public var cells:Array<IHomeCell> = [];
+}
+
+interface IHomeCell extends DataClass {
+    var     title(default, set):String;
+    var     sort(default, set):Int; 
+    var     color(default, set):String;
+    var     bgcolor(default, set):String;    
+    var     text(default, set):String;
+    var     bgimage(default, set):String;
+    var     image(default, set):String;
+    var     url(default, set): String;
+}
+
+class TextCell implements IHomeCell {
+    public var     title:String = 'Cell Title';
+    public var     sort:Int = 100;
+    public var     gridColumn:String = '';
+    public var     gridRow:String = '';
+    public var     color:String = 'white';
+    public var     text:String = 'Celltext...';
+    public var     bgcolor:String = '#666';     
+    public var     bgimage:String = '/assets/background/background.jpg';     
+    public var     url: String = '';
+    public var     image: String = '';
+}
+
+// class Home
 // class DomItem implements DataClass {
 //     public var      tag:String = 'div';
 //     public var      cls:String = 'home';

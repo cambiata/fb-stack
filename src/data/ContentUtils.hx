@@ -9,12 +9,59 @@ class ContentUtils {
 
             home: new Home({
                 title: 'Här är titel för hemsidan',
-                children: [
+                sections: [
+                    new SectionShelves({sort: 200}),
+                    new SectionCells({sort: 100, cells:[
+                        new TextCell({title:'Cell0', gridColumn: 'span 2', gridRow:'span 2', bgcolor:'#0F154D', /*bgimage:'/assets/home/background.jpg',*/ url: '/content/room0/shelf1/book2', text:'#Välkommen till Körakademin hösten 2018!                        
+
+###Vi lyfter svensk körsång!
+
+Körakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.
+
+                        '}),
+new TextCell({title:'Cell1', bgcolor:'#43245D', color: 'white', gridColumn:'span 2', image: '', text:'
+
+## ScorX Player                        
+
+är en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! 
+
+'}),
+new TextCell({title:'Cell1', bgcolor:'#0F154D', color: 'white', gridColumn:'span 2', image: '', text:'
+
+##Körakademin Plus
+
+är en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. 
+
+'}),
+new TextCell({title:'Cell1', bgcolor:'#6E1841', color: 'white',gridColumn:'span 2', image: '', text:'
+###Sjunger du i en Sensus-kör?                        
+
+Som registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.
+
+'}),
+
+new TextCell({title:'Cell1', bgcolor:'#6E1841', color: 'white',gridColumn:'', image: '', text:'
+                        
+###Sök bland 800 Scorx-titlar                        
+
+Nu kan du hitta ännu fler...
+
+'}),
+
+new TextCell({title:'Cell1', bgcolor:'#312632', color: 'white',gridColumn:'', image: '', text:'
+                        
+###Möt våra inspelningsteam                        
+
+Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? 
+
+'}),
+
+
+                    ]}),
                 ],
             }),
             
-            shelves:[
-                
+            shelves:[                
                 // other shelves
                 new Shelf({id:'shelf0', title:'Default page shelves', access:0, books:[
                     new Book({id:'book0', title:'Bok 0', access: 0, chapters:[

@@ -60,7 +60,7 @@ class ContentModel {
         }
         
         this.content = u;
-        trace('Content:' + this.content);
+        // trace('Content:' + this.content);
 
         updatePaths(this.content);
         updateDbPaths(this.content);

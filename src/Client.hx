@@ -7,6 +7,7 @@ import firebase.Firebase;
 import ui.*;
 import data.*;
 // import utils.*;
+using cx.ArrayTools;
 
 class Client {
     
@@ -21,7 +22,7 @@ class Client {
         ClientUI.instance.init();
         UserModel.instance.init();
         
-        ContentLoader.instance.loadContent();
+        // ContentLoader.instance.loadContent();
         UserLoader.instance.startSession();
     }
 }

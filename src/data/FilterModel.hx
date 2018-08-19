@@ -15,7 +15,7 @@ class FilterModel {
     public var filterContent(default, null):ContentRef;
     public function setFilterContent(ref:ContentRef) {
         this.filterContent = ref;
-        trace(this.filterContent);
+        // trace(this.filterContent);
         PagesModel.instance.setPageFromContentRef(ref);
         M.redraw();
     }
@@ -88,7 +88,7 @@ class FilterModel {
             if (this.filterContent.chapterId != null) {
                 getChapters().filter(chapter->chapter.id == this.filterContent.chapterId).first();
             } else {
-                trace('Fallback to first chapter');
+                // trace('Fallback to first chapter');
                 getChapters().first();
             }
         } catch (e:Dynamic) {
@@ -111,7 +111,7 @@ class FilterModel {
             if (this.filterContent.subchapterId != null) {
                 getSubchapters().filter(sub->sub.id == this.filterContent.subchapterId).first();
             } else {
-                trace('Fallback to first subchapter');
+                // trace('Fallback to first subchapter');
                 getSubchapters().first();
             }
         } catch (e:Dynamic) {

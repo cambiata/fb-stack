@@ -12,7 +12,6 @@ var Client = function() {
 	data_Routes.instance.init();
 	ui_ClientUI.instance.init();
 	data_UserModel.instance.init();
-	data_ContentLoader.instance.loadContent();
 	data_UserLoader.instance.startSession();
 };
 $hxClasses["Client"] = Client;
@@ -777,14 +776,14 @@ data_Room.prototype = {
 	,__properties__: {set_home:"set_home",set_sort:"set_sort",set_title:"set_title",set_shelves:"set_shelves",set_id:"set_id"}
 };
 var data_Home = function(data1) {
-	this.title = "Home title";
-	this.children = [];
+	this.sections = [];
+	this.title = "Titel för hemsidan";
 	if(data1 != null) {
-		if(Object.prototype.hasOwnProperty.call(data1,"children")) {
-			this.set_children(data1.children);
-		}
 		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
 			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sections")) {
+			this.set_sections(data1.sections);
 		}
 	}
 };
@@ -792,25 +791,221 @@ $hxClasses["data.Home"] = data_Home;
 data_Home.__name__ = ["data","Home"];
 data_Home.__interfaces__ = [DataClass];
 data_Home.prototype = {
-	set_children: function(v) {
-		if(v == null) {
-			throw new js__$Boot_HaxeError("DataClass validation failed for Home.children.");
-		}
-		return this.children = v;
-	}
-	,set_title: function(v) {
+	set_title: function(v) {
 		if(v == null) {
 			throw new js__$Boot_HaxeError("DataClass validation failed for Home.title.");
 		}
 		return this.title = v;
 	}
+	,set_sections: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for Home.sections.");
+		}
+		return this.sections = v;
+	}
 	,__class__: data_Home
-	,__properties__: {set_title:"set_title",set_children:"set_children"}
+	,__properties__: {set_sections:"set_sections",set_title:"set_title"}
 };
-var data_IHomeItem = function() { };
-$hxClasses["data.IHomeItem"] = data_IHomeItem;
-data_IHomeItem.__name__ = ["data","IHomeItem"];
-data_IHomeItem.__interfaces__ = [DataClass];
+var data_IHomeSection = function() { };
+$hxClasses["data.IHomeSection"] = data_IHomeSection;
+data_IHomeSection.__name__ = ["data","IHomeSection"];
+data_IHomeSection.__interfaces__ = [DataClass];
+data_IHomeSection.prototype = {
+	__class__: data_IHomeSection
+};
+var data_SectionShelves = function(data1) {
+	this.sort = 200;
+	this.title = "Shelves section";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+	}
+};
+$hxClasses["data.SectionShelves"] = data_SectionShelves;
+data_SectionShelves.__name__ = ["data","SectionShelves"];
+data_SectionShelves.__interfaces__ = [data_IHomeSection];
+data_SectionShelves.validate = function(data1) {
+	return [];
+};
+data_SectionShelves.prototype = {
+	set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SectionShelves.title.");
+		}
+		return this.title = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SectionShelves.sort.");
+		}
+		return this.sort = v;
+	}
+	,__class__: data_SectionShelves
+	,__properties__: {set_sort:"set_sort",set_title:"set_title"}
+};
+var data_SectionCells = function(data1) {
+	this.cells = [];
+	this.sort = 100;
+	this.title = "";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"cells")) {
+			this.set_cells(data1.cells);
+		}
+	}
+};
+$hxClasses["data.SectionCells"] = data_SectionCells;
+data_SectionCells.__name__ = ["data","SectionCells"];
+data_SectionCells.__interfaces__ = [data_IHomeSection];
+data_SectionCells.validate = function(data1) {
+	return [];
+};
+data_SectionCells.prototype = {
+	set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SectionCells.title.");
+		}
+		return this.title = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SectionCells.sort.");
+		}
+		return this.sort = v;
+	}
+	,set_cells: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for SectionCells.cells.");
+		}
+		return this.cells = v;
+	}
+	,__class__: data_SectionCells
+	,__properties__: {set_cells:"set_cells",set_sort:"set_sort",set_title:"set_title"}
+};
+var data_IHomeCell = function() { };
+$hxClasses["data.IHomeCell"] = data_IHomeCell;
+data_IHomeCell.__name__ = ["data","IHomeCell"];
+data_IHomeCell.__interfaces__ = [DataClass];
+var data_TextCell = function(data1) {
+	this.image = "";
+	this.url = "";
+	this.bgimage = "/assets/background/background.jpg";
+	this.bgcolor = "#666";
+	this.text = "Celltext...";
+	this.color = "white";
+	this.gridRow = "";
+	this.gridColumn = "";
+	this.sort = 100;
+	this.title = "Cell Title";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"gridColumn")) {
+			this.set_gridColumn(data1.gridColumn);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"gridRow")) {
+			this.set_gridRow(data1.gridRow);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"color")) {
+			this.set_color(data1.color);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
+			this.set_text(data1.text);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"bgcolor")) {
+			this.set_bgcolor(data1.bgcolor);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"bgimage")) {
+			this.set_bgimage(data1.bgimage);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"url")) {
+			this.set_url(data1.url);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"image")) {
+			this.set_image(data1.image);
+		}
+	}
+};
+$hxClasses["data.TextCell"] = data_TextCell;
+data_TextCell.__name__ = ["data","TextCell"];
+data_TextCell.__interfaces__ = [data_IHomeCell];
+data_TextCell.prototype = {
+	set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.title.");
+		}
+		return this.title = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.sort.");
+		}
+		return this.sort = v;
+	}
+	,set_gridColumn: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.gridColumn.");
+		}
+		return this.gridColumn = v;
+	}
+	,set_gridRow: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.gridRow.");
+		}
+		return this.gridRow = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.color.");
+		}
+		return this.color = v;
+	}
+	,set_text: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.text.");
+		}
+		return this.text = v;
+	}
+	,set_bgcolor: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.bgcolor.");
+		}
+		return this.bgcolor = v;
+	}
+	,set_bgimage: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.bgimage.");
+		}
+		return this.bgimage = v;
+	}
+	,set_url: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.url.");
+		}
+		return this.url = v;
+	}
+	,set_image: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for TextCell.image.");
+		}
+		return this.image = v;
+	}
+	,__class__: data_TextCell
+	,__properties__: {set_image:"set_image",set_url:"set_url",set_bgimage:"set_bgimage",set_bgcolor:"set_bgcolor",set_text:"set_text",set_color:"set_color",set_gridRow:"set_gridRow",set_gridColumn:"set_gridColumn",set_sort:"set_sort",set_title:"set_title"}
+};
 var data_Shelf = function(data1) {
 	this.type = "content";
 	this.sort = 0;
@@ -1141,21 +1336,21 @@ var data_ContentFilters = function() { };
 $hxClasses["data.ContentFilters"] = data_ContentFilters;
 data_ContentFilters.__name__ = ["data","ContentFilters"];
 data_ContentFilters.sort = function(ct) {
-	var a = ct.rooms;
-	a.sort(function(a1,b) {
-		return a1.sort - b.sort;
+	var copy = ct.rooms.slice();
+	copy.sort(function(a,b) {
+		return a.sort - b.sort;
 	});
-	Lambda.iter(a,function(room) {
-		var a2 = room.shelves;
-		a2.sort(function(a3,b1) {
-			return a3.sort - b1.sort;
+	Lambda.iter(copy,function(room) {
+		var copy1 = room.shelves.slice();
+		copy1.sort(function(a1,b1) {
+			return a1.sort - b1.sort;
 		});
-		Lambda.iter(a2,function(shelf) {
-			var a4 = shelf.books;
-			a4.sort(function(a5,b2) {
-				return a5.sort - b2.sort;
+		Lambda.iter(copy1,function(shelf) {
+			var copy2 = shelf.books.slice();
+			copy2.sort(function(a2,b2) {
+				return a2.sort - b2.sort;
 			});
-			return a4;
+			return copy2;
 		});
 		return;
 	});
@@ -1178,7 +1373,7 @@ var data_ContentUtils = function() { };
 $hxClasses["data.ContentUtils"] = data_ContentUtils;
 data_ContentUtils.__name__ = ["data","ContentUtils"];
 data_ContentUtils.getContentInit = function() {
-	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", children : []}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Subkapitel 0", access : 0}),new data_Chapter({ id : "ros0", title : "Rosettakapitel", access : 0, type : new data_RosettaChapter({ data : "{abc:\"ABC\"}"})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChapter({ url : "/video/kap/1"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChapter()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Subkapitel 0", access : 0}),new data_Chapter({ id : "ros0", title : "Rosettakapitel", access : 0, type : new data_RosettaChapter({ data : "{abc:\"ABC\"}"})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChapter({ url : "/video/kap/1"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChapter()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
 };
 var data_ContentModel = function() {
 	console.log("src/data/ContentModel.hx:15:","new content");
@@ -1241,7 +1436,6 @@ data_ContentModel.prototype = {
 			});
 		};
 		this.content = u;
-		console.log("src/data/ContentModel.hx:63:","Content:" + Std.string(this.content));
 		updatePaths(this.content);
 		updateDbPaths(this.content);
 		m.redraw();
@@ -1268,7 +1462,6 @@ data_FilterModel.__name__ = ["data","FilterModel"];
 data_FilterModel.prototype = {
 	setFilterContent: function(ref) {
 		this.filterContent = ref;
-		console.log("src/data/FilterModel.hx:18:",this.filterContent);
 		data_PagesModel.instance.setPageFromContentRef(ref);
 		m.redraw();
 	}
@@ -1337,7 +1530,6 @@ data_FilterModel.prototype = {
 					return chapter.id == _gthis.filterContent.chapterId;
 				})[0];
 			} else {
-				console.log("src/data/FilterModel.hx:91:","Fallback to first chapter");
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
@@ -1361,7 +1553,6 @@ data_FilterModel.prototype = {
 					return sub.id == _gthis.filterContent.subchapterId;
 				})[0];
 			} else {
-				console.log("src/data/FilterModel.hx:114:","Fallback to first subchapter");
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
@@ -3390,7 +3581,8 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			var node1 = mdNode;
 			var child1 = markdown_MithrilTools.cache.get(node1.data);
 			if(child1 == null) {
-				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : "data-node: " + Std.string(node1.data)}]};
+				var child2 = "data-node: " + Std.string(node1.data);
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
 				markdown_MithrilTools.cache.set(node1.data,child1);
 			}
 			parent.children.push(child1);
@@ -3475,58 +3667,43 @@ ui_UIFooter.prototype = {
 			return data_PagesModel.instance.set_pageWidth("100%");
 		}},"Width 100%");
 		var tmp5 = m.m("button",{ onclick : function(e5) {
+			return data_PagesModel.instance.set_pageWidth("50%");
+		}},"Width 50%");
+		var tmp6 = m.m("button",{ onclick : function(e6) {
 			return data_PagesModel.instance.set_pageWidth("25%");
 		}},"Width 25%");
-		var tmp6 = data_ContentModel.instance.content.rooms.map(function(room) {
+		var tmp7 = m.m("button",{ onclick : function(e7) {
+			return data_ContentLoader.instance.loadContent();
+		}},"Content load");
+		var tmp8 = m.m("button",{ onclick : function(e8) {
+			console.log("src/ui/ClientUI.hx:66:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)));
+			return;
+		}},"Trace content");
+		var tmp9 = data_ContentModel.instance.content.rooms.map(function(room) {
 			return m.m("option",{ value : room.id, key : room.id},room.title);
 		});
-		return [tmp,tmp1,tmp2,tmp3,tmp4,tmp5,m.m("select",{ onchange : function(e6) {
-			console.log("src/ui/ClientUI.hx:60:",e6.target.selectedIndex);
-			var roomIdx = e6.target.selectedIndex;
+		return [tmp,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,m.m("select",{ onchange : function(e9) {
+			console.log("src/ui/ClientUI.hx:70:",e9.target.selectedIndex);
+			var roomIdx = e9.target.selectedIndex;
 			var roomId = data_ContentModel.instance.content.rooms[roomIdx].id;
 			data_FilterModel.instance.setFilterContent({ roomId : roomId, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
 			return;
-		}},tmp6),m.m("button",{ onclick : function(e7) {
+		}},tmp9),m.m("button",{ onclick : function(e10) {
 			return data_ApiCalls.getRequest("/api/content-tree").then(function(result) {
 				var content = result.data;
-				console.log("src/ui/ClientUI.hx:73:",content.rooms);
-				content.rooms.map(function(room1) {
-					console.log("src/ui/ClientUI.hx:77:","-" + room1.classtype);
-					if(room1.shelves != null) {
-						room1.shelves.map(function(shelf) {
-							console.log("src/ui/ClientUI.hx:79:","- -" + shelf.classtype);
-							if(shelf.books != null) {
-								shelf.books.map(function(book) {
-									console.log("src/ui/ClientUI.hx:81:","- - -" + book.classtype);
-									if(book.chapters != null) {
-										book.chapters.map(function(chapter) {
-											console.log("src/ui/ClientUI.hx:83:","- - - -" + chapter.classtype);
-											if(chapter.subchapters != null) {
-												chapter.subchapters.map(function(sub) {
-													console.log("src/ui/ClientUI.hx:85:","- - - - -" + sub.classtype);
-													return;
-												});
-											}
-											return;
-										});
-									}
-									return;
-								});
-							}
-							return;
-						});
-					}
-					return;
-				});
+				console.log("src/ui/ClientUI.hx:83:",content.rooms);
 				var c = dataclass_JsonConverter.fromJson(data_Content,content);
-				console.log("src/ui/ClientUI.hx:104:","---------------------");
-				console.log("src/ui/ClientUI.hx:106:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)));
+				console.log("src/ui/ClientUI.hx:114:","---------------------");
+				console.log("src/ui/ClientUI.hx:116:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)));
 				return;
-			})["catch"](function(e8) {
-				console.log("src/ui/ClientUI.hx:109:",e8);
+			})["catch"](function(e11) {
+				console.log("src/ui/ClientUI.hx:119:",e11);
 				return;
 			});
-		}},"ClickMe")];
+		}},"ClickMe"),m.m("button",{ onclick : function(e12) {
+			console.log("src/ui/ClientUI.hx:124:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)));
+			return;
+		}},"Tree to json")];
 	}
 	,__class__: ui_UIFooter
 };
@@ -3597,9 +3774,9 @@ ui_Bookpage.prototype = {
 			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
 				return chapter.set_text(e.target.value);
 			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
-				console.log("src/ui/ClientUI.hx:216:",chapter.dbpath);
+				console.log("src/ui/ClientUI.hx:231:",chapter.dbpath);
 				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
-					console.log("src/ui/ClientUI.hx:218:","after update " + Std.string(e2));
+					console.log("src/ui/ClientUI.hx:233:","after update " + Std.string(e2));
 					return;
 				});
 			}},"Save")]);
@@ -3657,28 +3834,76 @@ $hxClasses["ui.Homepage"] = ui_Homepage;
 ui_Homepage.__name__ = ["ui","Homepage"];
 ui_Homepage.__interfaces__ = [mithril_Mithril];
 ui_Homepage.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var homeView;
+	shelvesView: function() {
 		try {
-			var room = data_FilterModel.instance.getRoom();
-			homeView = [m.m("section",[m.m("article","Article"),m.m("nav","Nav"),m.m("article","Article"),m.m("nav","Nav")])];
+			return [m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
+				return m.m("nav" + (shelf == data_FilterModel.instance.getShelf() ? ".selected" : ""),m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
+			})])];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
+		}
+	}
+	,cellsView: function(s) {
+		try {
+			return m.m("section.cells",[s.title > "" ? m.m("header",m.m("h1",s.title)) : null,s.cells.map(function(c) {
+				var c1 = c;
+				var styles = { };
+				var aTag = c1.url > "" ? "a" : "div";
+				var aHref = c1.url > "" ? { href : c1.url, oncreate : mithril__$M_M_$Impl_$.routeLink} : null;
+				var image = c1.image > "" ? m.m("img",{ src : c1.image}) : null;
+				if(c1.color > "") {
+					styles["color"] = c1.color;
+				}
+				if(c1.bgcolor > "") {
+					styles["backgroundColor"] = c1.bgcolor;
+				}
+				if(c1.gridColumn > "") {
+					styles["gridColumn"] = c1.gridColumn;
+				}
+				if(c1.bgimage > "") {
+					styles["backgroundImage"] = "url(\"" + c1.bgimage + "\")";
+				}
+				if(c1.gridRow > "") {
+					styles["gridRow"] = c1.gridRow;
+				}
+				var tmp = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c1.text)]);
+				return m.m("article.cell",{ style : styles},tmp);
+			})]);
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			console.log("src/ui/ClientUI.hx:367:","error: " + Std.string(e1));
-			homeView = m.m("div.error","Error:" + Std.string(e1));
+			console.log("src/ui/ClientUI.hx:397:","error: " + Std.string(e1));
+			return m.m("div.error","Error:" + Std.string(e1));
 		}
-		var othershelvesView;
+	}
+	,homeView: function() {
+		var _gthis = this;
 		try {
-			othershelvesView = [m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
-				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
-				return m.m("nav" + selected,m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
-			})])];
-		} catch( e2 ) {
-			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
-			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
+			var home = data_FilterModel.instance.getRoom().home;
+			if(home == null) {
+				return this.shelvesView();
+			}
+			var copy = home.sections.slice();
+			copy.sort(function(a,b) {
+				return a.sort - b.sort;
+			});
+			return [copy.map(function(s) {
+				switch(s == null ? null : js_Boot.getClass(s)) {
+				case data_SectionCells:
+					return _gthis.cellsView(s);
+				case data_SectionShelves:
+					return _gthis.shelvesView();
+				default:
+					return m.m("div","unknown shelf");
+				}
+			})];
+		} catch( e ) {
+			return m.m("section",m.m("div","Homeview error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)));
 		}
-		return m.m("div.home",[homeView,othershelvesView]);
+	}
+	,view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return m.m("div.home",[this.homeView()]);
 	}
 	,__class__: ui_Homepage
 };
@@ -3778,36 +4003,72 @@ $hxClasses["ui.UIHeader"] = ui_UIHeader;
 ui_UIHeader.__name__ = ["ui","UIHeader"];
 ui_UIHeader.__interfaces__ = [mithril_Mithril];
 ui_UIHeader.prototype = {
-	view: function() {
+	loginView: function() {
 		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var loginView = m.m("form",[m.m("input[type=input][placeholder='Email']",{ oninput : function(e) {
-			return _gthis.email = e.target.value;
-		}, value : this.email}),m.m("input[type=password][placeholder='Password']",{ oninput : function(e1) {
-			return _gthis.pass = e1.target.value;
-		}, value : this.pass}),m.m("button[type=button]",{ onclick : function(e2) {
-			data_UserLoader.instance.signIn(_gthis.email,_gthis.pass);
-			return;
-		}},"Logga in")]);
-		var logoutView = m.m("form",[m.m("div","Välkommen, " + data_UserModel.instance.get_user().firstname + " " + data_UserModel.instance.get_user().lastname),m.m("button[type=button]",{ onclick : function(e3) {
-			data_UserLoader.instance.signOut();
-			return;
-		}},"Logga ut")]);
-		var userView;
-		var _g = data_UserModel.instance.userState;
-		switch(_g._hx_index) {
-		case 0:
-			userView = m.m("div",[loginView]);
-			break;
-		case 1:
-			userView = m.m("div","Loading...");
-			break;
-		case 2:
-			var user = _g.user;
-			userView = m.m("div",[logoutView]);
-			break;
+		try {
+			return m.m("form",[m.m("input[type=input][placeholder='Email']",{ oninput : function(e) {
+				return _gthis.email = e.target.value;
+			}, value : this.email}),m.m("input[type=password][placeholder='Password']",{ oninput : function(e1) {
+				return _gthis.pass = e1.target.value;
+			}, value : this.pass}),m.m("button[type=button]",{ onclick : function(e2) {
+				data_UserLoader.instance.signIn(_gthis.email,_gthis.pass);
+				return;
+			}},"Logga in")]);
+		} catch( e3 ) {
+			var e4 = (e3 instanceof js__$Boot_HaxeError) ? e3.val : e3;
+			console.log("src/ui/UIHeader.hx:39:","error " + Std.string(e4));
+			return m.m("div.error",e4);
 		}
-		return [m.m("h3","" + Std.string(data_UserModel.instance.userState)),userView];
+	}
+	,loggedinView: function() {
+		try {
+			var selectvalues = data_ContentModel.instance.content.rooms.map(function(room) {
+				return [room.id,"Gå till " + room.title];
+			});
+			selectvalues.push(["logout","Logga ut"]);
+			selectvalues.unshift(["user",data_UserModel.instance.get_user().firstname + " " + data_UserModel.instance.get_user().lastname]);
+			var tmp = selectvalues.map(function(kv) {
+				return m.m("option",{ value : kv[0], key : kv[1]},kv[1]);
+			});
+			return m.m("div",[m.m("select.loggedin",{ onchange : function(e) {
+				console.log("src/ui/UIHeader.hx:58:",e.target.selectedIndex);
+				console.log("src/ui/UIHeader.hx:59:",e.target.value);
+				switch(e.target.value) {
+				case "logout":
+					data_UserLoader.instance.signOut();
+					break;
+				case "user":
+					break;
+				default:
+					data_FilterModel.instance.setFilterContent({ roomId : e.target.value, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
+				}
+				return e.target.selectedIndex = 0;
+			}},tmp)]);
+		} catch( e1 ) {
+			var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
+			console.log("src/ui/UIHeader.hx:80:","error " + Std.string(e2));
+			return m.m("div.error",e2);
+		}
+	}
+	,userView: function() {
+		try {
+			switch(data_UserModel.instance.userState._hx_index) {
+			case 0:
+				return m.m("div",[this.loginView()]);
+			case 1:
+				return m.m("div","Loading...");
+			case 2:
+				return m.m("div",[this.loggedinView()]);
+			}
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			console.log("src/ui/UIHeader.hx:95:","error " + Std.string(e1));
+			return m.m("div.error",e1);
+		}
+	}
+	,view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("h2","" + data_FilterModel.instance.getRoom().title),this.userView()];
 	}
 	,__class__: ui_UIHeader
 };
@@ -4128,7 +4389,10 @@ DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
 data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int", home : "DataClass<data.Home>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
-data_Home.__meta__ = { obj : { dataClassRtti : [{ children : "Array<Interface<data.IHomeItem>>", title : "String"}]}};
+data_Home.__meta__ = { obj : { dataClassRtti : [{ title : "String", sections : "Array<Interface<data.IHomeSection>>"}]}};
+data_SectionShelves.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int"}]}};
+data_SectionCells.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int", cells : "Array<Interface<data.IHomeCell>>"}]}};
+data_TextCell.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int", gridColumn : "String", gridRow : "String", color : "String", text : "String", bgcolor : "String", bgimage : "String", url : "String", image : "String"}]}};
 data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", text : "String", sort : "Int", subchapters : "Array<DataClass<data.Chapter>>", type : "Interface<data.IChaptertype>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};

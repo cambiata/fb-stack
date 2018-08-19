@@ -1,5 +1,6 @@
 package ui;
 
+import haxe.DynamicAccess;
 import ui.content.ContentTreeView.UIShelf;
 import mithril.M;
 import data.*;
@@ -53,8 +54,17 @@ class UIFooter implements Mithril {
                 PagesModel.instance.pageWidth = '100%';
             }}, 'Width 100%'),
             m('button', {onclick: e->{
+                PagesModel.instance.pageWidth = '50%';
+            }}, 'Width 50%'),
+            m('button', {onclick: e->{
                 PagesModel.instance.pageWidth = '25%';
             }}, 'Width 25%'),
+            m('button', {onclick: e->{
+                ContentLoader.instance.loadContent();
+            }}, 'Content load'),
+            m('button', {onclick: e->{
+                trace(haxe.Json.stringify(ContentModel.instance.content.toTypedJson()));
+            }}, 'Trace content'),
 
             m('select', {onchange:e->{                    
                     trace(e.target.selectedIndex);
@@ -73,28 +83,28 @@ class UIFooter implements Mithril {
                     trace(content.rooms);
 
 
-                    content.rooms.map(room->{
-                        trace('-' + room.classtype);
-                        if (room.shelves != null) room.shelves.map(shelf->{
-                            trace('- -' + shelf.classtype);
-                            if (shelf.books != null) shelf.books.map(book->{
-                                trace('- - -' + book.classtype);
-                                     if (book.chapters != null) book.chapters.map(chapter->{
-                                        trace('- - - -' + chapter.classtype);
-                                        if (chapter.subchapters != null) chapter.subchapters.map(sub->{
-                                            trace('- - - - -' + sub.classtype);
+                    // content.rooms.map(room->{
+                    //     trace('-' + room.classtype);
+                    //     if (room.shelves != null) room.shelves.map(shelf->{
+                    //         trace('- -' + shelf.classtype);
+                    //         if (shelf.books != null) shelf.books.map(book->{
+                    //             trace('- - -' + book.classtype);
+                    //                  if (book.chapters != null) book.chapters.map(chapter->{
+                    //                     trace('- - - -' + chapter.classtype);
+                    //                     if (chapter.subchapters != null) chapter.subchapters.map(sub->{
+                    //                         trace('- - - - -' + sub.classtype);
                     
 
-                                        });       
+                    //                     });       
                 
 
-                                    });       
+                    //                 });       
 
-                            });
+                    //         });
 
-                        });
+                    //     });
 
-                    });
+                    // });
 
 
 
@@ -109,6 +119,11 @@ class UIFooter implements Mithril {
                     trace(e);
                 });
             }}, 'ClickMe'),
+
+            m('button', {onclick: e->{
+                trace(haxe.Json.stringify(ContentModel.instance.content.toTypedJson()));
+
+            }}, 'Tree to json'),
 
         ];
     }
@@ -275,9 +290,7 @@ class Shelvespage implements Mithril {
     }
     
     public function view() {
-
          var shelves = FilterModel.instance.getShelves().map(shelf->{
-             
              var books = shelf.books.map(book->{
                     var selected = book == FilterModel.instance.getBook() ? '.selected' : '';
                     m('nav$selected', 
@@ -294,42 +307,6 @@ class Shelvespage implements Mithril {
                 ]);
          });
 
-
-
-                // m('section', [
-                //     m('header', m('h1', 'Sectionheader')),
-                //     FilterModel.instance.getRoom().shelves.map(shelf->{
-                //         var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';                        
-                //         m('nav$selected', 
-                //             m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, [
-                //                 m('img', {src:'/assets/slice3.png'}),
-                //                 m('div', shelf.title),
-                //             ])
-                //         );
-                //     }),
-                // ]),         
-
-        
-        // return m('div.border', [
-        //     m('h1', 'shelves'),
-        //     m('p', [m('a', {href:'/content' + FilterModel.instance.getRoom().path, oncreate:M.routeLink}, 'Visa alla'),]),
-
-        //     m('div', FilterModel.instance.getShelves().map(shelf->{
-        //         var a = m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, '' + shelf.title);
-        //         m('div.border', [
-        //             a,
-        //             m('nav', [
-        //                 shelf.books.map(book->{
-        //                     var selected = book == FilterModel.instance.getBook() ? '.selected' : '';
-                            
-
-
-        //                 })
-        //             ]),
-        //         ]);
-        //     }))
-
-        // ] );
         var view = try {
             m('div.shelves', [
                 m('section', m('header' ,  [
@@ -345,55 +322,102 @@ class Shelvespage implements Mithril {
     }
 }
 
-
 class Homepage implements Mithril {
     public function new() {
 
     }
     
-    public function view() {
+    public function shelvesView() return try {
+        [
+            m('section.shelves', [
+                m('header', m('h1', 'Innehåll')),
+                FilterModel.instance.getRoom().shelves.map(shelf->{
+                    var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';                        
+                    m('nav$selected', 
+                        m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, [
+                            m('img', {src:'/assets/shelves/${shelf.id}.jpg'}),
+                            m('div', [
+                                m('h2', shelf.title),
+                                m('p', shelf.info),
+                            ]),
+                        ])
+                    );
+                }),
+            ]),
+        ];
+    } catch (e:Dynamic) {
+        m('h3.error', '404 - can not show other shelves for room  ' + FilterModel.instance.filterContent);
+    }
 
-        var homeView = try {
-            var room = FilterModel.instance.getRoom();
-            [
-                m('section', [
-                    m('article', 'Article'),
-                    m('nav', 'Nav'),
-                    m('article', 'Article'),
-                    m('nav', 'Nav'),
-                ]),
-            ];
-        } catch (e:Dynamic) { 
-            trace('error: ' + e); 
-            m('div.error', 'Error:' + e);
-        
-        }
+    // public function homeView() return try {
+    //     var room = FilterModel.instance.getRoom();
+    //     [
+    //         m('section', [
+    //             m('article', 'Article'),
+    //             m('nav', 'Nav'),
+    //             m('article', 'Article'),
+    //             m('nav', 'Nav'),
+    //         ]),
+    //     ];
+    // } catch (e:Dynamic) { 
+    //     trace('error: ' + e); 
+    //     m('div.error', 'Error:' + e);
+    // }    
 
-        var othershelvesView = try {
-            [
-                m('section.shelves', [
-                    m('header', m('h1', 'Innehåll')),
-                    FilterModel.instance.getRoom().shelves.map(shelf->{
-                        var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';                        
-                        m('nav$selected', 
-                            m('a', {href:'/content'+shelf.path, oncreate: M.routeLink}, [
-                                m('img', {src:'/assets/shelves/${shelf.id}.jpg'}),
-                                m('div', [
-                                    m('h2', shelf.title),
-                                    m('p', shelf.info),
-                                ]),
-                            ])
-                        );
-                    }),
-                ]),
-            ];
-        } catch (e:Dynamic) {
-            m('h3.error', '404 - can not show other shelves for room  ' + FilterModel.instance.filterContent);
-        }
+    public function cellsView(s:SectionCells) return try {
+        var header = s.title > '' ? m('header', m('h1', s.title)) : null;        
 
+        var dense = {gridAutoFlow: 'dense'};
+
+        m('section.cells', [
+            header,
+            s.cells.map(c->{
+                var c:TextCell = cast c;
+                var styles = new DynamicAccess<String>();
+
+                var aTag = c.url > '' ? 'a' : 'div';
+                var aHref = c.url > '' ? {href: c.url, oncreate:M.routeLink} : null;
+
+                var image = c.image > '' ? m('img', {src:c.image}) : null;                
+                if (c.color > '') styles.set('color', c.color);
+                if (c.bgcolor > '') styles.set('backgroundColor', c.bgcolor);
+                if (c.gridColumn > '') styles.set('gridColumn', c.gridColumn);
+                if (c.bgimage > '') styles.set('backgroundImage', 'url("' + c.bgimage + '")');
+                if (c.gridRow > '') styles.set('gridRow', c.gridRow);
+                m('article.cell', {style: styles}, 
+                    m(aTag, aHref, [
+                            image,
+                            MithrilTools.markdownToView(c.text),
+                        ]
+                    )
+                );
+            }),
+        ]);
+    } catch (e:Dynamic) { 
+        trace('error: ' + e); 
+        m('div.error', 'Error:' + e);
+    }       
+
+    public function homeView() return try {        
+        var home:Home = FilterModel.instance.getRoom().home;
+        if (home == null) return shelvesView();
+        cast [
+            home.sections.sortA((a,b)->a.sort-b.sort).map(s->{
+                switch Type.getClass(s) {
+                    case SectionShelves: shelvesView();
+                    case SectionCells: cellsView(cast s);
+                    case _: m('div', 'unknown shelf');
+                }
+            }),
+        ];
+    } catch(e:Dynamic) {
+        return m('section', m('div', 'Homeview error: $e'));
+    }
+ 
+
+    public function view() {             
         return m('div.home', [
-            homeView,            
-            othershelvesView,
+            homeView(),
         ]);
     }
 }

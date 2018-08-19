@@ -2,7 +2,7 @@
 .markdown {
     font-size: 1.2em;
     line-height: 1.4em;
-    border: 1px dashed gray;
+    /* border: 1px dashed gray; */
 }
 
 .markdown  h1 {
@@ -35,4 +35,5 @@
 .markdown li {
     margin-bottom: 0.3em;
 }
+
 

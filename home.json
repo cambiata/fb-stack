@@ -1,0 +1,96 @@
+{
+    "title": "Här är titel för hemsidan",
+    "sections": [
+      {
+        "title": "Shelves section",
+        "sort": 200,
+        "classtype": "data.SectionShelves"
+      },
+      {
+        "title": "",
+        "sort": 100,
+        "cells": [
+          {
+            "title": "Cell0",
+            "sort": 100,
+            "gridColumn": "span 2",
+            "gridRow": "span 2",
+            "color": "white",
+            "text": "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        ",
+            "bgcolor": "#0F154D",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "/content/room0/shelf1/book2",
+            "image": "",
+            "classtype": "data.TextCell"
+          },
+          {
+            "title": "Cell1",
+            "sort": 100,
+            "gridColumn": "span 2",
+            "gridRow": "",
+            "color": "white",
+            "text": "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n",
+            "bgcolor": "#43245D",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "",
+            "image": "",
+            "classtype": "data.TextCell"
+          },
+          {
+            "title": "Cell1",
+            "sort": 100,
+            "gridColumn": "span 2",
+            "gridRow": "",
+            "color": "white",
+            "text": "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n",
+            "bgcolor": "#0F154D",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "",
+            "image": "",
+            "classtype": "data.TextCell"
+          },
+          {
+            "title": "Cell1",
+            "sort": 100,
+            "gridColumn": "span 2",
+            "gridRow": "",
+            "color": "white",
+            "text": "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n",
+            "bgcolor": "#6E1841",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "",
+            "image": "",
+            "classtype": "data.TextCell"
+          },
+          {
+            "title": "Cell1",
+            "sort": 100,
+            "gridColumn": "",
+            "gridRow": "",
+            "color": "white",
+            "text": "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n",
+            "bgcolor": "#6E1841",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "",
+            "image": "",
+            "classtype": "data.TextCell"
+          },
+          {
+            "title": "Cell1",
+            "sort": 100,
+            "gridColumn": "",
+            "gridRow": "",
+            "color": "white",
+            "text": "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n",
+            "bgcolor": "#312632",
+            "bgimage": "/assets/background/background.jpg",
+            "url": "",
+            "image": "",
+            "classtype": "data.TextCell"
+          }
+        ],
+        "classtype": "data.SectionCells"
+      }
+    ],
+    "classtype": "data.Home"
+  }
