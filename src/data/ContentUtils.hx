@@ -19,6 +19,11 @@ class ContentUtils {
 Körakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.
 
                         '}),
+
+
+new VideoCell( {gridColumn:'span 2'} ),
+
+
 new TextCell({title:'Cell1', bgcolor:'#43245D', color: 'white', gridColumn:'span 2', image: '', text:'
 
 ## ScorX Player                        
@@ -55,6 +60,7 @@ new TextCell({title:'Cell1', bgcolor:'#312632', color: 'white',gridColumn:'', im
 Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? 
 
 '}),
+
 
 
                     ]}),

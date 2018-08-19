@@ -1006,6 +1006,130 @@ data_TextCell.prototype = {
 	,__class__: data_TextCell
 	,__properties__: {set_image:"set_image",set_url:"set_url",set_bgimage:"set_bgimage",set_bgcolor:"set_bgcolor",set_text:"set_text",set_color:"set_color",set_gridRow:"set_gridRow",set_gridColumn:"set_gridColumn",set_sort:"set_sort",set_title:"set_title"}
 };
+var data_VideoCell = function(data1) {
+	this.video = "/assets/video/tada.mp4";
+	this.image = "";
+	this.url = "";
+	this.bgimage = "/assets/background/background.jpg";
+	this.bgcolor = "#666";
+	this.text = "Celltext...";
+	this.color = "white";
+	this.gridRow = "";
+	this.gridColumn = "";
+	this.sort = 100;
+	this.title = "Cell Title";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"title")) {
+			this.set_title(data1.title);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"sort")) {
+			this.set_sort(data1.sort);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"gridColumn")) {
+			this.set_gridColumn(data1.gridColumn);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"gridRow")) {
+			this.set_gridRow(data1.gridRow);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"color")) {
+			this.set_color(data1.color);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"text")) {
+			this.set_text(data1.text);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"bgcolor")) {
+			this.set_bgcolor(data1.bgcolor);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"bgimage")) {
+			this.set_bgimage(data1.bgimage);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"url")) {
+			this.set_url(data1.url);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"image")) {
+			this.set_image(data1.image);
+		}
+		if(Object.prototype.hasOwnProperty.call(data1,"video")) {
+			this.set_video(data1.video);
+		}
+	}
+};
+$hxClasses["data.VideoCell"] = data_VideoCell;
+data_VideoCell.__name__ = ["data","VideoCell"];
+data_VideoCell.__interfaces__ = [data_IHomeCell];
+data_VideoCell.validate = function(data1) {
+	return [];
+};
+data_VideoCell.prototype = {
+	set_title: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.title.");
+		}
+		return this.title = v;
+	}
+	,set_sort: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.sort.");
+		}
+		return this.sort = v;
+	}
+	,set_gridColumn: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.gridColumn.");
+		}
+		return this.gridColumn = v;
+	}
+	,set_gridRow: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.gridRow.");
+		}
+		return this.gridRow = v;
+	}
+	,set_color: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.color.");
+		}
+		return this.color = v;
+	}
+	,set_text: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.text.");
+		}
+		return this.text = v;
+	}
+	,set_bgcolor: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.bgcolor.");
+		}
+		return this.bgcolor = v;
+	}
+	,set_bgimage: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.bgimage.");
+		}
+		return this.bgimage = v;
+	}
+	,set_url: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.url.");
+		}
+		return this.url = v;
+	}
+	,set_image: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.image.");
+		}
+		return this.image = v;
+	}
+	,set_video: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for VideoCell.video.");
+		}
+		return this.video = v;
+	}
+	,__class__: data_VideoCell
+	,__properties__: {set_video:"set_video",set_image:"set_image",set_url:"set_url",set_bgimage:"set_bgimage",set_bgcolor:"set_bgcolor",set_text:"set_text",set_color:"set_color",set_gridRow:"set_gridRow",set_gridColumn:"set_gridColumn",set_sort:"set_sort",set_title:"set_title"}
+};
 var data_Shelf = function(data1) {
 	this.type = "content";
 	this.sort = 0;
@@ -1373,7 +1497,7 @@ var data_ContentUtils = function() { };
 $hxClasses["data.ContentUtils"] = data_ContentUtils;
 data_ContentUtils.__name__ = ["data","ContentUtils"];
 data_ContentUtils.getContentInit = function() {
-	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Subkapitel 0", access : 0}),new data_Chapter({ id : "ros0", title : "Rosettakapitel", access : 0, type : new data_RosettaChapter({ data : "{abc:\"ABC\"}"})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChapter({ url : "/video/kap/1"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChapter()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Subkapitel 0", access : 0}),new data_Chapter({ id : "ros0", title : "Rosettakapitel", access : 0, type : new data_RosettaChapter({ data : "{abc:\"ABC\"}"})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChapter({ url : "/video/kap/1"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChapter()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
 };
 var data_ContentModel = function() {
 	console.log("src/data/ContentModel.hx:15:","new content");
@@ -3581,8 +3705,7 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			var node1 = mdNode;
 			var child1 = markdown_MithrilTools.cache.get(node1.data);
 			if(child1 == null) {
-				var child2 = "data-node: " + Std.string(node1.data);
-				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : "data-node: " + Std.string(node1.data)}]};
 				markdown_MithrilTools.cache.set(node1.data,child1);
 			}
 			parent.children.push(child1);
@@ -3847,32 +3970,45 @@ ui_Homepage.prototype = {
 	,cellsView: function(s) {
 		try {
 			return m.m("section.cells",[s.title > "" ? m.m("header",m.m("h1",s.title)) : null,s.cells.map(function(c) {
-				var c1 = c;
-				var styles = { };
-				var aTag = c1.url > "" ? "a" : "div";
-				var aHref = c1.url > "" ? { href : c1.url, oncreate : mithril__$M_M_$Impl_$.routeLink} : null;
-				var image = c1.image > "" ? m.m("img",{ src : c1.image}) : null;
-				if(c1.color > "") {
-					styles["color"] = c1.color;
+				if((c == null ? null : js_Boot.getClass(c)) == data_VideoCell) {
+					var c1 = c;
+					var styles = { };
+					if(c1.gridColumn > "") {
+						styles["gridColumn"] = c1.gridColumn;
+					}
+					if(c1.gridRow > "") {
+						styles["gridRow"] = c1.gridRow;
+					}
+					var tmp = m.m("video",{ src : c1.video, controls : true, style : { width : "100%", height : "100%", backgroundColor : "black"}});
+					return m.m("article.cell",{ style : styles},tmp);
+				} else {
+					var c2 = c;
+					var styles1 = { };
+					var aTag = c2.url > "" ? "a" : "div";
+					var aHref = c2.url > "" ? { href : c2.url, oncreate : mithril__$M_M_$Impl_$.routeLink} : null;
+					var image = c2.image > "" ? m.m("img",{ src : c2.image}) : null;
+					if(c2.color > "") {
+						styles1["color"] = c2.color;
+					}
+					if(c2.bgcolor > "") {
+						styles1["backgroundColor"] = c2.bgcolor;
+					}
+					if(c2.bgimage > "") {
+						styles1["backgroundImage"] = "url(\"" + c2.bgimage + "\")";
+					}
+					if(c2.gridColumn > "") {
+						styles1["gridColumn"] = c2.gridColumn;
+					}
+					if(c2.gridRow > "") {
+						styles1["gridRow"] = c2.gridRow;
+					}
+					var tmp1 = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c2.text)]);
+					return m.m("article.cell",{ style : styles1},tmp1);
 				}
-				if(c1.bgcolor > "") {
-					styles["backgroundColor"] = c1.bgcolor;
-				}
-				if(c1.gridColumn > "") {
-					styles["gridColumn"] = c1.gridColumn;
-				}
-				if(c1.bgimage > "") {
-					styles["backgroundImage"] = "url(\"" + c1.bgimage + "\")";
-				}
-				if(c1.gridRow > "") {
-					styles["gridRow"] = c1.gridRow;
-				}
-				var tmp = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c1.text)]);
-				return m.m("article.cell",{ style : styles},tmp);
 			})]);
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			console.log("src/ui/ClientUI.hx:397:","error: " + Std.string(e1));
+			console.log("src/ui/ClientUI.hx:407:","error: " + Std.string(e1));
 			return m.m("div.error","Error:" + Std.string(e1));
 		}
 	}
@@ -4393,6 +4529,7 @@ data_Home.__meta__ = { obj : { dataClassRtti : [{ title : "String", sections : "
 data_SectionShelves.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int"}]}};
 data_SectionCells.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int", cells : "Array<Interface<data.IHomeCell>>"}]}};
 data_TextCell.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int", gridColumn : "String", gridRow : "String", color : "String", text : "String", bgcolor : "String", bgimage : "String", url : "String", image : "String"}]}};
+data_VideoCell.__meta__ = { obj : { dataClassRtti : [{ title : "String", sort : "Int", gridColumn : "String", gridRow : "String", color : "String", text : "String", bgcolor : "String", bgimage : "String", url : "String", image : "String", video : "String"}]}};
 data_Shelf.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", books : "Array<DataClass<data.Book>>", sort : "Int", type : "String"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Book.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", type : "String", info : "String", chapters : "Array<DataClass<data.Chapter>>", sort : "Int"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Chapter.__meta__ = { obj : { dataClassRtti : [{ id : "String", title : "String", access : "Int", info : "String", text : "String", sort : "Int", subchapters : "Array<DataClass<data.Chapter>>", type : "Interface<data.IChaptertype>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};

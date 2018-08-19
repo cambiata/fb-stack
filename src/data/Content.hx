@@ -71,6 +71,22 @@ class TextCell implements IHomeCell {
     public var     image: String = '';
 }
 
+class VideoCell implements IHomeCell {
+    public var     title:String = 'Cell Title';
+    public var     sort:Int = 100;
+    public var     gridColumn:String = '';
+    public var     gridRow:String = '';
+    public var     color:String = 'white';
+    public var     text:String = 'Celltext...';
+    public var     bgcolor:String = '#666';     
+    public var     bgimage:String = '/assets/background/background.jpg';     
+    public var     url: String = '';
+    public var     image: String = '';
+    
+    public var     video:String = '/assets/video/tada.mp4';         
+}
+
+
 // class Home
 // class DomItem implements DataClass {
 //     public var      tag:String = 'div';

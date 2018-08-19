@@ -372,25 +372,35 @@ class Homepage implements Mithril {
         m('section.cells', [
             header,
             s.cells.map(c->{
-                var c:TextCell = cast c;
-                var styles = new DynamicAccess<String>();
+                return switch Type.getClass(c) {
+                    case VideoCell:
+                        var c:VideoCell = cast c;
+                        var styles = new DynamicAccess<String>();
+                        if (c.gridColumn > '') styles.set('gridColumn', c.gridColumn);
+                        if (c.gridRow > '') styles.set('gridRow', c.gridRow);
+                        m('article.cell', {style:styles},  
+                            m('video', {src:c.video, controls:true, style:{width:'100%', height:'100%', backgroundColor:'black'}})
+                        );
 
-                var aTag = c.url > '' ? 'a' : 'div';
-                var aHref = c.url > '' ? {href: c.url, oncreate:M.routeLink} : null;
-
-                var image = c.image > '' ? m('img', {src:c.image}) : null;                
-                if (c.color > '') styles.set('color', c.color);
-                if (c.bgcolor > '') styles.set('backgroundColor', c.bgcolor);
-                if (c.gridColumn > '') styles.set('gridColumn', c.gridColumn);
-                if (c.bgimage > '') styles.set('backgroundImage', 'url("' + c.bgimage + '")');
-                if (c.gridRow > '') styles.set('gridRow', c.gridRow);
-                m('article.cell', {style: styles}, 
-                    m(aTag, aHref, [
-                            image,
-                            MithrilTools.markdownToView(c.text),
-                        ]
-                    )
-                );
+                    case _: 
+                        var c:TextCell = cast c;
+                        var styles = new DynamicAccess<String>();
+                        var aTag = c.url > '' ? 'a' : 'div';
+                        var aHref = c.url > '' ? {href: c.url, oncreate:M.routeLink} : null;
+                        var image = c.image > '' ? m('img', {src:c.image}) : null;                
+                        if (c.color > '') styles.set('color', c.color);
+                        if (c.bgcolor > '') styles.set('backgroundColor', c.bgcolor);
+                        if (c.bgimage > '') styles.set('backgroundImage', 'url("' + c.bgimage + '")');
+                        if (c.gridColumn > '') styles.set('gridColumn', c.gridColumn);
+                        if (c.gridRow > '') styles.set('gridRow', c.gridRow);
+                        m('article.cell', {style: styles}, 
+                            m(aTag, aHref, [
+                                    image,
+                                    MithrilTools.markdownToView(c.text),
+                                ]
+                            )
+                        );
+                }
             }),
         ]);
     } catch (e:Dynamic) { 
