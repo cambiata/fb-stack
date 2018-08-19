@@ -36,8 +36,12 @@ main section header {
     /* background-color: yellow; */
     color: gray;    
     grid-column: 1/-1;  
-    padding-top: 0.5em;
+    /* padding-top: 0.5em; */
 }
+
+main section header h1 { padding-top: 0.5em;}
+main section header h2 { padding-top: 0.5em;}
+main section header h3 { padding-top: 0.5em;}
 
 main section article {
     background-color: #ccc;

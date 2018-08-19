@@ -17,12 +17,10 @@ class Client {
         FirebaseModel.instance.init();        
         Routes.instance.init();        
         
-        // ContentModel.instance.init();
-        
         ClientUI.instance.init();
         UserModel.instance.init();
         
-        // ContentLoader.instance.loadContent();
+        ContentLoader.instance.loadContent();
         UserLoader.instance.startSession();
     }
 }

@@ -12,6 +12,7 @@ var Client = function() {
 	data_Routes.instance.init();
 	ui_ClientUI.instance.init();
 	data_UserModel.instance.init();
+	data_ContentLoader.instance.loadContent();
 	data_UserLoader.instance.startSession();
 };
 $hxClasses["Client"] = Client;
@@ -895,6 +896,9 @@ var data_IHomeCell = function() { };
 $hxClasses["data.IHomeCell"] = data_IHomeCell;
 data_IHomeCell.__name__ = ["data","IHomeCell"];
 data_IHomeCell.__interfaces__ = [DataClass];
+data_IHomeCell.prototype = {
+	__class__: data_IHomeCell
+};
 var data_TextCell = function(data1) {
 	this.image = "";
 	this.url = "";
@@ -3969,7 +3973,12 @@ ui_Homepage.prototype = {
 	}
 	,cellsView: function(s) {
 		try {
-			return m.m("section.cells",[s.title > "" ? m.m("header",m.m("h1",s.title)) : null,s.cells.map(function(c) {
+			var header = s.title > "" ? m.m("header",m.m("h1",s.title)) : null;
+			var copy = s.cells.slice();
+			copy.sort(function(a,b) {
+				return a.sort - b.sort;
+			});
+			return m.m("section.cells",[header,copy.map(function(c) {
 				if((c == null ? null : js_Boot.getClass(c)) == data_VideoCell) {
 					var c1 = c;
 					var styles = { };

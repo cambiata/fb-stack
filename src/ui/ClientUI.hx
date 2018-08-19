@@ -371,7 +371,7 @@ class Homepage implements Mithril {
 
         m('section.cells', [
             header,
-            s.cells.map(c->{
+            s.cells.sortA((a,b)->a.sort-b.sort).map(c->{
                 return switch Type.getClass(c) {
                     case VideoCell:
                         var c:VideoCell = cast c;
