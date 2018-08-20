@@ -72,19 +72,19 @@ Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna ba
                 new Shelf({id:'shelf0', title:'Default page shelves', access:0, books:[
                     new Book({id:'book0', title:'Bok 0', access: 0, chapters:[
                         new Chapter({id:'chapter0', title:'Kapitel 1', access:1, subchapters:[
-                            new Chapter({id:'sub0', title:'Subkapitel 0', access:0}),
-                            new Chapter({id:'ros0', title:'Rosettakapitel', access:0, type: new RosettaChapter({data:'{abc:"ABC"}'})}),
+                            new Chapter({id:'sub0', title:'Sub', access:0}),
+                            new Chapter({id:'vidc1', title:'Video', access:0, type: new VideoChaptertype({url:'/assets/video/tada.mp4'})}),
+                            new Chapter({id:'pdf1', title:'Pdf', access:0, type: new PdfChaptertype()}),
+                            new Chapter({id:'ros0', title:'Rosetta', access:0, type: new RosettaChaptertype()}),
+                            new Chapter({id:'pitch1', title:'Pitch', access:0, type: new PitchChaptertype()}),
                         ]}),
 
-                        new Chapter({id:'vidc1', title:'Videokapitel 1', type: new VideoChapter({url:'/video/kap/1'})}),
-                        new Chapter({id:'pdf1', title:'Pdfkapitel 1', type: new PdfChapter()}),
+                        new Chapter({id:'vidc1', title:'Videokapitel 1', type: new VideoChaptertype({url:'/assets/video/tada.mp4'})}),
+                        new Chapter({id:'pdf1', title:'Pdfkapitel 1', type: new PdfChaptertype()}),
+                        new Chapter({id:'rosetta1', title:'Rosetta 1', type: new RosettaChaptertype()}),
+                        new Chapter({id:'pitch1', title:'Pitch 1', type: new PitchChaptertype()}),
+                        new Chapter({id:'scorx1', title:'Scorxmixer 1', type: new ScorxmixerChaptertype()}),
 
-                        // new Chapter({id:'chapter1', title:'Kapitel 2', access:0, subchapters:[
-                        //     new Chapter({id:'sub0', title:'Sub0', access:0}),
-                        //     new Chapter({id:'sub1', title:'Sub1', access:0}),
-                        //     new Chapter({id:'sub2', title:'Sub2', access:0}),
-                        // ]}),
-                        // new Chapter({id:'chapter3', title:'Kapitel 3', access:0, subchapters:[]}),
                     ]}),
                     new Book({id:'book1', title:'Bok 1', access: 1, chapters:[
                         new Chapter({id:'chapter0', title:'Kapitel 1', access:1, subchapters:[

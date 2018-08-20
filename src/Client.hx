@@ -1,9 +1,10 @@
 
+
 import markdown.MithrilTools;
 import js.Promise;
 import firebase.Firebase;
-// import mithril.M;
-// import mithril.M.m;
+import mithril.M;
+import mithril.M.m;
 import ui.*;
 import data.*;
 // import utils.*;
@@ -19,10 +20,50 @@ class Client {
         
         ClientUI.instance.init();
         UserModel.instance.init();
-        
-        ContentLoader.instance.loadContent();
+
         UserLoader.instance.startSession();
+
+        initBundledClasses();
     }
+
+    function initBundledClasses() {
+        haxe.Timer.delay(()->{            
+            Bundle.load(ui.LazyView).then(_->{
+                ViewMapper.instance.set('test', ui.LazyView);
+                M.redraw();
+            });
+
+
+            Bundle.load(ui.RosettaChapter).then(_->{
+                ViewMapper.instance.set('ui.RosettaChapter', ui.RosettaChapter);
+                M.redraw();
+
+            });
+
+            Bundle.load(ui.PdfChapter).then(_->{
+                ViewMapper.instance.set('ui.PdfChapter', ui.PdfChapter);
+                M.redraw();
+            });
+
+            Bundle.load(ui.VideoChapter).then(_->{
+                ViewMapper.instance.set('ui.VideoChapter', ui.VideoChapter);
+                M.redraw();
+            });          
+
+            Bundle.load(ui.PitchChapter).then(_->{
+                ViewMapper.instance.set('ui.PitchChapter', ui.PitchChapter);
+                M.redraw();
+            });             
+
+            Bundle.load(ui.ScorxmixerChapter).then(_->{
+                ViewMapper.instance.set('ui.ScorxmixerChapter', ui.ScorxmixerChapter);
+                M.redraw();
+            });                      
+
+        }, 2000);
+
+    }
+
 }
 
 

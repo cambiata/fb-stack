@@ -16,6 +16,7 @@ class Main {
                 M.redraw();
             });
         }, 2000);
+
         M.mount(js.Browser.document.body, new Index());
     }
 }
@@ -33,7 +34,7 @@ class Index implements Mithril {
     public function view()  {                
         [
             m('h1', 'Index'),
-            ClassMap.instance.getNew('test').view(),
+            cast ClassMap.instance.getNew('test').view(),
         ];
     }        
 }

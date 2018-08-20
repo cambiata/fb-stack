@@ -39,7 +39,7 @@ class ArrayTools {
 
 	inline static public function sortA<T>(a:Array<T>, fn: T->T->Int):Array<T> {
 		var copy = a.copy();
-		copy.sort(fn)
+		copy.sort(fn);
 		return copy;
 	}
 

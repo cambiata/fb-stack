@@ -7,7 +7,7 @@
 -lib mithril
 -lib dataclass
 -lib markdown
--lib compiletime
+-lib modular
 
 # -D no_page_scrolling
 # -D local_content

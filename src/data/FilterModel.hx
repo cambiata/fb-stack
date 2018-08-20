@@ -51,7 +51,7 @@ class FilterModel {
             shelves;
 
         } catch (e:Dynamic) {
-            trace('FilterModel.getShelves(): Cant not get shelves of room with ref ' + this.filterContent);
+            //trace('FilterModel.getShelves(): Cant not get shelves of room with ref ' + this.filterContent);
             [];
         }
     }

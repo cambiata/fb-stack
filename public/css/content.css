@@ -63,8 +63,6 @@ div.book > nav img {
     margin-top: 1em;
 }
 
-
-
 div.book > article {
     color: black;
     grid-column: 2/3;
@@ -85,7 +83,6 @@ div.book > article > menu {
     background-color: #eee;
     grid-row: auto / span 1;
     padding: 1em;
-
 }
 
 div.book > article > menu  a {
@@ -113,3 +110,23 @@ div.book > article > section h2 {
 div.book > article > section h3 {
     margin-bottom: 0.4em;
 } 
+
+.specialchapter {
+    background-color: #555;
+    padding: 2em;
+    color: white;
+}
+
+.pdfbackground {
+    background-color: #ccc;
+    padding: .3em;
+}
+
+.pdfpage {
+    margin-bottom: .3em;    
+    border: 1px solid gray;
+    margin: 0 auto;
+    display: block;
+    width: 100%;
+
+}

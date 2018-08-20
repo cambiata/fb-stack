@@ -132,7 +132,7 @@ class UIHeader implements Mithril {
         // }
 
         return [
-            m('h2', '' + FilterModel.instance.getRoom().title),
+            m('h2', '' + (FilterModel.instance.getRoom() != null ? FilterModel.instance.getRoom().title : 'No room loaded!')),
             userView(),
         ];
     }

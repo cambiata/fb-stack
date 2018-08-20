@@ -131,7 +131,6 @@ class Book implements DataClass {
     public var    access:Int = 0;
     public var    type:Booktype = Standard;
     public var    info:String = 'defaultBookInfo';
-    // public var    chapters:Array<IChapter> = [];
     public var    chapters:Array<Chapter> = [];
     public var    sort:Int = 0;
     @exclude public var path:String = '';
@@ -157,21 +156,30 @@ interface IChaptertype extends DataClass {
     // var extratype(default, set):String;
 }
 
-class Standard implements IChaptertype {
+class StandardChaptertype implements IChaptertype {
     // public var extratype:String = 'chapter';
 }
 
-class VideoChapter implements IChaptertype {
+class VideoChaptertype implements IChaptertype {
     public var url:String = '/url/to/video';
 }
 
-class RosettaChapter implements IChaptertype {
+class RosettaChaptertype implements IChaptertype {
     public var data:String = '{xyz:123}';
 }
 
-class PdfChapter implements IChaptertype {
+class PdfChaptertype implements IChaptertype {
     public var filename:String = '/test.pdf';
 }
+
+class PitchChaptertype implements IChaptertype {
+    //public var filename:String = '/test.pdf';
+}
+
+class ScorxmixerChaptertype implements IChaptertype {
+    //public var filename:String = '/test.pdf';
+}
+
 
 
 typedef ContentRef = {roomId:String, shelfId:String, bookId:String, chapterId:String, subchapterId:String};
