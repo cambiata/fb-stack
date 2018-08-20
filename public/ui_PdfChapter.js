@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, mithril_Mithril = $s.b, haxe_ds_StringMap = $s.d, Std = $s.c;
+var $hxClasses = $s.a, mithril_Mithril = $s.b, haxe_ds_StringMap = $s.d, haxe_Log = $s.e, Std = $s.c;
 var data_PdfModel = function() {
 	this.map = new haxe_ds_StringMap();
 };
@@ -77,8 +77,8 @@ pdfjs_PDFDoc.prototype = {
 			canvas.height = viewport.height;
 			canvas.width = viewport.width;
 			return page.render({ canvasContext : canvas.getContext("2d",null), viewport : viewport}).then(function(x) {
-				console.log("src/pdfjs/PDF.hx:76:","renderd page " + pageNr);
-				console.log("src/pdfjs/PDF.hx:77:",canvas.width + " " + canvas.height);
+				haxe_Log.trace("renderd page " + pageNr,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 76, className : "pdfjs.PDFDoc", methodName : "renderPage"});
+				haxe_Log.trace(canvas.width + " " + canvas.height,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 77, className : "pdfjs.PDFDoc", methodName : "renderPage"});
 				return canvas;
 			});
 		});

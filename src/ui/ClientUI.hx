@@ -142,7 +142,12 @@ class UIContent implements Mithril {
             new Shelvespage().view(),
             
             //new ShelvesView().view(),
-            new Bookpage().view(),
+            
+            
+            // new Bookpage().view(),
+            BookpageCache.instance.getBookpageView(),
+
+
             // new BookView().view(),
             [
                 new ui.content.ContentTreeView(ContentModel.instance.content).view(),

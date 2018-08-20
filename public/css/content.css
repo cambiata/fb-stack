@@ -128,5 +128,16 @@ div.book > article > section h3 {
     margin: 0 auto;
     display: block;
     width: 100%;
+}
 
+.scorx {
+    border: 1px solid gray;
+    padding: 1em;
+    display: grid;
+    grid-gap: 1em;
+}
+
+.channelview {    
+    display: grid;
+    grid-gap: 0.5em;
 }

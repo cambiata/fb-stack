@@ -14,9 +14,12 @@ using cx.ArrayTools;
 
 class Bookpage implements Mithril {
     public function new() {
-
+        bpcount++;
+        trace('bookpage new: ' + bpcount + ' ' + FilterModel.instance.getBook().path);
     }
     
+    static public var bpcount:Int = 0;
+
     function chapterView(chapter:Chapter) {
         return try {     
             if (chapter == null)  return null; //???
@@ -130,8 +133,7 @@ class Bookpage implements Mithril {
     function specialChapterView(chapter:Chapter) try {
         
         if (chapter == null || chapter.type == null) return null; //m('div', 'No special chapter');
-        
-        trace(Type.getClass(chapter.type));
+                
 
         return switch Type.getClass(chapter.type) {
             case VideoChaptertype: ViewMapper.instance.getNew('ui.VideoChapter', [chapter.type]).view();

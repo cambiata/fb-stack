@@ -700,6 +700,243 @@ Type.createEnum = function(e,constr,params) {
 	}
 	return f;
 };
+var audio_Audio = function() {
+	this.context = new AudioContext();
+};
+$hxClasses["audio.Audio"] = audio_Audio;
+audio_Audio.__name__ = ["audio","Audio"];
+audio_Audio.prototype = {
+	__class__: audio_Audio
+};
+var audio_IPlayback = function() { };
+$hxClasses["audio.IPlayback"] = audio_IPlayback;
+audio_IPlayback.__name__ = ["audio","IPlayback"];
+var audio_scorx_Mixer = function(channels) {
+	this.channels = [];
+	this.channels = channels;
+	this.trackVolumeNodes = [];
+	this.sampleNodes = [];
+	this.masterVolumeNode = audio_Audio.instance.context.createGain();
+	this.analyserNode = audio_Audio.instance.context.createAnalyser();
+};
+$hxClasses["audio.scorx.Mixer"] = audio_scorx_Mixer;
+audio_scorx_Mixer.__name__ = ["audio","scorx","Mixer"];
+audio_scorx_Mixer.__interfaces__ = [audio_IPlayback];
+audio_scorx_Mixer.prototype = {
+	play: function(startTime) {
+		if(startTime == null) {
+			startTime = 0;
+		}
+		this.buildGraph();
+		this.elapsedTimeSinceStart = startTime;
+		this.sampleNodes.map(function(s) {
+			s.start(0,startTime);
+			return;
+		});
+	}
+	,stop: function() {
+		this.sampleNodes.map(function(s) {
+			s.stop(0);
+			s = null;
+			return s;
+		});
+	}
+	,buildGraph: function() {
+		var sources = [];
+		haxe_Log.trace(this.channels.length,{ fileName : "src/audio/scorx/Mixer.hx", lineNumber : 47, className : "audio.scorx.Mixer", methodName : "buildGraph"});
+		var _g1 = 0;
+		var _g = this.channels.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var sample = this.channels[i].buffer;
+			sources[i] = audio_Audio.instance.context.createBufferSource();
+			sources[i].buffer = sample;
+			this.trackVolumeNodes[i] = audio_Audio.instance.context.createGain();
+			this.trackVolumeNodes[i].gain.value = this.channels[i].volume;
+			sources[i].connect(this.trackVolumeNodes[i],0,0);
+			this.trackVolumeNodes[i].connect(this.masterVolumeNode,0,0);
+			this.masterVolumeNode.connect(this.analyserNode,0,0);
+			this.analyserNode.connect(audio_Audio.instance.context.destination,0,0);
+		}
+		this.sampleNodes = sources;
+	}
+	,setVolumeOfChannel: function(idx,volume) {
+		if(this.trackVolumeNodes == null || this.trackVolumeNodes == []) {
+			return;
+		}
+		if(this.trackVolumeNodes[idx] == null) {
+			return;
+		}
+		this.trackVolumeNodes[idx].gain.value = volume;
+		this.channels[idx].volume = volume;
+	}
+	,__class__: audio_scorx_Mixer
+};
+var audio_scorx_Channel = function(name,buffer) {
+	this.name = name;
+	this.buffer = buffer;
+	this.peaks = 0;
+	this.volume = 1.0;
+	this.panning = 0;
+	this.sampleNode = null;
+	this.volumeNode = null;
+};
+$hxClasses["audio.scorx.Channel"] = audio_scorx_Channel;
+audio_scorx_Channel.__name__ = ["audio","scorx","Channel"];
+audio_scorx_Channel.prototype = {
+	__class__: audio_scorx_Channel
+};
+var audio_scorx_Loader = function() { };
+$hxClasses["audio.scorx.Loader"] = audio_scorx_Loader;
+audio_scorx_Loader.__name__ = ["audio","scorx","Loader"];
+audio_scorx_Loader.load = function(url) {
+	return new Promise(function(res,rej) {
+		var request = new XMLHttpRequest();
+		request.open("GET",url,true);
+		request.responseType = "arraybuffer";
+		request.onload = function(_) {
+			audio_Audio.instance.context.decodeAudioData(request.response,function(buffer) {
+				haxe_Log.trace("Loaded and decoded track " + url,{ fileName : "src/audio/scorx/Mixer.hx", lineNumber : 118, className : "audio.scorx.Loader", methodName : "load"});
+				if(buffer == null) {
+					rej("error decoding file data: " + url);
+				}
+				res({ url : url, buffer : buffer});
+			},function() {
+				rej("decodeAudioData error ");
+			});
+		};
+		request.send();
+		return;
+	});
+};
+var audio_scorx_MixerModel = function() {
+	this.loadId = null;
+	this.playing = false;
+	this.volumes = [];
+	this.files = [];
+	this.deltaTime = 0;
+};
+$hxClasses["audio.scorx.MixerModel"] = audio_scorx_MixerModel;
+audio_scorx_MixerModel.__name__ = ["audio","scorx","MixerModel"];
+audio_scorx_MixerModel.__interfaces__ = [audio_IPlayback];
+audio_scorx_MixerModel.prototype = {
+	loadFiles: function(id,files) {
+		var _gthis = this;
+		if(this.loadId == id) {
+			return;
+		}
+		this.loadId = id;
+		this.mixer = null;
+		this.files = files;
+		this.volumes = this.files.map(function(f) {
+			return 0.7;
+		});
+		m.redraw();
+		Promise.all(files.map(function(f1) {
+			return audio_scorx_Loader.load(f1);
+		})).then(function(buffers) {
+			return Promise.resolve(buffers.map(function(b) {
+				return new audio_scorx_Channel(b.url,b.buffer);
+			}));
+		}).then(function(channels) {
+			haxe_Log.trace("all channels loaded!",{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 40, className : "audio.scorx.MixerModel", methodName : "loadFiles"});
+			_gthis.mixer = new audio_scorx_Mixer(channels);
+			m.redraw();
+			return;
+		});
+	}
+	,play: function(startTime) {
+		if(startTime == null) {
+			startTime = 0;
+		}
+		this.deltaTime = audio_Audio.instance.context.currentTime;
+		haxe_Log.trace("Delta:" + this.deltaTime,{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 48, className : "audio.scorx.MixerModel", methodName : "play"});
+		if(this.mixer != null) {
+			this.mixer.stop();
+			this.mixer.play(startTime);
+			this.playing = true;
+		}
+	}
+	,stop: function() {
+		if(this.mixer != null) {
+			this.mixer.stop();
+		}
+		this.playing = false;
+	}
+	,setVolumeOfChannel: function(idx,volume) {
+		this.volumes[idx] = volume;
+		if(this.mixer != null) {
+			this.mixer.setVolumeOfChannel(idx,volume);
+		}
+	}
+	,__class__: audio_scorx_MixerModel
+};
+var mithril_Mithril = function() { };
+$hxClasses["mithril.Mithril"] = mithril_Mithril;
+mithril_Mithril.__name__ = ["mithril","Mithril"];
+var audio_scorx_ui_ChannelView = function(idx,filename) {
+	this.filename = filename;
+	this.idx = idx;
+};
+$hxClasses["audio.scorx.ui.ChannelView"] = audio_scorx_ui_ChannelView;
+audio_scorx_ui_ChannelView.__name__ = ["audio","scorx","ui","ChannelView"];
+audio_scorx_ui_ChannelView.__interfaces__ = [mithril_Mithril];
+audio_scorx_ui_ChannelView.prototype = {
+	view: function() {
+		var _gthis = this;
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var m1 = audio_scorx_MixerModel.instance;
+		return m.m("div.channelview",[m.m("span",this.idx + ":" + this.filename),m.m("input",{ type : "range", min : 0, max : 100, value : m1.volumes[this.idx] * 100, onchange : function(e) {
+			haxe_Log.trace("change: ",{ fileName : "src/audio/scorx/ui/ChannelView.hx", lineNumber : 19, className : "audio.scorx.ui.ChannelView", methodName : "view", customParams : [e.target.value]});
+			audio_scorx_MixerModel.instance.setVolumeOfChannel(_gthis.idx,e.target.value / 100);
+			return;
+		}})]);
+	}
+	,__class__: audio_scorx_ui_ChannelView
+};
+var audio_scorx_ui_PlayView = function() {
+	haxe_Log.trace("new",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 8, className : "audio.scorx.ui.PlayView", methodName : "new"});
+};
+$hxClasses["audio.scorx.ui.PlayView"] = audio_scorx_ui_PlayView;
+audio_scorx_ui_PlayView.__name__ = ["audio","scorx","ui","PlayView"];
+audio_scorx_ui_PlayView.__interfaces__ = [mithril_Mithril];
+audio_scorx_ui_PlayView.prototype = {
+	buttonsView: function() {
+		if(audio_scorx_MixerModel.instance.mixer != null) {
+			return [m.m("button",{ onclick : function(e) {
+				haxe_Log.trace("button clicked!",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 31, className : "audio.scorx.ui.PlayView", methodName : "buttonsView"});
+				audio_scorx_MixerModel.instance.play();
+				return;
+			}},"Start"),m.m("button",{ onclick : function(e1) {
+				haxe_Log.trace("button clicked!",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 35, className : "audio.scorx.ui.PlayView", methodName : "buttonsView"});
+				audio_scorx_MixerModel.instance.stop();
+				return;
+			}},"Stop")];
+		} else {
+			return m.m("div","Mixer not ready...");
+		}
+	}
+	,view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [this.buttonsView()];
+	}
+	,__class__: audio_scorx_ui_PlayView
+};
+var audio_scorx_ui_PlayerView = function() {
+};
+$hxClasses["audio.scorx.ui.PlayerView"] = audio_scorx_ui_PlayerView;
+audio_scorx_ui_PlayerView.__name__ = ["audio","scorx","ui","PlayerView"];
+audio_scorx_ui_PlayerView.__interfaces__ = [mithril_Mithril];
+audio_scorx_ui_PlayerView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var files = audio_scorx_MixerModel.instance.files;
+		return m.m("div.scorx",[new audio_scorx_ui_PlayView().view(),files.map(function(f) {
+			return new audio_scorx_ui_ChannelView(files.indexOf(f),f).view();
+		})]);
+	}
+	,__class__: audio_scorx_ui_PlayerView
+};
 var cx_Cache = function(maxItems) {
 	if(maxItems == null) {
 		maxItems = 3;
@@ -1730,7 +1967,7 @@ data_ContentUtils.getContentInit = function() {
 	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
 };
 var data_ContentModel = function() {
-	console.log("src/data/ContentModel.hx:15:","new content");
+	haxe_Log.trace("new content",{ fileName : "src/data/ContentModel.hx", lineNumber : 15, className : "data.ContentModel", methodName : "new"});
 	this.set_content(data_ContentUtils.getContentInit());
 };
 $hxClasses["data.ContentModel"] = data_ContentModel;
@@ -1803,11 +2040,11 @@ $hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
 data_ErrorsAndLogs.__name__ = ["data","ErrorsAndLogs"];
 data_ErrorsAndLogs.addLog = function(log) {
 	data_ErrorsAndLogs.logs.unshift(log);
-	console.log("src/data/ErrorsAndLogs.hx:14:",log);
+	haxe_Log.trace(log,{ fileName : "src/data/ErrorsAndLogs.hx", lineNumber : 14, className : "data.ErrorsAndLogs", methodName : "addLog"});
 };
 data_ErrorsAndLogs.addError = function(e) {
 	data_ErrorsAndLogs.errors.unshift(e);
-	console.log("src/data/ErrorsAndLogs.hx:26:",e);
+	haxe_Log.trace(e,{ fileName : "src/data/ErrorsAndLogs.hx", lineNumber : 26, className : "data.ErrorsAndLogs", methodName : "addError"});
 };
 var data_FilterModel = function() {
 };
@@ -2057,21 +2294,21 @@ data_UserLoader.prototype = {
 				data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 				return null;
 			}
-			console.log("src/data/UserLoader.hx:25:","Browser user found");
+			haxe_Log.trace("Browser user found",{ fileName : "src/data/UserLoader.hx", lineNumber : 25, className : "data.UserLoader", methodName : "startSession"});
 			return data_ApiCalls.getAuthRequest("/api/userconfig");
 		}).then(function(dataResponse) {
-			console.log("src/data/UserLoader.hx:29:",dataResponse);
+			haxe_Log.trace(dataResponse,{ fileName : "src/data/UserLoader.hx", lineNumber : 29, className : "data.UserLoader", methodName : "startSession"});
 			if(dataResponse == null) {
 				return;
 			}
 			data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
-			console.log("src/data/UserLoader.hx:34:","------------------------------------");
-			console.log("src/data/UserLoader.hx:35:","UserModelLoaded");
+			haxe_Log.trace("------------------------------------",{ fileName : "src/data/UserLoader.hx", lineNumber : 34, className : "data.UserLoader", methodName : "startSession"});
+			haxe_Log.trace("UserModelLoaded",{ fileName : "src/data/UserLoader.hx", lineNumber : 35, className : "data.UserLoader", methodName : "startSession"});
 			return;
 		}).then(function(val) {
 			return data_UserLoader.instance.setupOnAuthChange();
 		}).then(function(val1) {
-			console.log("src/data/UserLoader.hx:42:","finished User loading!");
+			haxe_Log.trace("finished User loading!",{ fileName : "src/data/UserLoader.hx", lineNumber : 42, className : "data.UserLoader", methodName : "startSession"});
 			return Promise.resolve(true);
 		});
 	}
@@ -2080,11 +2317,11 @@ data_UserLoader.prototype = {
 			data_UserModel.instance.set_userState(data_UserMode.Loading);
 			return firebase.auth().signInWithEmailAndPassword(email,password);
 		}).then(function(user) {
-			console.log("src/data/UserLoader.hx:57:","USER " + user);
+			haxe_Log.trace("USER " + user,{ fileName : "src/data/UserLoader.hx", lineNumber : 57, className : "data.UserLoader", methodName : "signIn"});
 			return null;
 		})["catch"](function(error) {
-			console.log("src/data/UserLoader.hx:61:","ERROR" + error);
-			console.log("src/data/UserLoader.hx:62:","error:" + error);
+			haxe_Log.trace("ERROR" + error,{ fileName : "src/data/UserLoader.hx", lineNumber : 61, className : "data.UserLoader", methodName : "signIn"});
+			haxe_Log.trace("error:" + error,{ fileName : "src/data/UserLoader.hx", lineNumber : 62, className : "data.UserLoader", methodName : "signIn"});
 			data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 			return;
 		});
@@ -2124,8 +2361,8 @@ data_UserLoader.prototype = {
 		haxe_Timer.delay(function() {
 			return firebase.app().auth().onAuthStateChanged(function(user) {
 				if(user != null) {
-					console.log("src/data/UserLoader.hx:103:","--- Browser session user found.");
-					console.log("src/data/UserLoader.hx:105:","compare:" + user.email + " " + data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email);
+					haxe_Log.trace("--- Browser session user found.",{ fileName : "src/data/UserLoader.hx", lineNumber : 103, className : "data.UserLoader", methodName : "setupOnAuthChange"});
+					haxe_Log.trace("compare:" + user.email + " " + data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email,{ fileName : "src/data/UserLoader.hx", lineNumber : 105, className : "data.UserLoader", methodName : "setupOnAuthChange"});
 					var address = user.email;
 					if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
 						throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
@@ -2135,23 +2372,23 @@ data_UserLoader.prototype = {
 					}
 					data_UserModel.instance.set_userState(data_UserMode.Loading);
 					data_ApiCalls.getAuthRequest("/api/userconfig").then(function(dataResponse) {
-						console.log("src/data/UserLoader.hx:113:","------------------------------------");
-						console.log("src/data/UserLoader.hx:114:","UserModelLoaded : onAuthStateChanged");
-						console.log("src/data/UserLoader.hx:115:","" + Std.string(dataResponse));
+						haxe_Log.trace("------------------------------------",{ fileName : "src/data/UserLoader.hx", lineNumber : 113, className : "data.UserLoader", methodName : "setupOnAuthChange"});
+						haxe_Log.trace("UserModelLoaded : onAuthStateChanged",{ fileName : "src/data/UserLoader.hx", lineNumber : 114, className : "data.UserLoader", methodName : "setupOnAuthChange"});
+						haxe_Log.trace("" + Std.string(dataResponse),{ fileName : "src/data/UserLoader.hx", lineNumber : 115, className : "data.UserLoader", methodName : "setupOnAuthChange"});
 						return data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
 					})["catch"](function(error) {
-						console.log("src/data/UserLoader.hx:121:","--- Could not load userconfig for browser session user");
-						console.log("src/data/UserLoader.hx:122:",error);
+						haxe_Log.trace("--- Could not load userconfig for browser session user",{ fileName : "src/data/UserLoader.hx", lineNumber : 121, className : "data.UserLoader", methodName : "setupOnAuthChange"});
+						haxe_Log.trace(error,{ fileName : "src/data/UserLoader.hx", lineNumber : 122, className : "data.UserLoader", methodName : "setupOnAuthChange"});
 						return;
 					});
 					return;
 				} else {
-					console.log("src/data/UserLoader.hx:128:","--- No browser session user found.");
+					haxe_Log.trace("--- No browser session user found.",{ fileName : "src/data/UserLoader.hx", lineNumber : 128, className : "data.UserLoader", methodName : "setupOnAuthChange"});
 					data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 					return;
 				}
 			},function(error1) {
-				console.log("src/data/UserLoader.hx:133:","--- Error: " + Std.string(error1));
+				haxe_Log.trace("--- Error: " + Std.string(error1),{ fileName : "src/data/UserLoader.hx", lineNumber : 133, className : "data.UserLoader", methodName : "setupOnAuthChange"});
 				return data_UserModel.instance.set_userState(data_UserMode.Anonymous);
 			});
 		},2000);
@@ -2555,6 +2792,28 @@ dataclass_TypedJsonConverter.__super__ = dataclass_Converter;
 dataclass_TypedJsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_TypedJsonConverter
 });
+var haxe_Log = function() { };
+$hxClasses["haxe.Log"] = haxe_Log;
+haxe_Log.__name__ = ["haxe","Log"];
+haxe_Log.formatOutput = function(v,infos) {
+	var str = Std.string(v);
+	if(infos == null) {
+		return str;
+	}
+	var pstr = infos.fileName + ":" + infos.lineNumber;
+	if(infos != null && infos.customParams != null) {
+		var _g = 0;
+		var _g1 = infos.customParams;
+		while(_g < _g1.length) str += ", " + Std.string(_g1[_g++]);
+	}
+	return pstr + ": " + str;
+};
+haxe_Log.trace = function(v,infos) {
+	var str = haxe_Log.formatOutput(v,infos);
+	if(typeof(console) != "undefined" && console.log != null) {
+		console.log(str);
+	}
+};
 var haxe_Timer = function(time_ms) {
 	var me = this;
 	this.id = setInterval(function() {
@@ -2903,6 +3162,111 @@ js_Boot.__isNativeObj = function(o) {
 };
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
+};
+var js_html_compat_ArrayBuffer = function(a) {
+	if((a instanceof Array) && a.__enum__ == null) {
+		this.a = a;
+		this.byteLength = a.length;
+	} else {
+		var len = a;
+		this.a = [];
+		var _g1 = 0;
+		while(_g1 < len) this.a[_g1++] = 0;
+		this.byteLength = len;
+	}
+};
+$hxClasses["js.html.compat.ArrayBuffer"] = js_html_compat_ArrayBuffer;
+js_html_compat_ArrayBuffer.__name__ = ["js","html","compat","ArrayBuffer"];
+js_html_compat_ArrayBuffer.sliceImpl = function(begin,end) {
+	var u = new Uint8Array(this,begin,end == null ? null : end - begin);
+	var result = new ArrayBuffer(u.byteLength);
+	new Uint8Array(result).set(u);
+	return result;
+};
+js_html_compat_ArrayBuffer.prototype = {
+	slice: function(begin,end) {
+		return new js_html_compat_ArrayBuffer(this.a.slice(begin,end));
+	}
+	,__class__: js_html_compat_ArrayBuffer
+};
+var js_html_compat_Uint8Array = function() { };
+$hxClasses["js.html.compat.Uint8Array"] = js_html_compat_Uint8Array;
+js_html_compat_Uint8Array.__name__ = ["js","html","compat","Uint8Array"];
+js_html_compat_Uint8Array._new = function(arg1,offset,length) {
+	var arr;
+	if(typeof(arg1) == "number") {
+		arr = [];
+		var _g1 = 0;
+		var _g = arg1;
+		while(_g1 < _g) {
+			var i = _g1++;
+			arr[i] = 0;
+		}
+		arr.byteLength = arr.length;
+		arr.byteOffset = 0;
+		arr.buffer = new js_html_compat_ArrayBuffer(arr);
+	} else if((arg1 instanceof js_html_compat_ArrayBuffer)) {
+		var buffer = arg1;
+		if(offset == null) {
+			offset = 0;
+		}
+		if(length == null) {
+			length = buffer.byteLength - offset;
+		}
+		if(offset == 0) {
+			arr = buffer.a;
+		} else {
+			arr = buffer.a.slice(offset,offset + length);
+		}
+		arr.byteLength = arr.length;
+		arr.byteOffset = offset;
+		arr.buffer = buffer;
+	} else if((arg1 instanceof Array) && arg1.__enum__ == null) {
+		arr = arg1.slice();
+		arr.byteLength = arr.length;
+		arr.byteOffset = 0;
+		arr.buffer = new js_html_compat_ArrayBuffer(arr);
+	} else {
+		throw new js__$Boot_HaxeError("TODO " + Std.string(arg1));
+	}
+	arr.subarray = js_html_compat_Uint8Array._subarray;
+	arr.set = js_html_compat_Uint8Array._set;
+	return arr;
+};
+js_html_compat_Uint8Array._set = function(arg,offset) {
+	if(offset == null) {
+		offset = 0;
+	}
+	if((arg.buffer instanceof js_html_compat_ArrayBuffer)) {
+		var a = arg;
+		if(arg.byteLength + offset > this.byteLength) {
+			throw new js__$Boot_HaxeError("set() outside of range");
+		}
+		var _g1 = 0;
+		var _g = arg.byteLength;
+		while(_g1 < _g) {
+			var i = _g1++;
+			this[i + offset] = a[i];
+		}
+	} else if((arg instanceof Array) && arg.__enum__ == null) {
+		var a1 = arg;
+		if(a1.length + offset > this.byteLength) {
+			throw new js__$Boot_HaxeError("set() outside of range");
+		}
+		var _g11 = 0;
+		var _g2 = a1.length;
+		while(_g11 < _g2) {
+			var i1 = _g11++;
+			this[i1 + offset] = a1[i1];
+		}
+	} else {
+		throw new js__$Boot_HaxeError("TODO");
+	}
+};
+js_html_compat_Uint8Array._subarray = function(start,end) {
+	var a = js_html_compat_Uint8Array._new(this.slice(start,end));
+	a.byteOffset = start;
+	return a;
 };
 var markdown_Node = function() { };
 $hxClasses["markdown.Node"] = markdown_Node;
@@ -3861,7 +4225,7 @@ markdown_MarkdownTools.getBlocks = function(markdown1,additionalInlineSyntaxes) 
 		blocks = document.parseLines(lines);
 		return blocks;
 	} catch( e ) {
-		console.log("src/markdown/MarkdownTools.hx:37:",(e instanceof js__$Boot_HaxeError) ? e.val : e);
+		haxe_Log.trace((e instanceof js__$Boot_HaxeError) ? e.val : e,{ fileName : "src/markdown/MarkdownTools.hx", lineNumber : 37, className : "markdown.MarkdownTools", methodName : "getBlocks"});
 		return null;
 	}
 };
@@ -3907,8 +4271,7 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			var node1 = mdNode;
 			var child1 = markdown_MithrilTools.cache.get(node1.data);
 			if(child1 == null) {
-				var child2 = "data-node: " + Std.string(node1.data);
-				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : "data-node: " + Std.string(node1.data)}]};
 				markdown_MithrilTools.cache.set(node1.data,child1);
 			}
 			parent.children.push(child1);
@@ -3917,7 +4280,7 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			parent.children.push({ tag : "span", attrs : { className : "error"}, children : ["Error: " + mdNode.msg]});
 			break;
 		default:
-			console.log("src/markdown/MithrilTools.hx:97:","OTHER NODE");
+			haxe_Log.trace("OTHER NODE",{ fileName : "src/markdown/MithrilTools.hx", lineNumber : 97, className : "markdown.MithrilTools", methodName : "buildView"});
 		}
 	}
 	return parent;
@@ -3948,9 +4311,6 @@ mithril__$M_M_$Impl_$.__name__ = ["mithril","_M","M_Impl_"];
 mithril__$M_M_$Impl_$.routeLink = function(vnode) {
 	return m.route.link(vnode);
 };
-var mithril_Mithril = function() { };
-$hxClasses["mithril.Mithril"] = mithril_Mithril;
-mithril_Mithril.__name__ = ["mithril","Mithril"];
 var pdfjs_PDF = function() {
 	this.pdflib = window["pdfjs-dist/build/pdf"];
 };
@@ -3988,8 +4348,8 @@ pdfjs_PDFDoc.prototype = {
 			canvas.height = viewport.height;
 			canvas.width = viewport.width;
 			return page.render({ canvasContext : canvas.getContext("2d",null), viewport : viewport}).then(function(x) {
-				console.log("src/pdfjs/PDF.hx:76:","renderd page " + pageNr);
-				console.log("src/pdfjs/PDF.hx:77:",canvas.width + " " + canvas.height);
+				haxe_Log.trace("renderd page " + pageNr,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 76, className : "pdfjs.PDFDoc", methodName : "renderPage"});
+				haxe_Log.trace(canvas.width + " " + canvas.height,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 77, className : "pdfjs.PDFDoc", methodName : "renderPage"});
 				return canvas;
 			});
 		});
@@ -3997,6 +4357,8 @@ pdfjs_PDFDoc.prototype = {
 	,__class__: pdfjs_PDFDoc
 };
 var ui_Bookpage = function() {
+	ui_Bookpage.bpcount++;
+	haxe_Log.trace("bookpage new: " + ui_Bookpage.bpcount + " " + data_FilterModel.instance.getBook().path,{ fileName : "src/ui/Bookpage.hx", lineNumber : 18, className : "ui.Bookpage", methodName : "new"});
 };
 $hxClasses["ui.Bookpage"] = ui_Bookpage;
 ui_Bookpage.__name__ = ["ui","Bookpage"];
@@ -4045,9 +4407,9 @@ ui_Bookpage.prototype = {
 			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
 				return chapter.set_text(e.target.value);
 			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
-				console.log("src/ui/Bookpage.hx:94:",chapter.dbpath);
+				haxe_Log.trace(chapter.dbpath,{ fileName : "src/ui/Bookpage.hx", lineNumber : 97, className : "ui.Bookpage", methodName : "editChapterView"});
 				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
-					console.log("src/ui/Bookpage.hx:96:","after update " + Std.string(e2));
+					haxe_Log.trace("after update " + Std.string(e2),{ fileName : "src/ui/Bookpage.hx", lineNumber : 99, className : "ui.Bookpage", methodName : "editChapterView"});
 					return;
 				});
 			}},"Save")]);
@@ -4072,9 +4434,7 @@ ui_Bookpage.prototype = {
 				return null;
 			}
 			var o = chapter.type;
-			console.log("src/ui/Bookpage.hx:134:",o == null ? null : js_Boot.getClass(o));
-			var o1 = chapter.type;
-			switch(o1 == null ? null : js_Boot.getClass(o1)) {
+			switch(o == null ? null : js_Boot.getClass(o)) {
 			case data_PdfChaptertype:
 				return ui_ViewMapper.instance.getNew("ui.PdfChapter",[chapter.type]).view();
 			case data_PitchChaptertype:
@@ -4102,6 +4462,29 @@ ui_Bookpage.prototype = {
 		return m.m("div.book",[this.headerView(book),this.chaptersView(chapters,book),m.m("article",[this.editChapterView(chapter),this.chapterView(chapter),this.specialChapterView(chapter),this.subchaptersView(subchapters),this.editChapterView(subchapter),this.chapterView(subchapter),this.specialChapterView(subchapter)])]);
 	}
 	,__class__: ui_Bookpage
+};
+var ui_BookpageCache = function() {
+	this.currentBookpage = null;
+	this.currentPath = null;
+};
+$hxClasses["ui.BookpageCache"] = ui_BookpageCache;
+ui_BookpageCache.__name__ = ["ui","BookpageCache"];
+ui_BookpageCache.prototype = {
+	getBookpageView: function() {
+		var book = data_FilterModel.instance.getBook();
+		if(book == null) {
+			return null;
+		}
+		if(this.currentPath == book.path && this.currentBookpage != null) {
+			haxe_Log.trace("get bookpage from cache",{ fileName : "src/ui/BookpageCache.hx", lineNumber : 18, className : "ui.BookpageCache", methodName : "getBookpageView"});
+			return this.currentBookpage.view();
+		}
+		haxe_Log.trace("create new bookpage ",{ fileName : "src/ui/BookpageCache.hx", lineNumber : 21, className : "ui.BookpageCache", methodName : "getBookpageView"});
+		this.currentBookpage = new ui_Bookpage();
+		this.currentPath = book.path;
+		return this.currentBookpage.view();
+	}
+	,__class__: ui_BookpageCache
 };
 var ui_ClientUI = function() {
 };
@@ -4154,14 +4537,14 @@ ui_UIFooter.prototype = {
 			return data_ContentLoader.instance.loadContent();
 		}},"Content load");
 		var tmp8 = m.m("button",{ onclick : function(e8) {
-			console.log("src/ui/ClientUI.hx:66:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)));
+			haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 66, className : "ui.UIFooter", methodName : "view"});
 			return;
 		}},"Trace content");
 		var tmp9 = data_ContentModel.instance.content.rooms.map(function(room) {
 			return m.m("option",{ value : room.id, key : room.id},room.title);
 		});
 		return [tmp,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,m.m("select",{ onchange : function(e9) {
-			console.log("src/ui/ClientUI.hx:70:",e9.target.selectedIndex);
+			haxe_Log.trace(e9.target.selectedIndex,{ fileName : "src/ui/ClientUI.hx", lineNumber : 70, className : "ui.UIFooter", methodName : "view"});
 			var roomIdx = e9.target.selectedIndex;
 			var roomId = data_ContentModel.instance.content.rooms[roomIdx].id;
 			data_FilterModel.instance.setFilterContent({ roomId : roomId, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
@@ -4169,17 +4552,17 @@ ui_UIFooter.prototype = {
 		}},tmp9),m.m("button",{ onclick : function(e10) {
 			return data_ApiCalls.getRequest("/api/content-tree").then(function(result) {
 				var content = result.data;
-				console.log("src/ui/ClientUI.hx:83:",content.rooms);
+				haxe_Log.trace(content.rooms,{ fileName : "src/ui/ClientUI.hx", lineNumber : 83, className : "ui.UIFooter", methodName : "view"});
 				var c = dataclass_JsonConverter.fromJson(data_Content,content);
-				console.log("src/ui/ClientUI.hx:114:","---------------------");
-				console.log("src/ui/ClientUI.hx:116:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)));
+				haxe_Log.trace("---------------------",{ fileName : "src/ui/ClientUI.hx", lineNumber : 114, className : "ui.UIFooter", methodName : "view"});
+				haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 116, className : "ui.UIFooter", methodName : "view"});
 				return;
 			})["catch"](function(e11) {
-				console.log("src/ui/ClientUI.hx:119:",e11);
+				haxe_Log.trace(e11,{ fileName : "src/ui/ClientUI.hx", lineNumber : 119, className : "ui.UIFooter", methodName : "view"});
 				return;
 			});
 		}},"ClickMe"),m.m("button",{ onclick : function(e12) {
-			console.log("src/ui/ClientUI.hx:124:",JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)));
+			haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 124, className : "ui.UIFooter", methodName : "view"});
 			return;
 		}},"Tree to json")];
 	}
@@ -4193,7 +4576,7 @@ ui_UIContent.__interfaces__ = [mithril_Mithril];
 ui_UIContent.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),new ui_Bookpage().view(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],data_PagesModel.instance.pageIdx,null,null,data_PagesModel.instance.pageWidth).view();
+		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),ui_BookpageCache.instance.getBookpageView(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],data_PagesModel.instance.pageIdx,null,null,data_PagesModel.instance.pageWidth).view();
 	}
 	,__class__: ui_UIContent
 };
@@ -4370,7 +4753,7 @@ ui_Homepage.prototype = {
 			})]);
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			console.log("src/ui/Homepage.hx:80:","error: " + Std.string(e1));
+			haxe_Log.trace("error: " + Std.string(e1),{ fileName : "src/ui/Homepage.hx", lineNumber : 80, className : "ui.Homepage", methodName : "cellsView"});
 			return m.m("div.error","Error:" + Std.string(e1));
 		}
 	}
@@ -4461,6 +4844,7 @@ ui_RosettaChapter.prototype = {
 };
 var ui_ScorxmixerChapter = function(c) {
 	this.c = c;
+	audio_scorx_MixerModel.instance.loadFiles("test",["/assets/mp3/test/100.mp3","/assets/mp3/test/110.mp3","/assets/mp3/test/120.mp3","/assets/mp3/test/130.mp3","/assets/mp3/test/200.mp3"]);
 };
 $hxClasses["ui.ScorxmixerChapter"] = ui_ScorxmixerChapter;
 ui_ScorxmixerChapter.__name__ = ["ui","ScorxmixerChapter"];
@@ -4468,7 +4852,7 @@ ui_ScorxmixerChapter.__interfaces__ = [mithril_Mithril];
 ui_ScorxmixerChapter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.pitch",m.m("h1","Pitch"))];
+		return [m.m("div.specialchapter.scorx",m.m("h1","ScorX")),new audio_scorx_ui_PlayerView().view()];
 	}
 	,__class__: ui_ScorxmixerChapter
 };
@@ -4495,7 +4879,7 @@ ui_UIHeader.prototype = {
 			}},"Logga in")]);
 		} catch( e3 ) {
 			var e4 = (e3 instanceof js__$Boot_HaxeError) ? e3.val : e3;
-			console.log("src/ui/UIHeader.hx:39:","error " + Std.string(e4));
+			haxe_Log.trace("error " + Std.string(e4),{ fileName : "src/ui/UIHeader.hx", lineNumber : 39, className : "ui.UIHeader", methodName : "loginView"});
 			return m.m("div.error",e4);
 		}
 	}
@@ -4510,8 +4894,8 @@ ui_UIHeader.prototype = {
 				return m.m("option",{ value : kv[0], key : kv[1]},kv[1]);
 			});
 			return m.m("div",[m.m("select.loggedin",{ onchange : function(e) {
-				console.log("src/ui/UIHeader.hx:58:",e.target.selectedIndex);
-				console.log("src/ui/UIHeader.hx:59:",e.target.value);
+				haxe_Log.trace(e.target.selectedIndex,{ fileName : "src/ui/UIHeader.hx", lineNumber : 58, className : "ui.UIHeader", methodName : "loggedinView"});
+				haxe_Log.trace(e.target.value,{ fileName : "src/ui/UIHeader.hx", lineNumber : 59, className : "ui.UIHeader", methodName : "loggedinView"});
 				switch(e.target.value) {
 				case "logout":
 					data_UserLoader.instance.signOut();
@@ -4525,7 +4909,7 @@ ui_UIHeader.prototype = {
 			}},tmp)]);
 		} catch( e1 ) {
 			var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
-			console.log("src/ui/UIHeader.hx:80:","error " + Std.string(e2));
+			haxe_Log.trace("error " + Std.string(e2),{ fileName : "src/ui/UIHeader.hx", lineNumber : 80, className : "ui.UIHeader", methodName : "loggedinView"});
 			return m.m("div.error",e2);
 		}
 	}
@@ -4541,7 +4925,7 @@ ui_UIHeader.prototype = {
 			}
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			console.log("src/ui/UIHeader.hx:95:","error " + Std.string(e1));
+			haxe_Log.trace("error " + Std.string(e1),{ fileName : "src/ui/UIHeader.hx", lineNumber : 95, className : "ui.UIHeader", methodName : "userView"});
 			return m.m("div.error",e1);
 		}
 	}
@@ -4877,6 +5261,11 @@ haxe_ds_ObjectMap.count = 0;
 Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function() {
 	return String(this.val);
 }});
+var ArrayBuffer = $global.ArrayBuffer || js_html_compat_ArrayBuffer;
+if(ArrayBuffer.prototype.slice == null) {
+	ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
+}
+var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
 try {
 var __varName = window.m;
 (function(m) {
@@ -4915,6 +5304,8 @@ DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July
 Require.jsPath = "./";
 Require.jsExt = ".js";
 Require.loaded = new haxe_ds_StringMap();
+audio_Audio.instance = new audio_Audio();
+audio_scorx_MixerModel.instance = new audio_scorx_MixerModel();
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
 data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int", home : "DataClass<data.Home>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
@@ -4950,6 +5341,7 @@ dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
 dataclass_TypedJsonConverter.current = new dataclass_TypedJsonConverter();
 js_Boot.__toStr = ({ }).toString;
+js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
 markdown_BlockSyntax.RE_EMPTY = new EReg("^([ \\t]*)$","");
 markdown_BlockSyntax.RE_SETEXT = new EReg("^((=+)|(-+))$","");
 markdown_BlockSyntax.RE_HEADER = new EReg("^(#{1,6})(.*?)#*$","");
@@ -4966,6 +5358,8 @@ markdown_LinkSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s
 markdown_ImgSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
 markdown_InlineParser.defaultSyntaxes = [new markdown_AutolinkSyntaxWithoutBrackets(),new markdown_TextSyntax(" {2,}\n","<br />\n"),new markdown_TextSyntax("\\s*[A-Za-z0-9]+"),new markdown_AutolinkSyntax(),new markdown_LinkSyntax(),new markdown_ImgSyntax(),new markdown_TextSyntax(" \\* "),new markdown_TextSyntax(" _ "),new markdown_TextSyntax("&[#a-zA-Z0-9]*;"),new markdown_TextSyntax("&","&amp;"),new markdown_TextSyntax("</?\\w+.*?>"),new markdown_TextSyntax("<","&lt;"),new markdown_TagSyntax("\\*\\*","strong"),new markdown_TagSyntax("__","strong"),new markdown_TagSyntax("\\*","em"),new markdown_TagSyntax("\\b_","em","_\\b"),new markdown_CodeSyntax("``\\s?((?:.|\\n)*?)\\s?``"),new markdown_CodeSyntax("`([^`]*)`")];
 markdown_MithrilTools.cache = new cx_Cache(5);
+ui_Bookpage.bpcount = 0;
+ui_BookpageCache.instance = new ui_BookpageCache();
 ui_ClientUI.instance = new ui_ClientUI();
 ui_ViewMapper.instance = new ui_ViewMapper();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
