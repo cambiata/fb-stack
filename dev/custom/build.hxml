@@ -4,4 +4,4 @@
 -lib mithril
 
 
--js public/test.js
+-js public/client.js

@@ -5,22 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <style>
-        app-drawer {
-            background-color: red;
-            display: grid;
-        }
-    </style>
+    
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.0.0/webcomponents-bundle.js"></script>
-    <script src="custom.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="custom.js"></script>    
 </head>
 <body>
-    <app-drawer> Hello AppDrawer! </app-drawer>
+    <header>
 
+    </header>
+    <aside>
+        aside
+    </aside>
     <main>
-
-
+        
+        <scroller-main>
+            <scroller-page>
+                page 0
+            </scroller-page>
+            <scroller-page class="page1">
+                page 1
+            </scroller-page>
+            <scroller-page class="page2">
+                page 2
+            </scroller-page>           
+        </scroller-main>
     </main>
-    
+
+    <footer>Footer</footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="client.js"></script>  
 </body>
 </html>

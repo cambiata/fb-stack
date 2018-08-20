@@ -1,0 +1,14 @@
+# -cp src
+# -D analyzer-optimize
+# -main Main
+# -lib modular
+
+# -js public/test.js
+
+-lib modular
+-lib mithril
+-main Main
+-js public/index.js
+-cp src
+-D analyzer-optimize
+-dce full

@@ -1,6 +1,3 @@
-/* main > div {    
-    max-width: 80%;
-} */
 
 main section {
     border: 1px solid #ddd;
@@ -19,8 +16,6 @@ main section.shelves {
 main section.cels {
     grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
 }
-
-
 
 main section div.home {
     width: 800px;
@@ -60,8 +55,6 @@ main section nav {
     min-height: 12em;
     border-radius: 3px;
     border-color: #ccc;
-
-
 }
 
 main section nav img {
