@@ -1,0 +1,11 @@
+-cp ../../cx/src
+-cp src
+-lib mithril
+-main Main
+
+-js public/client.js 
+-dce full
+
+
+
+

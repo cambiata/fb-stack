@@ -1,0 +1,9 @@
+-cp ../../cx/src
+-cp src
+-lib mithril
+-main Testkeyboard
+-js public/testkeyboard.js 
+-dce full
+
+
+
