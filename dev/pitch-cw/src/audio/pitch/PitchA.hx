@@ -4,7 +4,7 @@ import js.html.Float32Array;
 import audio.*;
 import js.html.audio.*;
 
-class PitchA {
+class PitchA implements IPitchDetector {
     public function new() { 
         this.timeDomainBuffer = new Float32Array( 1024 );   
     }
@@ -12,7 +12,7 @@ class PitchA {
     public var analyser:AnalyserNode = null;    
     var timeDomainBuffer:Float32Array; 
 
-    public function getAnalyser(source:Dynamic) {
+    public function setupAnalyserNode(source:Dynamic) {
         this.analyser = Audio.instance.context.createAnalyser();
         this.analyser.fftSize = 2048;         
         source.connect(this.analyser);

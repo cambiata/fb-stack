@@ -5,7 +5,8 @@ import audio.*;
 import js.html.Uint8Array;
 import js.html.audio.*;
 
-class PitchB {
+
+class PitchB implements IPitchDetector {
 
     public function new(useFilters:Bool = true) { 
         this.useFilters = useFilters;
@@ -19,7 +20,7 @@ class PitchB {
     var analyserNode:AnalyserNode = null;
     
     var fftSize = 2048;
-    public function getAnalyser(source:Dynamic) {
+    public function setupAnalyserNode(source:Dynamic):AnalyserNode {
         var audioContext:AudioContext = Audio.instance.context;
         this.analyserNode = audioContext.createAnalyser();
         this.analyserNode.fftSize = fftSize;
@@ -92,7 +93,6 @@ class PitchB {
         return -1;
 
         // Pitch smoothing logic
-
         // var minUpdateDelay = 75;
         // var silenceTimeout = null;
         // var pitchHistory = [];
