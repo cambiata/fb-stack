@@ -56,24 +56,7 @@ class Routes {
         onmatch: function(args, path) {
             try {
                 ErrorsAndLogs.addLog('RouteResolver:$path: ' + args + '');
-                
-                /*
-                if (args.exists('subchapterId')) {
-                    FilterModel.instance.setFilterSubchapter(cast args);
-                } else (args.exists('chapterId')) {
-                    FilterModel.instance.setFilterChapter(cast args);
-                } else (args.exists('subchapterId')) {
-                    FilterModel.instance.setFilter(cast args);
-                } else (args.exists('subchapterId')) {
-                    FilterModel.instance.setFilterSubchapter(cast args);
-                } else (args.exists('subchapterId')) {
-                    FilterModel.instance.setFilterSubchapter(cast args);
-                } else
-                */
-
                 FilterModel.instance.setFilterContent(cast args);
-                
-
 
             } catch (e:Dynamic) {
                 ErrorsAndLogs.addError('RouteResolver roomHandler Error: $e');

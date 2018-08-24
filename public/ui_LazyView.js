@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, mithril_Mithril = $s.b;
+var $hxClasses = $s.a, mithril_Mithril = $s.b, data_TestModel = $s.c;
 var ui_LazyView = function() {
 };
 $hxClasses["ui.LazyView"] = ui_LazyView;
@@ -9,7 +9,7 @@ ui_LazyView.__interfaces__ = [mithril_Mithril];
 ui_LazyView.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("h1","Lazy View")];
+		return [m.m("h1","Lazy View " + data_TestModel.instance.counter)];
 	}
 	,__class__: ui_LazyView
 };

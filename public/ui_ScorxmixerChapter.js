@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, haxe_Log = $s.e, mithril_Mithril = $s.b;
+var $hxClasses = $s.a, haxe_Log = $s.f, mithril_Mithril = $s.b, data_TestModel = $s.c;
 var audio_Audio = function() {
 	this.context = new AudioContext();
 };
@@ -245,7 +245,7 @@ ui_ScorxmixerChapter.__interfaces__ = [mithril_Mithril];
 ui_ScorxmixerChapter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.scorx",m.m("h1","ScorX")),new audio_scorx_ui_PlayerView().view()];
+		return [m.m("div.specialchapter.scorx ",m.m("h1","ScorX " + data_TestModel.instance.counter)),new audio_scorx_ui_PlayerView().view()];
 	}
 	,__class__: ui_ScorxmixerChapter
 };

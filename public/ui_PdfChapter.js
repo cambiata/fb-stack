@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, mithril_Mithril = $s.b, haxe_ds_StringMap = $s.d, haxe_Log = $s.e, Std = $s.c;
+var $hxClasses = $s.a, mithril_Mithril = $s.b, haxe_ds_StringMap = $s.e, haxe_Log = $s.f, Std = $s.d;
 var data_PdfModel = function() {
 	this.map = new haxe_ds_StringMap();
 };

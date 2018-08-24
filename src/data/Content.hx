@@ -6,7 +6,6 @@ using dataclass.JsonConverter;
 using cx.ArrayTools;
 using Lambda;
 
-
 class Content implements DataClass {
     public var    id:String; 
     public var    rooms:Array<Room> = [];

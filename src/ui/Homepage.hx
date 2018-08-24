@@ -17,7 +17,7 @@ class Homepage implements Mithril {
     
     public function shelvesView() return try {
         [
-            m('section.shelves', [
+            m('div.home.shelves', m('section.shelves', [
                 m('header', m('h1', 'Innehåll')),
                 FilterModel.instance.getRoom().shelves.map(shelf->{
                     var selected = shelf == FilterModel.instance.getShelf() ? '.selected' : '';                        
@@ -31,7 +31,7 @@ class Homepage implements Mithril {
                         ])
                     );
                 }),
-            ]),
+            ])),
         ];
     } catch (e:Dynamic) {
         m('h3.error', '404 - can not show other shelves for room  ' + FilterModel.instance.filterContent);
@@ -42,7 +42,7 @@ class Homepage implements Mithril {
 
         var dense = {gridAutoFlow: 'dense'};
 
-        m('section.cells', [
+        m('div.home.cells', m('section.cells', [
             header,
             s.cells.sortA((a,b)->a.sort-b.sort).map(c->{
                 return switch Type.getClass(c) {
@@ -75,7 +75,7 @@ class Homepage implements Mithril {
                         );
                 }
             }),
-        ]);
+        ]));
     } catch (e:Dynamic) { 
         trace('error: ' + e); 
         m('div.error', 'Error:' + e);
@@ -98,10 +98,8 @@ class Homepage implements Mithril {
     }
  
     public function view() {          
-
-        return m('div.home', [
-            ViewMapper.instance.getNew('test').view(),
+        [
             homeView(),
-        ]);
+        ];
     }
 }

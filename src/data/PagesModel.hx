@@ -21,7 +21,7 @@ class PagesModel {
         return this.pageIdx;
     }
 
-    public var pageWidth(default, set):String = '50%';
+    public var pageWidth(default, set):String = '100%';
     function set_pageWidth(val:String) {
         this.pageWidth = val;
         

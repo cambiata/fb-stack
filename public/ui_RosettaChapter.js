@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, mithril_Mithril = $s.b, Std = $s.c;
+var $hxClasses = $s.a, mithril_Mithril = $s.b, Std = $s.d;
 var ui_RosettaChapter = function(t) {
 	this.cht = t;
 };

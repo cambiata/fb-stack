@@ -1964,7 +1964,7 @@ var data_ContentUtils = function() { };
 $hxClasses["data.ContentUtils"] = data_ContentUtils;
 data_ContentUtils.__name__ = ["data","ContentUtils"];
 data_ContentUtils.getContentInit = function() {
-	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"})]}),new data_SectionCells({ sort : 300, cells : [new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
 };
 var data_ContentModel = function() {
 	haxe_Log.trace("new content",{ fileName : "src/data/ContentModel.hx", lineNumber : 15, className : "data.ContentModel", methodName : "new"});
@@ -2164,7 +2164,7 @@ data_FirebaseModel.prototype = {
 	,__class__: data_FirebaseModel
 };
 var data_PagesModel = function() {
-	this.pageWidth = "50%";
+	this.pageWidth = "100%";
 	this.pageIdx = 0;
 };
 $hxClasses["data.PagesModel"] = data_PagesModel;
@@ -2281,6 +2281,23 @@ data_Routes.prototype = {
 		m.route(window.document.querySelector("#routes"),"/",routes);
 	}
 	,__class__: data_Routes
+};
+var data_TestModel = function() {
+	this.counter = 0;
+	this.init();
+};
+$hxClasses["data.TestModel"] = data_TestModel;
+data_TestModel.__name__ = ["data","TestModel"];
+data_TestModel.prototype = {
+	init: function() {
+		var _gthis = this;
+		window.setInterval(function(_) {
+			_gthis.counter++;
+			m.redraw();
+			return;
+		},1000);
+	}
+	,__class__: data_TestModel
 };
 var data_UserLoader = function() {
 };
@@ -4271,7 +4288,8 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 			var node1 = mdNode;
 			var child1 = markdown_MithrilTools.cache.get(node1.data);
 			if(child1 == null) {
-				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : "data-node: " + Std.string(node1.data)}]};
+				var child2 = "data-node: " + Std.string(node1.data);
+				child1 = { tag : "h3", attrs : { }, children : [{ tag : "span", text : child2}]};
 				markdown_MithrilTools.cache.set(node1.data,child1);
 			}
 			parent.children.push(child1);
@@ -4699,9 +4717,9 @@ ui_Homepage.__interfaces__ = [mithril_Mithril];
 ui_Homepage.prototype = {
 	shelvesView: function() {
 		try {
-			return [m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
+			return [m.m("div.home.shelves",m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
 				return m.m("nav" + (shelf == data_FilterModel.instance.getShelf() ? ".selected" : ""),m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
-			})])];
+			})]))];
 		} catch( e ) {
 			(e instanceof js__$Boot_HaxeError);
 			return m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
@@ -4714,7 +4732,7 @@ ui_Homepage.prototype = {
 			copy.sort(function(a,b) {
 				return a.sort - b.sort;
 			});
-			return m.m("section.cells",[header,copy.map(function(c) {
+			return m.m("div.home.cells",m.m("section.cells",[header,copy.map(function(c) {
 				if((c == null ? null : js_Boot.getClass(c)) == data_VideoCell) {
 					var c1 = c;
 					var styles = { };
@@ -4750,7 +4768,7 @@ ui_Homepage.prototype = {
 					var tmp1 = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c2.text)]);
 					return m.m("article.cell",{ style : styles1},tmp1);
 				}
-			})]);
+			})]));
 		} catch( e ) {
 			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
 			haxe_Log.trace("error: " + Std.string(e1),{ fileName : "src/ui/Homepage.hx", lineNumber : 80, className : "ui.Homepage", methodName : "cellsView"});
@@ -4784,7 +4802,7 @@ ui_Homepage.prototype = {
 	}
 	,view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.home",[ui_ViewMapper.instance.getNew("test").view(),this.homeView()]);
+		return [this.homeView()];
 	}
 	,__class__: ui_Homepage
 };
@@ -4796,7 +4814,7 @@ ui_LazyView.__interfaces__ = [mithril_Mithril];
 ui_LazyView.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("h1","Lazy View")];
+		return [m.m("h1","Lazy View " + data_TestModel.instance.counter)];
 	}
 	,__class__: ui_LazyView
 };
@@ -4852,7 +4870,7 @@ ui_ScorxmixerChapter.__interfaces__ = [mithril_Mithril];
 ui_ScorxmixerChapter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.scorx",m.m("h1","ScorX")),new audio_scorx_ui_PlayerView().view()];
+		return [m.m("div.specialchapter.scorx ",m.m("h1","ScorX " + data_TestModel.instance.counter)),new audio_scorx_ui_PlayerView().view()];
 	}
 	,__class__: ui_ScorxmixerChapter
 };
@@ -5332,6 +5350,7 @@ data_FirebaseModel.instance = new data_FirebaseModel();
 data_PagesModel.instance = new data_PagesModel();
 data_PdfModel.instance = new data_PdfModel();
 data_Routes.instance = new data_Routes();
+data_TestModel.instance = new data_TestModel();
 data_UserLoader.instance = new data_UserLoader();
 data_UserModel.instance = new data_UserModel();
 dataclass_Converter.typedClassFieldName = "classtype";

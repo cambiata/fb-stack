@@ -1,4 +1,5 @@
 package ui;
+import data.TestModel;
 import audio.scorx.MixerModel;
 
 import mithril.M;
@@ -21,7 +22,7 @@ class ScorxmixerChapter implements Mithril {
 
     public function view() {        
         return [
-            m('div.specialchapter.scorx', m('h1', 'ScorX')),            
+            m('div.specialchapter.scorx ', m('h1', 'ScorX '  + TestModel.instance.counter)),            
             new audio.scorx.ui.PlayerView().view(),
         ];
     }

@@ -1,20 +1,26 @@
 
 main section {
-    border: 1px solid #ddd;
+    /* border: 1px solid #ddd; */
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(13em, 1fr));
     /* grid-template-rows: 1em repeat(auto-fit); */
     grid-gap: 1em;
     margin-top: 1em;
     padding: 0 1em;
+
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 main section.shelves {
     grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+    padding: 3em 0;
+    grid-gap: 3em;
 }
 
-main section.cels {
-    grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
+main section.cells {
+    padding: 1em 0;
+    grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
 }
 
 main section div.home {
@@ -51,10 +57,11 @@ main section article.fullwidth {
 }
 
 main section nav {
-    background-color: #eee;
+    background-color: rgb(15, 21, 77);
     min-height: 12em;
     border-radius: 3px;
     border-color: #ccc;
+    color: white;
 }
 
 main section nav img {
@@ -67,11 +74,11 @@ main section nav img {
 
 main section nav div {
     padding: 1em;
-    background-color: #eee;
+    background-color: inherited; 
 }
 
-main section nav h3 {
-    margin-bottom: .5em;
+main section nav h2 {
+    margin-bottom: .4em;
 }
 
 

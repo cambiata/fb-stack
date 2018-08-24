@@ -6,7 +6,7 @@ class LazyView implements Mithril {
     public function new() {}
     public function view() {
         return [
-            m('h1', 'Lazy View'),
+            m('h1', 'Lazy View ' + data.TestModel.instance.counter),
         ];
     }
 }

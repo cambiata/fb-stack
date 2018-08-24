@@ -11,6 +11,9 @@ class ContentUtils {
                 title: 'Här är titel för hemsidan',
                 sections: [
                     new SectionShelves({sort: 200}),
+
+
+
                     new SectionCells({sort: 100, cells:[
                         new TextCell({title:'Cell0', gridColumn: 'span 2', gridRow:'span 2', bgcolor:'#0F154D', /*bgimage:'/assets/home/background.jpg',*/ url: '/content/room0/shelf1/book2', text:'#Välkommen till Körakademin hösten 2018!                        
 
@@ -31,6 +34,13 @@ new TextCell({title:'Cell1', bgcolor:'#43245D', color: 'white', gridColumn:'span
 är en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! 
 
 '}),
+
+
+
+                    ]}),
+
+ new SectionCells({sort: 300, cells:[           
+
 new TextCell({title:'Cell1', bgcolor:'#0F154D', color: 'white', gridColumn:'span 2', image: '', text:'
 
 ##Körakademin Plus
@@ -38,6 +48,8 @@ new TextCell({title:'Cell1', bgcolor:'#0F154D', color: 'white', gridColumn:'span
 är en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. 
 
 '}),
+
+
 new TextCell({title:'Cell1', bgcolor:'#6E1841', color: 'white',gridColumn:'span 2', image: '', text:'
 ###Sjunger du i en Sensus-kör?                        
 
