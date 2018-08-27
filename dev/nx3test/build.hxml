@@ -1,0 +1,9 @@
+-cp xsrc
+-cp ../../../cx/src
+
+-D analyzer-optimize
+-main Main
+-lib mithril
+
+
+-js public/test.js

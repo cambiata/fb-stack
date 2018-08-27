@@ -2,7 +2,7 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope = $global.$hx_scope || {};
 var require = (function(r){ return function require(m) { return r[m]; } })($s.__registry__ || {});
-var ui_LazyView, ui_RosettaChapter, ui_PdfChapter, ui_VideoChapter, ui_PitchChapter, ui_ScorxmixerChapter;
+var ui_LazyView, ui_RosettaChapter, ui_PdfChapter, ui_VideoChapter, ui_PitchChapter, ui_ScorxmixerChapter, ui_render_QSyntaxRenderer;
 var $hxClasses = {},$estr = function() { return js_Boot.__string_rec(this,''); },$hxEnums = {},$_;
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
@@ -66,11 +66,19 @@ Client.prototype = {
 				m.redraw();
 				return;
 			});
-			return Require.module("ui_ScorxmixerChapter").then(function(id5) {
+			Require.module("ui_ScorxmixerChapter").then(function(id5) {
 				var _10 = ui_ScorxmixerChapter = $s.ui_ScorxmixerChapter;
 				return id5;
 			}).then(function(_11) {
 				ui_ViewMapper.instance.set("ui.ScorxmixerChapter",ui_ScorxmixerChapter);
+				m.redraw();
+				return;
+			});
+			return Require.module("ui_render_QSyntaxRenderer").then(function(id6) {
+				var _12 = ui_render_QSyntaxRenderer = $s.ui_render_QSyntaxRenderer;
+				return id6;
+			}).then(function(_13) {
+				ui_StringRendererMapper.instance.set("score",new ui_render_QSyntaxRenderer());
 				m.redraw();
 				return;
 			});
@@ -340,6 +348,17 @@ Lambda.iter = function(it,f) {
 	var x = $getIterator(it);
 	while(x.hasNext()) f(x.next());
 };
+Lambda.filter = function(it,f) {
+	var l = new haxe_ds_List();
+	var x = $getIterator(it);
+	while(x.hasNext()) {
+		var x1 = x.next();
+		if(f(x1)) {
+			l.add(x1);
+		}
+	}
+	return l;
+};
 var Document = function() {
 	this.refLinks = new haxe_ds_StringMap();
 	this.inlineSyntaxes = [];
@@ -480,6 +499,15 @@ Reflect.isFunction = function(f) {
 		return !(f.__name__ || f.__ename__);
 	} else {
 		return false;
+	}
+};
+Reflect.compare = function(a,b) {
+	if(a == b) {
+		return 0;
+	} else if(a > b) {
+		return 1;
+	} else {
+		return -1;
 	}
 };
 var haxe_IMap = function() { };
@@ -1733,7 +1761,7 @@ var data_ContentUtils = function() { };
 $hxClasses["data.ContentUtils"] = data_ContentUtils;
 data_ContentUtils.__name__ = ["data","ContentUtils"];
 data_ContentUtils.getContentInit = function() {
-	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"})]}),new data_SectionCells({ sort : 300, cells : [new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"})]}),new data_SectionCells({ sort : 300, cells : [new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", text : "/@score a b c @/", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
 };
 var data_ContentModel = function() {
 	haxe_Log.trace("new content",{ fileName : "src/data/ContentModel.hx", lineNumber : 15, className : "data.ContentModel", methodName : "new"});
@@ -1768,21 +1796,13 @@ data_ContentModel.prototype = {
 		var updateDbPaths = function(tree1) {
 			tree1.dbpath = "content-tree";
 			Lambda.iter(tree1.rooms,function(room1) {
-				var updateDbPaths1 = tree1.dbpath + "/rooms/";
-				var updateDbPaths2 = tree1.rooms.indexOf(room1);
-				room1.dbpath = updateDbPaths1 + updateDbPaths2;
+				room1.dbpath = tree1.dbpath + "/rooms/" + tree1.rooms.indexOf(room1);
 				Lambda.iter(room1.shelves,function(shelf1) {
-					var updateDbPaths3 = room1.dbpath + "/shelves/";
-					var updateDbPaths4 = room1.shelves.indexOf(shelf1);
-					shelf1.dbpath = updateDbPaths3 + updateDbPaths4;
+					shelf1.dbpath = room1.dbpath + "/shelves/" + room1.shelves.indexOf(shelf1);
 					Lambda.iter(shelf1.books,function(book1) {
-						var updateDbPaths5 = shelf1.dbpath + "/books/";
-						var updateDbPaths6 = shelf1.books.indexOf(book1);
-						book1.dbpath = updateDbPaths5 + updateDbPaths6;
+						book1.dbpath = shelf1.dbpath + "/books/" + shelf1.books.indexOf(book1);
 						Lambda.iter(book1.chapters,function(chapter1) {
-							var updateDbPaths7 = book1.dbpath + "/chapters/";
-							var updateDbPaths8 = book1.chapters.indexOf(chapter1);
-							chapter1.dbpath = updateDbPaths7 + updateDbPaths8;
+							chapter1.dbpath = book1.dbpath + "/chapters/" + book1.chapters.indexOf(chapter1);
 							Lambda.iter(chapter1.subchapters,function(sub1) {
 								return sub1.dbpath = chapter1.dbpath + "/subchapters/" + chapter1.subchapters.indexOf(sub1);
 							});
@@ -1832,7 +1852,6 @@ data_FilterModel.prototype = {
 				return room.id == _gthis.filterContent.roomId;
 			})[0];
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return data_ContentModel.instance.content.rooms[0];
 		}
 	}
@@ -1847,7 +1866,6 @@ data_FilterModel.prototype = {
 			}
 			return shelves;
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return [];
 		}
 	}
@@ -1858,7 +1876,6 @@ data_FilterModel.prototype = {
 				return shelf.id == _gthis.filterContent.shelfId;
 			})[0];
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1869,7 +1886,6 @@ data_FilterModel.prototype = {
 				return book.id == _gthis.filterContent.bookId;
 			})[0];
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1877,7 +1893,6 @@ data_FilterModel.prototype = {
 		try {
 			return this.getBook().chapters;
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1892,7 +1907,6 @@ data_FilterModel.prototype = {
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1900,7 +1914,6 @@ data_FilterModel.prototype = {
 		try {
 			return this.getChapter().subchapters;
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -1915,7 +1928,6 @@ data_FilterModel.prototype = {
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2014,20 +2026,11 @@ data_Routes.prototype = {
 };
 var data_TestModel = function() {
 	this.counter = 0;
-	this.init();
 };
 $hxClasses["data.TestModel"] = data_TestModel;
 data_TestModel.__name__ = ["data","TestModel"];
 data_TestModel.prototype = {
-	init: function() {
-		var _gthis = this;
-		window.setInterval(function(_) {
-			_gthis.counter++;
-			m.redraw();
-			return;
-		},1000);
-	}
-	,__class__: data_TestModel
+	__class__: data_TestModel
 };
 var data_UserLoader = function() {
 };
@@ -2623,6 +2626,16 @@ haxe_ds_List.prototype = {
 	}
 	,iterator: function() {
 		return new haxe_ds__$List_ListIterator(this.h);
+	}
+	,map: function(f) {
+		var b = new haxe_ds_List();
+		var l = this.h;
+		while(l != null) {
+			var v = l.item;
+			l = l.next;
+			b.add(f(v));
+		}
+		return b;
 	}
 	,__class__: haxe_ds_List
 };
@@ -4027,8 +4040,13 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 		case markdown_ast_ErrorNode:
 			parent.children.push({ tag : "span", attrs : { className : "error"}, children : ["Error: " + mdNode.msg]});
 			break;
+		case ui_StringRenderNode:
+			var code = mdNode.code;
+			var child3 = m.m("div",m.trust(ui_StringRendererMapper.instance.get("score").renderFromCode(code)));
+			parent.children.push(child3);
+			break;
 		default:
-			haxe_Log.trace("OTHER NODE",{ fileName : "src/markdown/MithrilTools.hx", lineNumber : 97, className : "markdown.MithrilTools", methodName : "buildView"});
+			haxe_Log.trace("OTHER NODE",{ fileName : "src/markdown/MithrilTools.hx", lineNumber : 114, className : "markdown.MithrilTools", methodName : "buildView"});
 		}
 	}
 	return parent;
@@ -4059,9 +4077,71 @@ mithril__$M_M_$Impl_$.__name__ = ["mithril","_M","M_Impl_"];
 mithril__$M_M_$Impl_$.routeLink = function(vnode) {
 	return m.route.link(vnode);
 };
+var nx3_ENotationVariant = $hxEnums["nx3.ENotationVariant"] = { __ename__ : true, __constructs__ : ["Normal","Rythmic","RythmicSingleLevel","HeadsOnly","StavesOnly"]
+	,Normal: {_hx_index:0,__enum__:"nx3.ENotationVariant",toString:$estr}
+	,Rythmic: {_hx_index:1,__enum__:"nx3.ENotationVariant",toString:$estr}
+	,RythmicSingleLevel: ($_=function(level) { return {_hx_index:2,level:level,__enum__:"nx3.ENotationVariant",toString:$estr}; },$_.__params__ = ["level"],$_)
+	,HeadsOnly: {_hx_index:3,__enum__:"nx3.ENotationVariant",toString:$estr}
+	,StavesOnly: {_hx_index:4,__enum__:"nx3.ENotationVariant",toString:$estr}
+};
+var nx3_ENoteArticulation = $hxEnums["nx3.ENoteArticulation"] = { __ename__ : true, __constructs__ : ["Staccato","Tenuto","Marcato"]
+	,Staccato: {_hx_index:0,__enum__:"nx3.ENoteArticulation",toString:$estr}
+	,Tenuto: {_hx_index:1,__enum__:"nx3.ENoteArticulation",toString:$estr}
+	,Marcato: {_hx_index:2,__enum__:"nx3.ENoteArticulation",toString:$estr}
+};
+var nx3_ENoteAttributes = $hxEnums["nx3.ENoteAttributes"] = { __ename__ : true, __constructs__ : ["Arpeggio","Clef"]
+	,Arpeggio: ($_=function(top,bottomY) { return {_hx_index:0,top:top,bottomY:bottomY,__enum__:"nx3.ENoteAttributes",toString:$estr}; },$_.__params__ = ["top","bottomY"],$_)
+	,Clef: ($_=function(variant) { return {_hx_index:1,variant:variant,__enum__:"nx3.ENoteAttributes",toString:$estr}; },$_.__params__ = ["variant"],$_)
+};
+var nx3_EPosition = $hxEnums["nx3.EPosition"] = { __ename__ : true, __constructs__ : ["X","Y","XY","XYW"]
+	,X: ($_=function(x) { return {_hx_index:0,x:x,__enum__:"nx3.EPosition",toString:$estr}; },$_.__params__ = ["x"],$_)
+	,Y: ($_=function(y) { return {_hx_index:1,y:y,__enum__:"nx3.EPosition",toString:$estr}; },$_.__params__ = ["y"],$_)
+	,XY: ($_=function(x,y) { return {_hx_index:2,x:x,y:y,__enum__:"nx3.EPosition",toString:$estr}; },$_.__params__ = ["x","y"],$_)
+	,XYW: ($_=function(x,y,w) { return {_hx_index:3,x:x,y:y,w:w,__enum__:"nx3.EPosition",toString:$estr}; },$_.__params__ = ["x","y","w"],$_)
+};
+var nx3_action_EActivityType = $hxEnums["nx3.action.EActivityType"] = { __ename__ : true, __constructs__ : ["MouseDown","MouseUp","MouseOver","MouseOut"]
+	,MouseDown: {_hx_index:0,__enum__:"nx3.action.EActivityType",toString:$estr}
+	,MouseUp: {_hx_index:1,__enum__:"nx3.action.EActivityType",toString:$estr}
+	,MouseOver: {_hx_index:2,__enum__:"nx3.action.EActivityType",toString:$estr}
+	,MouseOut: {_hx_index:3,__enum__:"nx3.action.EActivityType",toString:$estr}
+};
+var nx3_action_IInteractivity = function() { };
+$hxClasses["nx3.action.IInteractivity"] = nx3_action_IInteractivity;
+nx3_action_IInteractivity.__name__ = ["nx3","action","IInteractivity"];
+nx3_action_IInteractivity.prototype = {
+	__class__: nx3_action_IInteractivity
+};
+var nx3_geom_Point = function() { };
+$hxClasses["nx3.geom.Point"] = nx3_geom_Point;
+nx3_geom_Point.__name__ = ["nx3","geom","Point"];
+var ui_QSyntax = function() {
+	markdown_InlineSyntax.call(this,ui_QSyntax.REGEX);
+};
+$hxClasses["ui.QSyntax"] = ui_QSyntax;
+ui_QSyntax.__name__ = ["ui","QSyntax"];
+ui_QSyntax.__super__ = markdown_InlineSyntax;
+ui_QSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		var code = this.pattern.matched(1);
+		haxe_Log.trace("found QSyntax: " + code,{ fileName : "src/ui/Bookpage.hx", lineNumber : 27, className : "ui.QSyntax", methodName : "onMatch"});
+		parser.addNode(new ui_StringRenderNode("score",code));
+		return true;
+	}
+	,__class__: ui_QSyntax
+});
+var ui_StringRenderNode = function(tag,code) {
+	markdown_ElementNode.call(this,tag,[]);
+	this.code = code;
+};
+$hxClasses["ui.StringRenderNode"] = ui_StringRenderNode;
+ui_StringRenderNode.__name__ = ["ui","StringRenderNode"];
+ui_StringRenderNode.__super__ = markdown_ElementNode;
+ui_StringRenderNode.prototype = $extend(markdown_ElementNode.prototype,{
+	__class__: ui_StringRenderNode
+});
 var ui_Bookpage = function() {
 	ui_Bookpage.bpcount++;
-	haxe_Log.trace("bookpage new: " + ui_Bookpage.bpcount + " " + data_FilterModel.instance.getBook().path,{ fileName : "src/ui/Bookpage.hx", lineNumber : 18, className : "ui.Bookpage", methodName : "new"});
+	haxe_Log.trace("bookpage new: " + ui_Bookpage.bpcount + " " + data_FilterModel.instance.getBook().path,{ fileName : "src/ui/Bookpage.hx", lineNumber : 51, className : "ui.Bookpage", methodName : "new"});
 };
 $hxClasses["ui.Bookpage"] = ui_Bookpage;
 ui_Bookpage.__name__ = ["ui","Bookpage"];
@@ -4073,7 +4153,7 @@ ui_Bookpage.prototype = {
 				return null;
 			}
 			if(chapter.type == null || (chapter.type instanceof data_StandardChaptertype)) {
-				return m.m("section",[m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text)]);
+				return m.m("section",[m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text,[new ui_QSyntax()])]);
 			} else {
 				return null;
 			}
@@ -4110,9 +4190,9 @@ ui_Bookpage.prototype = {
 			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
 				return chapter.set_text(e.target.value);
 			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
-				haxe_Log.trace(chapter.dbpath,{ fileName : "src/ui/Bookpage.hx", lineNumber : 97, className : "ui.Bookpage", methodName : "editChapterView"});
+				haxe_Log.trace(chapter.dbpath,{ fileName : "src/ui/Bookpage.hx", lineNumber : 118, className : "ui.Bookpage", methodName : "editChapterView"});
 				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
-					haxe_Log.trace("after update " + Std.string(e2),{ fileName : "src/ui/Bookpage.hx", lineNumber : 99, className : "ui.Bookpage", methodName : "editChapterView"});
+					haxe_Log.trace("after update " + Std.string(e2),{ fileName : "src/ui/Bookpage.hx", lineNumber : 120, className : "ui.Bookpage", methodName : "editChapterView"});
 					return;
 				});
 			}},"Save")]);
@@ -4490,6 +4570,63 @@ ui_Homepage.prototype = {
 		return [this.homeView()];
 	}
 	,__class__: ui_Homepage
+};
+var ui_render_IStringRenderer = function() { };
+$hxClasses["ui.render.IStringRenderer"] = ui_render_IStringRenderer;
+ui_render_IStringRenderer.__name__ = ["ui","render","IStringRenderer"];
+ui_render_IStringRenderer.prototype = {
+	__class__: ui_render_IStringRenderer
+};
+var ui_DefaultRenderer = function() {
+};
+$hxClasses["ui.DefaultRenderer"] = ui_DefaultRenderer;
+ui_DefaultRenderer.__name__ = ["ui","DefaultRenderer"];
+ui_DefaultRenderer.__interfaces__ = [ui_render_IStringRenderer];
+ui_DefaultRenderer.prototype = {
+	renderFromCode: function(code) {
+		return "DefaultRenderer:getString():" + code;
+	}
+	,__class__: ui_DefaultRenderer
+};
+var ui_StringRendererMapper = function() {
+	this.map = new haxe_ds_StringMap();
+	var _this = this.map;
+	var value = new ui_DefaultRenderer();
+	if(__map_reserved["default"] != null) {
+		_this.setReserved("default",value);
+	} else {
+		_this.h["default"] = value;
+	}
+};
+$hxClasses["ui.StringRendererMapper"] = ui_StringRendererMapper;
+ui_StringRendererMapper.__name__ = ["ui","StringRendererMapper"];
+ui_StringRendererMapper.prototype = {
+	set: function(name,renderer) {
+		var _this = this.map;
+		if(__map_reserved[name] != null) {
+			_this.setReserved(name,renderer);
+		} else {
+			_this.h[name] = renderer;
+		}
+	}
+	,get: function(name) {
+		var _this = this.map;
+		if(__map_reserved[name] != null ? _this.existsReserved(name) : _this.h.hasOwnProperty(name)) {
+			var _this1 = this.map;
+			if(__map_reserved[name] != null) {
+				return _this1.getReserved(name);
+			} else {
+				return _this1.h[name];
+			}
+		}
+		var _this2 = this.map;
+		if(__map_reserved["default"] != null) {
+			return _this2.getReserved("default");
+		} else {
+			return _this2.h["default"];
+		}
+	}
+	,__class__: ui_StringRendererMapper
 };
 var ui_UIHeader = function() {
 	this.pass = "";
@@ -4978,11 +5115,13 @@ markdown_LinkSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s
 markdown_ImgSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
 markdown_InlineParser.defaultSyntaxes = [new markdown_AutolinkSyntaxWithoutBrackets(),new markdown_TextSyntax(" {2,}\n","<br />\n"),new markdown_TextSyntax("\\s*[A-Za-z0-9]+"),new markdown_AutolinkSyntax(),new markdown_LinkSyntax(),new markdown_ImgSyntax(),new markdown_TextSyntax(" \\* "),new markdown_TextSyntax(" _ "),new markdown_TextSyntax("&[#a-zA-Z0-9]*;"),new markdown_TextSyntax("&","&amp;"),new markdown_TextSyntax("</?\\w+.*?>"),new markdown_TextSyntax("<","&lt;"),new markdown_TagSyntax("\\*\\*","strong"),new markdown_TagSyntax("__","strong"),new markdown_TagSyntax("\\*","em"),new markdown_TagSyntax("\\b_","em","_\\b"),new markdown_CodeSyntax("``\\s?((?:.|\\n)*?)\\s?``"),new markdown_CodeSyntax("`([^`]*)`")];
 markdown_MithrilTools.cache = new cx_Cache(5);
+ui_QSyntax.REGEX = "/@score ([0-9a-zA-Z ]*)@/";
 ui_Bookpage.bpcount = 0;
 ui_BookpageCache.instance = new ui_BookpageCache();
 ui_ClientUI.instance = new ui_ClientUI();
+ui_StringRendererMapper.instance = new ui_StringRendererMapper();
 ui_ViewMapper.instance = new ui_ViewMapper();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
-$s.a = $hxClasses; $s.b = mithril_Mithril; $s.c = data_TestModel; $s.d = Std; $s.e = haxe_ds_StringMap; $s.f = haxe_Log; 
+$s.a = $hxClasses; $s.b = mithril_Mithril; $s.c = data_TestModel; $s.d = Std; $s.e = haxe_ds_StringMap; $s.f = haxe_Log; $s.g = ui_render_IStringRenderer; $s.h = StringTools; $s.i = $extend; $s.j = $estr; $s.k = $hxEnums; $s.l = js__$Boot_HaxeError; $s.m = HxOverrides; $s.n = Reflect; $s.o = Lambda; $s.p = Type; $s.aa = js_Boot; $s.ab = haxe_ds_ObjectMap; $s.ac = haxe_ds_IntMap; 
 Client.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

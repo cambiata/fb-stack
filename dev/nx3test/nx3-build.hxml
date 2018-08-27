@@ -1,0 +1,15 @@
+-cp ../../cx/src
+-cp src
+-main Main
+
+--each 
+
+-js bin/client.js 
+
+--next
+
+-lib hxnodejs
+-js bin/server.js
+
+#-cmd cd bin
+#-cmd node server.js

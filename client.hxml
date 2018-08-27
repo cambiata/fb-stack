@@ -1,6 +1,6 @@
 -D analyzer-optimize
 -dce full
-
+# -cp ../cx/src
 -cp src
 -cp ../firebase-client-hx/src
 
