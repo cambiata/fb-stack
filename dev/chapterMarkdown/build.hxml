@@ -1,0 +1,9 @@
+-cp src
+-cp ../../src
+-D analyzer-optimize
+-main Main
+-lib mithril
+-lib markdown
+-lib dataclass
+
+-js public/test.js

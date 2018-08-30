@@ -32,6 +32,7 @@ class StorageMap {
 			return downloadUrl;
 		}).catchError(e -> {
 			trace('error ' + e);
+			M.redraw();
 			return NONEXISTING;
 		});
 

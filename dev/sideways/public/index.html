@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style id="base">
+        body {
+            font-family: "Roboto", sans-serif;    
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1em auto;
+            grid-template-rows: 5em auto 5em;
+        }
+
+        header {
+            background-color: rgb(172, 200, 255);
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+            display: grid;
+            grid-template-columns: 8em auto 12em;
+            padding: 1em;
+        }
+
+        #userinfo {
+            background-color: gray;
+            grid-column: -1/-2;
+        }
+
+        #logo {
+            background-color: gray;
+            grid-column: 1/2;
+        }
+
+        aside {
+            background-color: #333;
+            grid-column: 1 / 2;
+            grid-row: 2 / 2;
+        }
+
+        footer {
+            background-color: rgb(57, 68, 92);
+            grid-column: 1 / -1;
+            grid-row: -2 / -1;
+            color: white;
+            display: grid;
+            grid-template-columns: 8em 8em 8em 8em 8em 8em;
+            grid-gap: 1em;
+            padding: 1em;
+        }
+
+        .sideways {
+            grid-column: 2 / -1;
+            grid-row: 2 / -2;
+            border-color: 1px solid gray;
+        }
+
+        .blue {
+            background-color: rgb(172, 172, 243);
+        }
+
+        .red {
+            background-color: rgb(238, 172, 172);
+        }
+
+        .green {
+            background-color: rgb(178, 243, 178);
+        }
+
+        .yellow {
+            background-color: rgb(233, 233, 167);
+        }
+
+        .vsection {
+            width: 100%;
+            border: 1px solid blue;
+        }
+
+        .center {
+            border: 1px solid red;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+
+    <style id="book">
+        
+        #book {
+            display: grid;
+            grid-template-columns: 200px auto;
+            grid-template-rows: 100px auto;
+        }
+
+        #bookheader {
+            background-color: yellow;
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+        }
+
+        #bookleft {
+            background-color: lime;
+            grid-column: 1 / 2;
+            grid-row: 2 / -1;
+        }
+
+        #bookcontent {
+            background-color: skyblue;
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+        }
+
+        #chaptercontent, #subchaptercontent{
+            background-color: white;
+            border: 1px solid gray;            
+        }    
+    </style>
+
+</head>
+
+<body>
+
+    <header><span id="logo">Logo</span>
+        <div id="userinfo">UserInfo</div>
+    </header>
+
+    <aside>Aside</aside>
+    <main class="sideways">
+        <div class="pages">
+
+            <!-- Home -->
+
+            <section id="page-home" class="page blue">
+                <div class="vsection">
+                    <div class="center">
+                        <button class="page-right">>></button>
+                    </div>
+                </div>
+                <div class="vsection">
+                    <div class="center">
+                        Another vsectionxs
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shelves -->
+
+            <section id="page-shelves" class="page red">
+                <div class="center">
+                    <button class="page-left"><<</button>
+                            <button class="page-right">>></button>
+                </div>
+            </section>
+
+            <!-- Book -->
+
+            <section id="page-book" class="page yellow">
+                <div id="book" class="center">
+                    <div id="bookheader">Bookheader</div>
+                    <div id="bookleft">Bookleft</div>
+                    <div id="bookcontent">
+                        <div id="chaptercontent">
+                            Chaptercontent
+                        </div>
+                        <div id="chaptertype">Chaptertype</div>
+                        <div id="subchaptercontent">
+                            Subchaptercontent
+                        </div>
+                        <div id="subchaptertype">Subchaptertype</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search -->
+
+            <section id="page-search" class="page green">
+                <div class="center">
+                    <button class="page-left"><<</button>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer></footer>
+
+    <script src="sideways.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="client2.js"></script>
+
+</body>
+
+</html>

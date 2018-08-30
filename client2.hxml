@@ -1,0 +1,12 @@
+-cp src
+-cp ../firebase-client-hx/src
+# -cp ../../src
+# -cp ../../../firebase-client-hx/src
+-D analyzer-optimize
+-main client2.Client2
+-lib mithril
+-lib dataclass
+-lib markdown
+-lib modular
+
+-js public/client2.js

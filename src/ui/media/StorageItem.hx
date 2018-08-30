@@ -15,10 +15,11 @@ class StorageItem implements Mithril {
 
 	public function view() {
 		var storageUrl = StorageMap.instance.get(src);
-
+		trace('storageUrl:' + storageUrl);
 		var itemView = null;
 		if (storageUrl == StorageMap.instance.getDefault(src))
-			itemView = getLoadingView(src);
+			// itemView = getLoadingView(src);
+			itemView = getUploadView(src);
 		else if (storageUrl == StorageMap.NONEXISTING)
 			itemView = getUploadView(src);
 		else
@@ -28,12 +29,12 @@ class StorageItem implements Mithril {
 	}
 
 	public function getLoadingView(src) {
-		return m('div', {
-			style: {
-				border: '2px solid blue',
-				padding: '1em'
-			}
-		}, 'Loading ' + src + '...');
+		// return m('div', {
+		// 	style: {
+		// 		border: '2px solid blue',
+		// 		padding: '1em'
+		// 	}
+		// }, 'Loading ' + src + '...');
 	}
 
 	public function getItemView(src) {

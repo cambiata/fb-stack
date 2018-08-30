@@ -1,8 +1,9 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, mithril_Mithril = $s.b;
+var haxe_Log = $s.e, $hxClasses = $s.a, mithril_Mithril = $s.b;
 var ui_VideoChapter = function(c) {
 	this.c = c;
+	haxe_Log.trace("VIDEO CHAPTER CREATED",{ fileName : "src/ui/VideoChapter.hx", lineNumber : 9, className : "ui.VideoChapter", methodName : "new"});
 };
 $hxClasses["ui.VideoChapter"] = ui_VideoChapter;
 ui_VideoChapter.__name__ = ["ui","VideoChapter"];
@@ -10,7 +11,9 @@ ui_VideoChapter.__interfaces__ = [mithril_Mithril];
 ui_VideoChapter.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.video",m.m("h1","Video")),m.m("video",{ src : this.c.url, controls : true, style : { width : "100%", objectFit : "contain", backgroundColor : "black"}})];
+		return [m.m("div.specialchapter.video",m.m("h1","Video")),m.m("video",{ src : this.c.url, controls : true, config : function(el,isInit,context) {
+			return context.retain = true;
+		}, style : { width : "100%", objectFit : "contain", backgroundColor : "black"}})];
 	}
 	,__class__: ui_VideoChapter
 };

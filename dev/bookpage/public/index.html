@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div.centered {
+            border: 1px solid red;
+            max-height: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        #bookpage {
+            display: grid;
+            grid-template-columns: 160px auto;
+            grid-template-rows: 40px auto;
+        }
+
+        #bookheader {
+            background-color: yellow;
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+        }
+
+        #bookleft {
+            background-color: lime;
+            grid-column: 1 / 2;
+            grid-row: 2 / -1;
+        }
+
+        #bookcontent {
+            background-color: white;           
+            grid-column: 2 / -1;
+            grid-row: 2 / 2;
+        }
+
+        #booktoc {
+            padding: .5em;
+        }
+
+        #booktocitem {
+            display: block;
+            margin-bottom: .5em;
+        }
+
+        #chaptertoc {
+            background-color: #bbb;
+            padding: .5em;
+        }
+
+        #chaptertocitem {
+            display: inline-block;
+            margin-right: .5em;
+        }
+
+        .selected {
+            border: 3px solid red;
+        }
+
+        .markdown {
+            padding: 1em;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main>
+
+
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="test.js"></script>
+
+</body>
+
+</html>

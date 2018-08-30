@@ -1,7 +1,10 @@
 -cp src
+-cp ../../src
+-cp ../../../firebase-client-hx/src
 -D analyzer-optimize
 -main Main
 -lib mithril
-
+-lib dataclass
+-lib markdown
 
 -js public/test.js

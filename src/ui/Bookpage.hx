@@ -10,8 +10,11 @@ import mithril.M;
 import data.Content;
 import data.FilterModel;
 import haxe.DynamicAccess;
-import markdown.MithrilTools;
+// import markdown.MithrilTools;
 import firebase.Firebase;
+import markdown.MithrilRenderer;
+import markdown.inlineRenderer.QInlineSyntaxRenderer;
+import ui.ChapterTypeViewCache;
 
 using cx.ArrayTools;
 
@@ -36,6 +39,36 @@ class QSyntax extends InlineSyntax {
 	}
 }
 
+// /@score hej @/
+class MediaSyntax extends InlineSyntax {
+	public function new()
+		super(REGEX);
+
+	public static var REGEX = '/@media ([/.0-9a-zA-Z ]*)@/';
+
+	override function onMatch(parser:InlineParser):Bool {
+		var url = pattern.matched(1);
+		trace('found MediaSyntax: $url');
+		var el = new MediaNode('media', url);
+		parser.addNode(el);
+		return true;
+	}
+
+	public function getRenderer(code:String) {
+		var renderer:IStringRenderer = StringRendererMapper.instance.get('score');
+		return renderer;
+	}
+}
+
+class MediaNode extends ElementNode {
+	public var data(default, null):Dynamic;
+
+	public function new(tag:String, data:Dynamic) {
+		super(tag, []);
+		this.data = data;
+	}
+}
+
 class StringRenderNode extends ElementNode {
 	public var code(default, null):String;
 
@@ -47,11 +80,11 @@ class StringRenderNode extends ElementNode {
 
 class Bookpage implements Mithril {
 	public function new() {
-		bpcount++;
-		trace('bookpage new: ' + bpcount + ' ' + FilterModel.instance.getBook().path);
+		BP_RENDER_COUNT++;
+		// trace('bookpage new: ' + bpcount + ' ' + FilterModel.instance.getBook().path);
 	}
 
-	static public var bpcount:Int = 0;
+	static public var BP_RENDER_COUNT:Int = 0;
 
 	function chapterView(chapter:Chapter) {
 		return try {
@@ -60,8 +93,9 @@ class Bookpage implements Mithril {
 			if (chapter.type == null || Std.is(chapter.type, StandardChaptertype)) {
 				return m('section', [
 					m('h1', '' + chapter.title),
-					// m('p', '' + chapter.text),
-					cast MithrilTools.markdownToView(chapter.text, [new QSyntax()]),
+
+					cast markdown.MithrilRendererCache.instance.markdownToView(chapter.path, chapter.text, [new QInlineSyntaxRenderer()])
+
 				]);
 			} else {
 				return null; // m('section', 'Do not show standad chapter stuff');
@@ -110,7 +144,10 @@ class Bookpage implements Mithril {
 			m('details', [
 				m('textarea', {
 					style: {width: "100%", height: "300px"},
-					oninput: e -> chapter.text = e.target.value,
+					oninput: e -> {
+						markdown.MithrilRendererCache.instance.clearCacheKey(chapter.path);
+						chapter.text = e.target.value;
+					},
 					value: chapter.text
 				}),
 				m('button', {
@@ -152,24 +189,27 @@ class Bookpage implements Mithril {
 
 	function headerView(book:Book)
 		try {
-			return (book != null) ? m('header', [m('div', book.title)]) : cast 'No book selected';
+			return (book != null) ? m('header', [m('div', book.title + ' ' + BP_RENDER_COUNT)]) : cast 'No book selected';
 		} catch (e:Dynamic) {
 			return m('div.error', 'headerView: ' + e);
 		}
 
 	function specialChapterView(chapter:Chapter)
 		try {
-			if (chapter == null || chapter.type == null)
-				return null; // m('div', 'No special chapter');
-			return switch Type.getClass(chapter.type) {
-				case VideoChaptertype: ViewMapper.instance.getNew('ui.VideoChapter', [chapter.type]).view();
-				case RosettaChaptertype: ViewMapper.instance.getNew('ui.RosettaChapter', [chapter.type]).view();
-				case PdfChaptertype: ViewMapper.instance.getNew('ui.PdfChapter', [chapter.type]).view();
-				case PitchChaptertype: ViewMapper.instance.getNew('ui.PitchChapter', [chapter.type]).view();
-				case ScorxmixerChaptertype: ViewMapper.instance.getNew('ui.ScorxmixerChapter', [chapter.type]).view();
-				case _: return m('div', 'Undefined special chapter: ' + chapter.type);
-			}
-			return m('div', 'Undefined special chapter: ' + chapter.type);
+			// if (chapter == null || chapter.type == null)
+			// 	return null; // m('div', 'No special chapter');
+			// return switch Type.getClass(chapter.type) {
+			// 	case VideoChaptertype: ViewMapper.instance.getNew('ui.VideoChapter', [chapter.type]).view();
+			// 	case RosettaChaptertype: ViewMapper.instance.getNew('ui.RosettaChapter', [chapter.type]).view();
+			// 	case PdfChaptertype: ViewMapper.instance.getNew('ui.PdfChapter', [chapter.type]).view();
+			// 	case PitchChaptertype: ViewMapper.instance.getNew('ui.PitchChapter', [chapter.type]).view();
+			// 	case ScorxmixerChaptertype: ViewMapper.instance.getNew('ui.ScorxmixerChapter', [chapter.type]).view();
+			// 	case _: return m('div', 'Undefined special chapter: ' + chapter.type);
+			// }
+			// return m('div', 'Undefined special chapter: ' + chapter.type);
+			return ChapterTypeViewCache.instance.getTypeView(chapter);
+			// return m('div', 'Hej');
+			// return new VideoChapter(cast chapter.type).view();
 		} catch (e:Dynamic) {
 			return m('div.error', 'specialChapterView: ' + e);
 		}

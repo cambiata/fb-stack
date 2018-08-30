@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .selected {
+            border: 2px solid blue;
+        }
+        .center {
+            border: 2px solid red;
+            margin: 0 auto;
+            max-width: 1000px;
+        }
+
+        #book {
+            display: grid;
+            grid-template-columns: 200px auto;
+            grid-template-rows: 100px auto;
+        }
+
+        #bookheader {
+            background-color: yellow;
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+        }
+
+        #bookleft {
+            background-color: lime;
+            grid-column: 1 / 2;
+            grid-row: 2 / -1;
+        }
+
+        #bookcontent {
+            background-color: skyblue;
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+        }
+
+        #chaptercontent, #subchaptercontent{
+            background-color: white;
+            border: 1px solid gray;            
+        }
+
+    </style>
+</head>
+
+<body>
+    <main>
+
+    </main>
+    <div id="book" class="center">
+        <div id="bookheader">Bookheader</div>
+        <div id="bookleft">Bookleft</div>
+        <div id="bookcontent">
+            <div id="chaptercontent">
+                Chaptercontent
+            </div>
+            <div id="chaptertype">Chaptertype</div>
+            <div id="subchaptercontent">
+                Subchaptercontent
+            </div>
+            <div id="subchaptertype">Subchaptertype</div>
+        </div>
+    </div>
+
+    <div id="debug" class="center">
+        Debug
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="test.js"></script>
+
+</body>
+
+</html>

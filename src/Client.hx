@@ -16,7 +16,7 @@ class Client {
 		FirebaseModel.instance.init();
 		Routes.instance.init();
 		ClientUI.instance.init();
-		// ContentLoader.instance.loadContent();
+		ContentLoader.instance.loadContent();
 		UserModel.instance.init();
 		UserLoader.instance.startSession();
 		initBundledClasses();
@@ -24,40 +24,27 @@ class Client {
 
 	function initBundledClasses() {
 		haxe.Timer.delay(() -> {
-			Bundle.load(ui.LazyView).then(_ -> {
-				ViewMapper.instance.set('test', ui.LazyView);
-				M.redraw();
-			});
-
-			Bundle.load(ui.RosettaChapter).then(_ -> {
+			Promise.all([
+				Bundle.load(RosettaChapter),
+				Bundle.load(PdfChapter),
+				Bundle.load(VideoChapter),
+				Bundle.load(PitchChapter),
+				Bundle.load(ScorxmixerChapter),
+			]).then(_ -> {
+				trace('ALL LOADED');
 				ViewMapper.instance.set('ui.RosettaChapter', ui.RosettaChapter);
-				M.redraw();
-			});
-
-			Bundle.load(ui.PdfChapter).then(_ -> {
 				ViewMapper.instance.set('ui.PdfChapter', ui.PdfChapter);
-				M.redraw();
-			});
-
-			Bundle.load(ui.VideoChapter).then(_ -> {
 				ViewMapper.instance.set('ui.VideoChapter', ui.VideoChapter);
-				M.redraw();
-			});
-
-			Bundle.load(ui.PitchChapter).then(_ -> {
 				ViewMapper.instance.set('ui.PitchChapter', ui.PitchChapter);
-				M.redraw();
-			});
-
-			Bundle.load(ui.ScorxmixerChapter).then(_ -> {
 				ViewMapper.instance.set('ui.ScorxmixerChapter', ui.ScorxmixerChapter);
+				ui.ChapterTypeViewCache.instance.clearCache();
 				M.redraw();
 			});
 
 			Bundle.load(ui.render.QSyntaxRenderer).then(_ -> {
-				// ViewMapper.instance.set('ui.ScorxmixerChapter', ui.ScorxmixerChapter);
-				StringRendererMapper.instance.set('score', cast new ui.render.QSyntaxRenderer());
-
+				ui.StringRendererMapper.instance.set('score', cast new ui.render.QSyntaxRenderer());
+				markdown.MithrilRendererCache.instance.clearCache();
+				trace('QSyntaxRenderer loaded');
 				M.redraw();
 			});
 		}, 2000);

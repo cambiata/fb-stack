@@ -7,82 +7,9 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var Client = function() {
-	data_FirebaseModel.instance.init();
-	data_Routes.instance.init();
-	ui_ClientUI.instance.init();
-	data_UserModel.instance.init();
-	data_UserLoader.instance.startSession();
-	this.initBundledClasses();
-};
-$hxClasses["Client"] = Client;
-Client.__name__ = ["Client"];
-Client.main = function() {
-	new Client();
-};
-Client.prototype = {
-	initBundledClasses: function() {
-		haxe_Timer.delay(function() {
-			Require.module("ui_LazyView").then(function(id) {
-				var _ = ui_LazyView = $s.ui_LazyView;
-				return id;
-			}).then(function(_1) {
-				ui_ViewMapper.instance.set("test",ui_LazyView);
-				m.redraw();
-				return;
-			});
-			Require.module("ui_RosettaChapter").then(function(id1) {
-				var _2 = ui_RosettaChapter = $s.ui_RosettaChapter;
-				return id1;
-			}).then(function(_3) {
-				ui_ViewMapper.instance.set("ui.RosettaChapter",ui_RosettaChapter);
-				m.redraw();
-				return;
-			});
-			Require.module("ui_PdfChapter").then(function(id2) {
-				var _4 = ui_PdfChapter = $s.ui_PdfChapter;
-				return id2;
-			}).then(function(_5) {
-				ui_ViewMapper.instance.set("ui.PdfChapter",ui_PdfChapter);
-				m.redraw();
-				return;
-			});
-			Require.module("ui_VideoChapter").then(function(id3) {
-				var _6 = ui_VideoChapter = $s.ui_VideoChapter;
-				return id3;
-			}).then(function(_7) {
-				ui_ViewMapper.instance.set("ui.VideoChapter",ui_VideoChapter);
-				m.redraw();
-				return;
-			});
-			Require.module("ui_PitchChapter").then(function(id4) {
-				var _8 = ui_PitchChapter = $s.ui_PitchChapter;
-				return id4;
-			}).then(function(_9) {
-				ui_ViewMapper.instance.set("ui.PitchChapter",ui_PitchChapter);
-				m.redraw();
-				return;
-			});
-			Require.module("ui_ScorxmixerChapter").then(function(id5) {
-				var _10 = ui_ScorxmixerChapter = $s.ui_ScorxmixerChapter;
-				return id5;
-			}).then(function(_11) {
-				ui_ViewMapper.instance.set("ui.ScorxmixerChapter",ui_ScorxmixerChapter);
-				m.redraw();
-				return;
-			});
-			return Require.module("ui_render_QSyntaxRenderer").then(function(id6) {
-				var _12 = ui_render_QSyntaxRenderer = $s.ui_render_QSyntaxRenderer;
-				return id6;
-			}).then(function(_13) {
-				ui_StringRendererMapper.instance.set("score",new ui_render_QSyntaxRenderer());
-				m.redraw();
-				return;
-			});
-		},2000);
-	}
-	,__class__: Client
-};
+var Bundle = function() { };
+$hxClasses["Bundle"] = Bundle;
+Bundle.__name__ = ["Bundle"];
 var DataClass = function() { };
 $hxClasses["DataClass"] = DataClass;
 DataClass.__name__ = ["DataClass"];
@@ -327,11 +254,10 @@ Lambda.array = function(it) {
 	while(i.hasNext()) a.push(i.next());
 	return a;
 };
-Lambda.mapi = function(it,f) {
+Lambda.map = function(it,f) {
 	var l = new haxe_ds_List();
-	var i = 0;
 	var x = $getIterator(it);
-	while(x.hasNext()) l.add(f(i++,x.next()));
+	while(x.hasNext()) l.add(f(x.next()));
 	return l;
 };
 Lambda.has = function(it,elt) {
@@ -340,6 +266,13 @@ Lambda.has = function(it,elt) {
 		return true;
 	}
 	return false;
+};
+Lambda.foreach = function(it,f) {
+	var x = $getIterator(it);
+	while(x.hasNext()) if(!f(x.next())) {
+		return false;
+	}
+	return true;
 };
 Lambda.iter = function(it,f) {
 	var x = $getIterator(it);
@@ -355,6 +288,34 @@ Lambda.filter = function(it,f) {
 		}
 	}
 	return l;
+};
+Lambda.indexOf = function(it,v) {
+	var i = 0;
+	var v2 = $getIterator(it);
+	while(v2.hasNext()) {
+		if(v == v2.next()) {
+			return i;
+		}
+		++i;
+	}
+	return -1;
+};
+var Markdown = function() { };
+$hxClasses["Markdown"] = Markdown;
+Markdown.__name__ = ["Markdown"];
+Markdown.markdownToHtml = function(markdown) {
+	var document = new Document();
+	try {
+		var _this_r = new RegExp("(\r\n|\r)","g".split("u").join(""));
+		var lines = markdown.replace(_this_r,"\n").split("\n");
+		document.parseRefLinks(lines);
+		return Markdown.renderHtml(document.parseLines(lines));
+	} catch( e ) {
+		return "<pre>" + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e) + "</pre>";
+	}
+};
+Markdown.renderHtml = function(blocks) {
+	return new markdown_HtmlRenderer().render(blocks);
 };
 var Document = function() {
 	this.refLinks = new haxe_ds_StringMap();
@@ -631,6 +592,13 @@ Std.parseInt = function(x) {
 	}
 	return v;
 };
+Std.random = function(x) {
+	if(x <= 0) {
+		return 0;
+	} else {
+		return Math.floor(Math.random() * x);
+	}
+};
 var StringBuf = function() {
 	this.b = "";
 };
@@ -837,6 +805,47 @@ Xml.prototype = {
 		}
 		return this.attributeMap.keys();
 	}
+	,elements: function() {
+		if(this.nodeType != Xml.Document && this.nodeType != Xml.Element) {
+			throw new js__$Boot_HaxeError("Bad node type, expected Element or Document but found " + this.nodeType);
+		}
+		var _g = [];
+		var _g1 = 0;
+		var _g2 = this.children;
+		while(_g1 < _g2.length) {
+			var child = _g2[_g1];
+			++_g1;
+			if(child.nodeType == Xml.Element) {
+				_g.push(child);
+			}
+		}
+		return HxOverrides.iter(_g);
+	}
+	,elementsNamed: function(name) {
+		if(this.nodeType != Xml.Document && this.nodeType != Xml.Element) {
+			throw new js__$Boot_HaxeError("Bad node type, expected Element or Document but found " + this.nodeType);
+		}
+		var _g = [];
+		var _g1 = 0;
+		var _g2 = this.children;
+		while(_g1 < _g2.length) {
+			var child = _g2[_g1];
+			++_g1;
+			var tmp;
+			if(child.nodeType == Xml.Element) {
+				if(child.nodeType != Xml.Element) {
+					throw new js__$Boot_HaxeError("Bad node type, expected Element but found " + child.nodeType);
+				}
+				tmp = child.nodeName == name;
+			} else {
+				tmp = false;
+			}
+			if(tmp) {
+				_g.push(child);
+			}
+		}
+		return HxOverrides.iter(_g);
+	}
 	,firstElement: function() {
 		if(this.nodeType != Xml.Document && this.nodeType != Xml.Element) {
 			throw new js__$Boot_HaxeError("Bad node type, expected Element or Document but found " + this.nodeType);
@@ -888,6 +897,9 @@ audio_Audio.prototype = {
 var audio_IPlayback = function() { };
 $hxClasses["audio.IPlayback"] = audio_IPlayback;
 audio_IPlayback.__name__ = ["audio","IPlayback"];
+audio_IPlayback.prototype = {
+	__class__: audio_IPlayback
+};
 var audio_scorx_Mixer = function(channels) {
 	this.channels = [];
 	this.channels = channels;
@@ -920,7 +932,7 @@ audio_scorx_Mixer.prototype = {
 	}
 	,buildGraph: function() {
 		var sources = [];
-		haxe_Log.trace(this.channels.length,{ fileName : "src/audio/scorx/Mixer.hx", lineNumber : 47, className : "audio.scorx.Mixer", methodName : "buildGraph"});
+		console.log("src/audio/scorx/Mixer.hx:47:",this.channels.length);
 		var _g1 = 0;
 		var _g = this.channels.length;
 		while(_g1 < _g) {
@@ -937,6 +949,12 @@ audio_scorx_Mixer.prototype = {
 		}
 		this.sampleNodes = sources;
 	}
+	,getDuration: function() {
+		if(this.channels[0] != null) {
+			return this.channels[0].buffer.duration;
+		}
+		return 0;
+	}
 	,setVolumeOfChannel: function(idx,volume) {
 		if(this.trackVolumeNodes == null || this.trackVolumeNodes == []) {
 			return;
@@ -946,6 +964,13 @@ audio_scorx_Mixer.prototype = {
 		}
 		this.trackVolumeNodes[idx].gain.value = volume;
 		this.channels[idx].volume = volume;
+	}
+	,setMasterVolume: function(volume) {
+		this.volume = volume;
+		this.masterVolumeNode.gain.value = volume;
+	}
+	,getPosition: function() {
+		return 0;
 	}
 	,__class__: audio_scorx_Mixer
 };
@@ -973,7 +998,7 @@ audio_scorx_Loader.load = function(url) {
 		request.responseType = "arraybuffer";
 		request.onload = function(_) {
 			audio_Audio.instance.context.decodeAudioData(request.response,function(buffer) {
-				haxe_Log.trace("Loaded and decoded track " + url,{ fileName : "src/audio/scorx/Mixer.hx", lineNumber : 118, className : "audio.scorx.Loader", methodName : "load"});
+				console.log("src/audio/scorx/Mixer.hx:118:","Loaded and decoded track " + url);
 				if(buffer == null) {
 					rej("error decoding file data: " + url);
 				}
@@ -997,28 +1022,52 @@ $hxClasses["audio.scorx.MixerModel"] = audio_scorx_MixerModel;
 audio_scorx_MixerModel.__name__ = ["audio","scorx","MixerModel"];
 audio_scorx_MixerModel.__interfaces__ = [audio_IPlayback];
 audio_scorx_MixerModel.prototype = {
-	loadFiles: function(id,files) {
+	ready: function() {
+		return this.mixer != null;
+	}
+	,loadFiles: function(id,files) {
 		var _gthis = this;
-		if(this.loadId == id) {
-			return;
-		}
-		this.loadId = id;
-		this.mixer = null;
-		this.files = files;
-		this.volumes = this.files.map(function(f) {
-			return 0.7;
-		});
-		m.redraw();
-		Promise.all(files.map(function(f1) {
-			return audio_scorx_Loader.load(f1);
-		})).then(function(buffers) {
-			return Promise.resolve(buffers.map(function(b) {
-				return new audio_scorx_Channel(b.url,b.buffer);
-			}));
-		}).then(function(channels) {
-			haxe_Log.trace("all channels loaded!",{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 40, className : "audio.scorx.MixerModel", methodName : "loadFiles"});
-			_gthis.mixer = new audio_scorx_Mixer(channels);
+		return new Promise(function(res,rej) {
+			if(_gthis.loadId == id) {
+				res(true);
+				return;
+			}
+			_gthis.loadId = id;
+			_gthis.mixer = null;
+			_gthis.files = files;
+			_gthis.volumes = _gthis.files.map(function(f) {
+				return 0.7;
+			});
 			m.redraw();
+			Promise.all(files.map(function(f1) {
+				return audio_scorx_Loader.load(f1);
+			})).then(function(buffers) {
+				return Promise.resolve(buffers.map(function(b) {
+					return new audio_scorx_Channel(b.url,b.buffer);
+				}));
+			}).then(function(channels) {
+				console.log("src/audio/scorx/MixerModel.hx:42:","all channels loaded!");
+				_gthis.mixer = new audio_scorx_Mixer(channels);
+				res(true);
+				return;
+			});
+			return;
+		});
+	}
+	,createMixer: function(id,files) {
+		return new Promise(function(res,rej) {
+			Promise.all(files.map(function(f) {
+				return audio_scorx_Loader.load(f);
+			})).then(function(buffers) {
+				return Promise.resolve(buffers.map(function(b) {
+					return new audio_scorx_Channel(b.url,b.buffer);
+				}));
+			}).then(function(channels) {
+				console.log("src/audio/scorx/MixerModel.hx:56:","all channels loaded!");
+				var mixer = new audio_scorx_Mixer(channels);
+				res(mixer);
+				return;
+			});
 			return;
 		});
 	}
@@ -1027,7 +1076,7 @@ audio_scorx_MixerModel.prototype = {
 			startTime = 0;
 		}
 		this.deltaTime = audio_Audio.instance.context.currentTime;
-		haxe_Log.trace("Delta:" + this.deltaTime,{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 48, className : "audio.scorx.MixerModel", methodName : "play"});
+		console.log("src/audio/scorx/MixerModel.hx:66:","Delta:" + this.deltaTime);
 		if(this.mixer != null) {
 			this.mixer.stop();
 			this.mixer.play(startTime);
@@ -1040,87 +1089,1173 @@ audio_scorx_MixerModel.prototype = {
 		}
 		this.playing = false;
 	}
+	,getDuration: function() {
+		if(this.mixer != null) {
+			return this.mixer.getDuration();
+		} else {
+			return 0;
+		}
+	}
 	,setVolumeOfChannel: function(idx,volume) {
 		this.volumes[idx] = volume;
 		if(this.mixer != null) {
 			this.mixer.setVolumeOfChannel(idx,volume);
 		}
 	}
+	,setMasterVolume: function(volume) {
+		this.masterVolume = volume;
+		if(this.mixer != null) {
+			this.mixer.setMasterVolume(volume);
+		}
+	}
+	,getPosition: function() {
+		if(this.mixer != null && this.playing) {
+			return audio_Audio.instance.context.currentTime - this.deltaTime;
+		} else {
+			return 0;
+		}
+	}
 	,__class__: audio_scorx_MixerModel
+};
+var client2_Client2 = function() {
+	client2_SidewaysManager.instance.init();
+	data_FirebaseModel.instance.init();
+	client2_ContentManager.instance.init();
+	client2_UserManager.instance.init();
+	client2_UserManager.instance.startSession();
+	client2_RoutesManager.instance.init();
+	this.initUI();
+	this.initBundledClasses();
+};
+$hxClasses["client2.Client2"] = client2_Client2;
+client2_Client2.__name__ = ["client2","Client2"];
+client2_Client2.main = function() {
+	new client2_Client2();
+};
+client2_Client2.prototype = {
+	initUI: function() {
+		client2_Header.instance.init();
+		client2_Footer.instance.init();
+		client2_PageHome.instance.init();
+		client2_PageBook.instance.init();
+		client2_PageShelves.instance.init();
+		client2_PageSearch.instance.init();
+		client2_PageContent.instance.init();
+	}
+	,initBundledClasses: function() {
+		haxe_Timer.delay(function() {
+			return Require.module("ui_render_QSyntaxRenderer").then(function(id) {
+				var _ = ui_render_QSyntaxRenderer = $s.ui_render_QSyntaxRenderer;
+				return id;
+			}).then(function(_1) {
+				ui_StringRendererMapper.instance.set("score",new ui_render_QSyntaxRenderer());
+				markdown_MithrilRendererCache.instance.clearCache();
+				console.log("src/client2/Client2.hx:37:","QSyntaxRenderer loaded");
+				m.redraw();
+				return;
+			});
+		},2000);
+	}
+	,__class__: client2_Client2
 };
 var mithril_Mithril = function() { };
 $hxClasses["mithril.Mithril"] = mithril_Mithril;
 mithril_Mithril.__name__ = ["mithril","Mithril"];
-var audio_scorx_ui_ChannelView = function(idx,filename) {
-	this.filename = filename;
-	this.idx = idx;
+var client2_Logo = function() {
 };
-$hxClasses["audio.scorx.ui.ChannelView"] = audio_scorx_ui_ChannelView;
-audio_scorx_ui_ChannelView.__name__ = ["audio","scorx","ui","ChannelView"];
-audio_scorx_ui_ChannelView.__interfaces__ = [mithril_Mithril];
-audio_scorx_ui_ChannelView.prototype = {
+$hxClasses["client2.Logo"] = client2_Logo;
+client2_Logo.__name__ = ["client2","Logo"];
+client2_Logo.__interfaces__ = [mithril_Mithril];
+client2_Logo.prototype = {
 	view: function() {
-		var _gthis = this;
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var m1 = audio_scorx_MixerModel.instance;
-		return m.m("div.channelview",[m.m("span",this.idx + ":" + this.filename),m.m("input",{ type : "range", min : 0, max : 100, value : m1.volumes[this.idx] * 100, onchange : function(e) {
-			haxe_Log.trace("change: ",{ fileName : "src/audio/scorx/ui/ChannelView.hx", lineNumber : 19, className : "audio.scorx.ui.ChannelView", methodName : "view", customParams : [e.target.value]});
-			audio_scorx_MixerModel.instance.setVolumeOfChannel(_gthis.idx,e.target.value / 100);
+		return [m.m("button",{ onclick : function(e) {
+			client2_SidewaysManager.instance.init();
 			return;
-		}})]);
+		}},"Sideways")];
 	}
-	,__class__: audio_scorx_ui_ChannelView
+	,__class__: client2_Logo
 };
-var audio_scorx_ui_PlayView = function() {
-	haxe_Log.trace("new",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 8, className : "audio.scorx.ui.PlayView", methodName : "new"});
+var client2_ContentManager = function() {
 };
-$hxClasses["audio.scorx.ui.PlayView"] = audio_scorx_ui_PlayView;
-audio_scorx_ui_PlayView.__name__ = ["audio","scorx","ui","PlayView"];
-audio_scorx_ui_PlayView.__interfaces__ = [mithril_Mithril];
-audio_scorx_ui_PlayView.prototype = {
-	buttonsView: function() {
-		if(audio_scorx_MixerModel.instance.mixer != null) {
-			return [m.m("button",{ onclick : function(e) {
-				haxe_Log.trace("button clicked!",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 31, className : "audio.scorx.ui.PlayView", methodName : "buttonsView"});
-				audio_scorx_MixerModel.instance.play();
+$hxClasses["client2.ContentManager"] = client2_ContentManager;
+client2_ContentManager.__name__ = ["client2","ContentManager"];
+client2_ContentManager.prototype = {
+	init: function() {
+		this.set_content(data_ContentUtils.getContentInit());
+	}
+	,set_content: function(u) {
+		var updatePaths = function(tree) {
+			tree.path = "";
+			Lambda.iter(tree.rooms,function(room) {
+				room.path = tree.path + "/" + room.id;
+				Lambda.iter(room.shelves,function(shelf) {
+					shelf.path = room.path + "/" + shelf.id;
+					Lambda.iter(shelf.books,function(book) {
+						book.path = shelf.path + "/" + book.id;
+						Lambda.iter(book.chapters,function(chapter) {
+							chapter.path = book.path + "/" + chapter.id;
+							Lambda.iter(chapter.subchapters,function(sub) {
+								return sub.path = chapter.path + "/" + sub.id;
+							});
+							return;
+						});
+						return;
+					});
+					return;
+				});
 				return;
-			}},"Start"),m.m("button",{ onclick : function(e1) {
-				haxe_Log.trace("button clicked!",{ fileName : "src/audio/scorx/ui/PlayView.hx", lineNumber : 35, className : "audio.scorx.ui.PlayView", methodName : "buttonsView"});
-				audio_scorx_MixerModel.instance.stop();
+			});
+		};
+		var updateDbPaths = function(tree1) {
+			tree1.dbpath = "content-tree";
+			Lambda.iter(tree1.rooms,function(room1) {
+				room1.dbpath = tree1.dbpath + "/rooms/" + tree1.rooms.indexOf(room1);
+				Lambda.iter(room1.shelves,function(shelf1) {
+					shelf1.dbpath = room1.dbpath + "/shelves/" + room1.shelves.indexOf(shelf1);
+					Lambda.iter(shelf1.books,function(book1) {
+						book1.dbpath = shelf1.dbpath + "/books/" + shelf1.books.indexOf(book1);
+						Lambda.iter(book1.chapters,function(chapter1) {
+							chapter1.dbpath = book1.dbpath + "/chapters/" + book1.chapters.indexOf(chapter1);
+							Lambda.iter(chapter1.subchapters,function(sub1) {
+								return sub1.dbpath = chapter1.dbpath + "/subchapters/" + chapter1.subchapters.indexOf(sub1);
+							});
+							return;
+						});
+						return;
+					});
+					return;
+				});
 				return;
-			}},"Stop")];
-		} else {
-			return m.m("div","Mixer not ready...");
+			});
+		};
+		this.content = u;
+		updatePaths(this.content);
+		updateDbPaths(this.content);
+		m.redraw();
+		return u;
+	}
+	,__class__: client2_ContentManager
+	,__properties__: {set_content:"set_content"}
+};
+var client2_FilterManager = function() {
+};
+$hxClasses["client2.FilterManager"] = client2_FilterManager;
+client2_FilterManager.__name__ = ["client2","FilterManager"];
+client2_FilterManager.prototype = {
+	setFilterContent: function(ref) {
+		this.filterContent = ref;
+		client2_SidewaysManager.instance.setPageFromContentRef(ref);
+		m.redraw();
+	}
+	,getRoom: function() {
+		var _gthis = this;
+		try {
+			return client2_ContentManager.instance.content.rooms.filter(function(room) {
+				return room.id == _gthis.filterContent.roomId;
+			})[0];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return client2_ContentManager.instance.content.rooms[0];
+		}
+	}
+	,getShelves: function() {
+		var _gthis = this;
+		try {
+			var shelves = this.getRoom().shelves;
+			if(this.filterContent != null && this.filterContent.shelfId != null) {
+				shelves = shelves.filter(function(shelf) {
+					return shelf.id == _gthis.filterContent.shelfId;
+				});
+			}
+			return shelves;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return [];
+		}
+	}
+	,getShelf: function() {
+		var _gthis = this;
+		try {
+			return this.getRoom().shelves.filter(function(shelf) {
+				return shelf.id == _gthis.filterContent.shelfId;
+			})[0];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,getBook: function() {
+		var _gthis = this;
+		try {
+			return this.getShelf().books.filter(function(book) {
+				return book.id == _gthis.filterContent.bookId;
+			})[0];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,getChapters: function() {
+		try {
+			return this.getBook().chapters;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,getChapter: function() {
+		var _gthis = this;
+		try {
+			if(this.filterContent.chapterId != null) {
+				return this.getChapters().filter(function(chapter) {
+					return chapter.id == _gthis.filterContent.chapterId;
+				})[0];
+			} else {
+				return this.getChapters()[0];
+			}
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,getSubchapters: function() {
+		try {
+			return this.getChapter().subchapters;
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,getSubchapter: function() {
+		var _gthis = this;
+		try {
+			if(this.filterContent.subchapterId != null) {
+				return this.getSubchapters().filter(function(sub) {
+					return sub.id == _gthis.filterContent.subchapterId;
+				})[0];
+			} else {
+				return this.getSubchapters()[0];
+			}
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return null;
+		}
+	}
+	,__class__: client2_FilterManager
+};
+var client2_FilterTools = function() { };
+$hxClasses["client2.FilterTools"] = client2_FilterTools;
+client2_FilterTools.__name__ = ["client2","FilterTools"];
+client2_FilterTools.getShelvesOfType = function(shelves,type) {
+	return shelves.filter(function(shelf) {
+		return shelf.type == type;
+	});
+};
+client2_FilterTools.getShelvesExcludeType = function(shelves,type) {
+	return shelves.filter(function(shelf) {
+		return shelf.type != type;
+	});
+};
+var client2_Footer = function() {
+};
+$hxClasses["client2.Footer"] = client2_Footer;
+client2_Footer.__name__ = ["client2","Footer"];
+client2_Footer.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#buttons"),new client2_FooterView());
+	}
+	,__class__: client2_Footer
+};
+var client2_FooterView = function() {
+};
+$hxClasses["client2.FooterView"] = client2_FooterView;
+client2_FooterView.__name__ = ["client2","FooterView"];
+client2_FooterView.__interfaces__ = [mithril_Mithril];
+client2_FooterView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("button",{ onclick : function(e) {
+			return client2_SidewaysManager.instance.set_pageIdx(0);
+		}},"Home"),m.m("button",{ onclick : function(e1) {
+			return client2_SidewaysManager.instance.set_pageIdx(1);
+		}},"Shelves"),m.m("button",{ onclick : function(e2) {
+			return client2_SidewaysManager.instance.set_pageIdx(2);
+		}},"Book"),m.m("button",{ onclick : function(e3) {
+			return client2_SidewaysManager.instance.set_pageIdx(3);
+		}},"Search")];
+	}
+	,__class__: client2_FooterView
+};
+var client2_Header = function() {
+};
+$hxClasses["client2.Header"] = client2_Header;
+client2_Header.__name__ = ["client2","Header"];
+client2_Header.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#userinfo"),new client2_UserView());
+	}
+	,__class__: client2_Header
+};
+var client2_UserViewX = function() {
+};
+$hxClasses["client2.UserViewX"] = client2_UserViewX;
+client2_UserViewX.__name__ = ["client2","UserViewX"];
+client2_UserViewX.__interfaces__ = [mithril_Mithril];
+client2_UserViewX.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","Mitrhil UserView")];
+	}
+	,__class__: client2_UserViewX
+};
+var client2_UserView = function() {
+	this.pass = "";
+	this.email = "";
+	this.email = "";
+	this.pass = "";
+};
+$hxClasses["client2.UserView"] = client2_UserView;
+client2_UserView.__name__ = ["client2","UserView"];
+client2_UserView.__interfaces__ = [mithril_Mithril];
+client2_UserView.prototype = {
+	loginView: function() {
+		var _gthis = this;
+		try {
+			return m.m("form",[m.m("input[type=input][placeholder='Email']",{ oninput : function(e) {
+				return _gthis.email = e.target.value;
+			}, value : this.email}),m.m("input[type=password][placeholder='Password']",{ oninput : function(e1) {
+				return _gthis.pass = e1.target.value;
+			}, value : this.pass}),m.m("button[type=button]",{ onclick : function(e2) {
+				client2_UserManager.instance.signIn(_gthis.email,_gthis.pass);
+				return;
+			}},"Logga in")]);
+		} catch( e3 ) {
+			var e4 = (e3 instanceof js__$Boot_HaxeError) ? e3.val : e3;
+			console.log("src/client2/Header.hx:63:","error " + Std.string(e4));
+			return m.m("div.error",e4);
+		}
+	}
+	,loggedinView: function() {
+		try {
+			var selectvalues = client2_ContentManager.instance.content.rooms.map(function(room) {
+				return [room.id,"Gå till " + room.title];
+			});
+			selectvalues.push(["logout","Logga ut"]);
+			selectvalues.unshift(["user",client2_UserManager.instance.get_user().firstname + " " + client2_UserManager.instance.get_user().lastname]);
+			var tmp = selectvalues.map(function(kv) {
+				return m.m("option",{ value : kv[0], key : kv[1]},kv[1]);
+			});
+			return m.m("form",[m.m("select.loggedin",{ onchange : function(e) {
+				console.log("src/client2/Header.hx:82:",e.target.selectedIndex);
+				console.log("src/client2/Header.hx:83:",e.target.value);
+				switch(e.target.value) {
+				case "logout":
+					client2_UserManager.instance.signOut();
+					break;
+				case "user":
+					break;
+				default:
+				}
+				return e.target.selectedIndex = 0;
+			}},tmp)]);
+		} catch( e1 ) {
+			var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
+			console.log("src/client2/Header.hx:108:","error " + Std.string(e2));
+			return m.m("div.error",e2);
+		}
+	}
+	,userView: function() {
+		try {
+			switch(client2_UserManager.instance.userState._hx_index) {
+			case 0:
+				return m.m("div",[this.loginView()]);
+			case 1:
+				return m.m("div","Loading...");
+			case 2:
+				return m.m("div",[this.loggedinView()]);
+			}
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			console.log("src/client2/Header.hx:120:","error " + Std.string(e1));
+			return m.m("div.error",e1);
 		}
 	}
 	,view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [this.buttonsView()];
+		return [this.userView()];
 	}
-	,__class__: audio_scorx_ui_PlayView
+	,__class__: client2_UserView
 };
-var audio_scorx_ui_PlayerView = function() {
+var client2_PageBook = function() {
 };
-$hxClasses["audio.scorx.ui.PlayerView"] = audio_scorx_ui_PlayerView;
-audio_scorx_ui_PlayerView.__name__ = ["audio","scorx","ui","PlayerView"];
-audio_scorx_ui_PlayerView.__interfaces__ = [mithril_Mithril];
-audio_scorx_ui_PlayerView.prototype = {
+$hxClasses["client2.PageBook"] = client2_PageBook;
+client2_PageBook.__name__ = ["client2","PageBook"];
+client2_PageBook.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#bookleft"),new client2_BookTOC());
+		m.mount(window.document.querySelector("#chaptercontent"),new client2_ChapterContent());
+		m.mount(window.document.querySelector("#subchaptercontent"),new client2_SubchapterContent());
+	}
+	,__class__: client2_PageBook
+};
+var client2_BookView = function() {
+};
+$hxClasses["client2.BookView"] = client2_BookView;
+client2_BookView.__name__ = ["client2","BookView"];
+client2_BookView.__interfaces__ = [mithril_Mithril];
+client2_BookView.prototype = {
 	view: function() {
 		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var files = audio_scorx_MixerModel.instance.files;
-		return m.m("div.scorx",[new audio_scorx_ui_PlayView().view(),files.map(function(f) {
-			return new audio_scorx_ui_ChannelView(files.indexOf(f),f).view();
-		})]);
+		return [m.m("div","BookView")];
 	}
-	,__class__: audio_scorx_ui_PlayerView
+	,__class__: client2_BookView
+};
+var client2_BookTOC = function() {
+};
+$hxClasses["client2.BookTOC"] = client2_BookTOC;
+client2_BookTOC.__name__ = ["client2","BookTOC"];
+client2_BookTOC.__interfaces__ = [mithril_Mithril];
+client2_BookTOC.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		try {
+			return m.m("#booktoc",client2_FilterManager.instance.getBook().chapters.map(function(ch) {
+				var selected = client2_FilterManager.instance.getChapter() == ch ? ".selected" : "";
+				var href = "/content" + ch.path;
+				return m.m("a.linkbutton" + selected,{ href : href, oncreate : mithril__$M_M_$Impl_$.routeLink},ch.title);
+			}));
+		} catch( e ) {
+			return m.m("div","Error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+	}
+	,__class__: client2_BookTOC
+};
+var client2_ChapterTOC = function() {
+};
+$hxClasses["client2.ChapterTOC"] = client2_ChapterTOC;
+client2_ChapterTOC.__name__ = ["client2","ChapterTOC"];
+client2_ChapterTOC.__interfaces__ = [mithril_Mithril];
+client2_ChapterTOC.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		try {
+			return m.m("#chaptertoc",client2_FilterManager.instance.getChapter().subchapters.map(function(sub) {
+				var selected = client2_FilterManager.instance.getSubchapter() == sub ? ".selected" : "";
+				var href = "/content" + sub.path;
+				return m.m("a.linkbutton" + selected,{ href : href, oncreate : mithril__$M_M_$Impl_$.routeLink},sub.title);
+			}));
+		} catch( e ) {
+			return m.m("div","Error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+	}
+	,__class__: client2_ChapterTOC
+};
+var client2_ChapterContent = function() {
+};
+$hxClasses["client2.ChapterContent"] = client2_ChapterContent;
+client2_ChapterContent.__name__ = ["client2","ChapterContent"];
+client2_ChapterContent.__interfaces__ = [mithril_Mithril];
+client2_ChapterContent.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		try {
+			var chapter = client2_FilterManager.instance.getChapter();
+			client2_ChapterTypeModel.instance.setChapter(chapter);
+			var md = chapter.text;
+			var id = chapter.path;
+			return markdown_MithrilRendererCache.instance.markdownToView(id,md,[new markdown_inlineRenderer_QInlineSyntaxRenderer()]);
+		} catch( e ) {
+			return m.m("div","Error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+	}
+	,__class__: client2_ChapterContent
+};
+var client2_SubchapterContent = function() {
+};
+$hxClasses["client2.SubchapterContent"] = client2_SubchapterContent;
+client2_SubchapterContent.__name__ = ["client2","SubchapterContent"];
+client2_SubchapterContent.__interfaces__ = [mithril_Mithril];
+client2_SubchapterContent.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		try {
+			var subchapter = client2_FilterManager.instance.getSubchapter();
+			client2_SubchapterTypeModel.instance.setChapter(subchapter);
+			var md = subchapter.text;
+			var id = subchapter.path;
+			return [new client2_ChapterTOC().view(),markdown_MithrilRendererCache.instance.markdownToView(id,md,[new markdown_inlineRenderer_QInlineSyntaxRenderer()])];
+		} catch( e ) {
+			return m.m("div","Error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+	}
+	,__class__: client2_SubchapterContent
+};
+var client2_TypeModel = function() {
+	this.currentChapter = null;
+};
+$hxClasses["client2.TypeModel"] = client2_TypeModel;
+client2_TypeModel.__name__ = ["client2","TypeModel"];
+client2_TypeModel.prototype = {
+	createUI: function(targetSelector,type) {
+		var target = window.document.querySelector(targetSelector);
+		target.textContent = this.currentChapter.title;
+		switch(type == null ? null : js_Boot.getClass(type)) {
+		case data_ScorxmixerChaptertype:
+			var paths = type.paths;
+			var el = window.document.createElement("div");
+			var tmp = Std.string(paths);
+			el.textContent = "Scorx " + tmp;
+			var btnPlay = window.document.createElement("button");
+			btnPlay.textContent = "Play";
+			var btnStop = window.document.createElement("button");
+			btnStop.textContent = "Stop";
+			target.appendChild(btnPlay);
+			target.appendChild(btnStop);
+			target.appendChild(el);
+			storage_StorageSource.instance.getUrls(paths).then(function(_urls) {
+				var urls = _urls;
+				console.log("src/client2/PageBook.hx:145:",urls);
+				return audio_scorx_MixerModel.instance.createMixer("test",urls).then(function(_mixer) {
+					var mixer = _mixer;
+					el.textContent = "Mixer ready";
+					btnPlay.onclick = function(e) {
+						mixer.play();
+						return;
+					};
+					return btnStop.onclick = function(e1) {
+						mixer.stop();
+						return;
+					};
+				});
+			});
+			break;
+		case data_VideoChaptertype:
+			var el1 = window.document.createElement("video");
+			el1.src = "";
+			el1.controls = true;
+			el1.style.width = "100%";
+			target.appendChild(el1);
+			storage_StorageSource.instance.getUrl(type.url).then(function(url) {
+				console.log("src/client2/PageBook.hx:125:",url);
+				return el1.src = url;
+			});
+			break;
+		default:
+		}
+	}
+	,__class__: client2_TypeModel
+};
+var client2_ChapterTypeModel = function() {
+	client2_TypeModel.call(this);
+};
+$hxClasses["client2.ChapterTypeModel"] = client2_ChapterTypeModel;
+client2_ChapterTypeModel.__name__ = ["client2","ChapterTypeModel"];
+client2_ChapterTypeModel.__super__ = client2_TypeModel;
+client2_ChapterTypeModel.prototype = $extend(client2_TypeModel.prototype,{
+	setChapter: function(chapter) {
+		if(chapter == null) {
+			return;
+		}
+		if(chapter == this.currentChapter) {
+			return;
+		}
+		this.currentChapter = chapter;
+		this.createUI("#chaptertype",this.currentChapter.type);
+	}
+	,__class__: client2_ChapterTypeModel
+});
+var client2_SubchapterTypeModel = function() {
+	client2_TypeModel.call(this);
+};
+$hxClasses["client2.SubchapterTypeModel"] = client2_SubchapterTypeModel;
+client2_SubchapterTypeModel.__name__ = ["client2","SubchapterTypeModel"];
+client2_SubchapterTypeModel.__super__ = client2_TypeModel;
+client2_SubchapterTypeModel.prototype = $extend(client2_TypeModel.prototype,{
+	setChapter: function(chapter) {
+		if(chapter == null) {
+			return;
+		}
+		if(chapter == this.currentChapter) {
+			return;
+		}
+		this.currentChapter = chapter;
+		this.createUI("#subchaptertype",this.currentChapter.type);
+	}
+	,__class__: client2_SubchapterTypeModel
+});
+var client2_PageContent = function() {
+};
+$hxClasses["client2.PageContent"] = client2_PageContent;
+client2_PageContent.__name__ = ["client2","PageContent"];
+client2_PageContent.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#page-content"),new client2_ContentView());
+	}
+	,__class__: client2_PageContent
+};
+var client2_ContentView = function() {
+};
+$hxClasses["client2.ContentView"] = client2_ContentView;
+client2_ContentView.__name__ = ["client2","ContentView"];
+client2_ContentView.__interfaces__ = [mithril_Mithril];
+client2_ContentView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [new ui_content_ContentTreeView(client2_ContentManager.instance.content).view()];
+	}
+	,__class__: client2_ContentView
+};
+var client2_PageHome = function() {
+};
+$hxClasses["client2.PageHome"] = client2_PageHome;
+client2_PageHome.__name__ = ["client2","PageHome"];
+client2_PageHome.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#page-home"),new client2_HomvView());
+	}
+	,__class__: client2_PageHome
+};
+var client2_HomvView = function() {
+};
+$hxClasses["client2.HomvView"] = client2_HomvView;
+client2_HomvView.__name__ = ["client2","HomvView"];
+client2_HomvView.__interfaces__ = [mithril_Mithril];
+client2_HomvView.prototype = {
+	shelvesView: function() {
+		try {
+			return [m.m("div.vsection.light",m.m("div.center.homeshelves",[m.m("header",m.m("h1","Innehåll")),client2_FilterManager.instance.getRoom().shelves.map(function(shelf) {
+				return m.m("nav.homeshelfitem" + (shelf == client2_FilterManager.instance.getShelf() ? ".selected" : ""),m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div.homeshelfitemtext",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
+			})]))];
+		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
+			return m.m("h3.error","404 - can not show other shelves for room  " + Std.string(client2_FilterManager.instance.filterContent));
+		}
+	}
+	,cellsView: function(s) {
+		try {
+			var header = s.title > "" ? m.m("header",m.m("h1",s.title)) : null;
+			var copy = s.cells.slice();
+			copy.sort(function(a,b) {
+				return a.sort - b.sort;
+			});
+			return m.m("div.vsection.dark",m.m("div.center.homecells",[header,copy.map(function(c) {
+				if((c == null ? null : js_Boot.getClass(c)) == data_VideoCell) {
+					var c1 = c;
+					var styles = { };
+					if(c1.gridColumn > "") {
+						styles["gridColumn"] = c1.gridColumn;
+					}
+					if(c1.gridRow > "") {
+						styles["gridRow"] = c1.gridRow;
+					}
+					var tmp = m.m("video",{ src : c1.video, controls : true, style : { width : "100%", height : "100%", backgroundColor : "black"}});
+					return m.m("article.homecell",{ style : styles},tmp);
+				} else {
+					var c2 = c;
+					var styles1 = { };
+					var aTag = c2.url > "" ? "a" : "div";
+					var aHref = c2.url > "" ? { href : c2.url, oncreate : mithril__$M_M_$Impl_$.routeLink} : null;
+					var image = c2.image > "" ? m.m("img",{ src : c2.image}) : null;
+					if(c2.color > "") {
+						styles1["color"] = c2.color;
+					}
+					if(c2.bgcolor > "") {
+						styles1["backgroundColor"] = c2.bgcolor;
+					}
+					if(c2.bgimage > "") {
+						styles1["backgroundImage"] = "url(\"" + c2.bgimage + "\")";
+					}
+					if(c2.gridColumn > "") {
+						styles1["gridColumn"] = c2.gridColumn;
+					}
+					if(c2.gridRow > "") {
+						styles1["gridRow"] = c2.gridRow;
+					}
+					var tmp1 = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c2.text)]);
+					return m.m("article.homecell",{ style : styles1},tmp1);
+				}
+			})]));
+		} catch( e ) {
+			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
+			console.log("src/client2/PageHome.hx:74:","error: " + Std.string(e1));
+			return m.m("div.error","Error:" + Std.string(e1));
+		}
+	}
+	,homeView: function() {
+		var _gthis = this;
+		try {
+			var home = client2_FilterManager.instance.getRoom().home;
+			if(home == null) {
+				return this.shelvesView();
+			}
+			var copy = home.sections.slice();
+			copy.sort(function(a,b) {
+				return a.sort - b.sort;
+			});
+			return [copy.map(function(s) {
+				switch(s == null ? null : js_Boot.getClass(s)) {
+				case data_SectionCells:
+					return _gthis.cellsView(s);
+				case data_SectionShelves:
+					return _gthis.shelvesView();
+				default:
+					return m.m("div","unknown shelf");
+				}
+			})];
+		} catch( e ) {
+			return m.m("section",m.m("div","Homeview error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)));
+		}
+	}
+	,view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [this.homeView()];
+	}
+	,__class__: client2_HomvView
+};
+var client2_PageSearch = function() {
+};
+$hxClasses["client2.PageSearch"] = client2_PageSearch;
+client2_PageSearch.__name__ = ["client2","PageSearch"];
+client2_PageSearch.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#page-search"),new client2_SearchView());
+	}
+	,__class__: client2_PageSearch
+};
+var client2_SearchView = function() {
+};
+$hxClasses["client2.SearchView"] = client2_SearchView;
+client2_SearchView.__name__ = ["client2","SearchView"];
+client2_SearchView.__interfaces__ = [mithril_Mithril];
+client2_SearchView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		return [m.m("div","SearchView"),new client2_UIFilters().view()];
+	}
+	,__class__: client2_SearchView
+};
+var client2_UIFilters = function() {
+};
+$hxClasses["client2.UIFilters"] = client2_UIFilters;
+client2_UIFilters.__name__ = ["client2","UIFilters"];
+client2_UIFilters.__interfaces__ = [mithril_Mithril];
+client2_UIFilters.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var f = client2_FilterManager.instance.filterContent;
+		var s = f != null ? "" + f.roomId + "/" + f.shelfId + "/" + f.bookId + "/" + f.chapterId + "/" + f.subchapterId : "null";
+		var filterContentView = m.m("div","filter: " + s);
+		return m.m(".border",[filterContentView,m.m("span","" + Std.string(client2_FilterManager.instance.getBook())),m.m("span","" + Std.string(client2_FilterManager.instance.getChapter())),m.m("span","" + Std.string(client2_FilterManager.instance.getSubchapter()))]);
+	}
+	,__class__: client2_UIFilters
+};
+var client2_PageShelves = function() {
+};
+$hxClasses["client2.PageShelves"] = client2_PageShelves;
+client2_PageShelves.__name__ = ["client2","PageShelves"];
+client2_PageShelves.prototype = {
+	init: function() {
+		m.mount(window.document.querySelector("#page-shelves"),new client2_ShelvesView());
+	}
+	,__class__: client2_PageShelves
+};
+var client2_ShelvesView = function() {
+};
+$hxClasses["client2.ShelvesView"] = client2_ShelvesView;
+client2_ShelvesView.__name__ = ["client2","ShelvesView"];
+client2_ShelvesView.__interfaces__ = [mithril_Mithril];
+client2_ShelvesView.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var shelves = client2_FilterManager.instance.getShelves().map(function(shelf) {
+			var books = shelf.books.map(function(book) {
+				var selected = book == client2_FilterManager.instance.getBook() ? ".selected" : "";
+				return m.m("nav" + selected,m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/books/" + book.id + ".jpg"}),m.m("div",book.title)]));
+			});
+			return m.m("section",[m.m("header",m.m("h1",shelf.title)),books]);
+		});
+		var view;
+		try {
+			view = m.m("div.shelves",[m.m("section",m.m("header",[m.m("a.btn",{ href : "/content" + client2_FilterManager.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("a.btn",{ href : "/content" + client2_FilterManager.instance.getRoom().path + "/shelves", oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")])),shelves]);
+		} catch( e ) {
+			view = m.m("div","error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+		return view;
+	}
+	,__class__: client2_ShelvesView
+};
+var client2_RoutesManager = function() {
+	this.homeHandler = { onmatch : function(args,path) {
+		try {
+			data_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
+			client2_FilterManager.instance.setFilterContent(null);
+		} catch( e ) {
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+		}
+		return null;
+	}, render : function(vnode) {
+		return m.m("div","homeHandler");
+	}};
+	this.shelvesHandler = { onmatch : function(args1,path1) {
+		try {
+			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
+			client2_FilterManager.instance.setFilterContent(args1);
+			client2_SidewaysManager.instance.set_pageIdx(1);
+		} catch( e1 ) {
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
+		}
+		return null;
+	}, render : function(vnode1) {
+		return m.m("div","homeHandler");
+	}};
+	this.contentHandler = { onmatch : function(args2,path2) {
+		try {
+			data_ErrorsAndLogs.addLog("RouteResolver:" + path2 + ": " + Std.string(args2) + "");
+			client2_FilterManager.instance.setFilterContent(args2);
+		} catch( e2 ) {
+			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
+		}
+		return null;
+	}, render : function(vnode2) {
+		return m.m("div","homeHandler");
+	}};
+};
+$hxClasses["client2.RoutesManager"] = client2_RoutesManager;
+client2_RoutesManager.__name__ = ["client2","RoutesManager"];
+client2_RoutesManager.prototype = {
+	init: function() {
+		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/shelves" : this.shelvesHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
+		m.route(window.document.querySelector("#routes"),"/",routes);
+	}
+	,__class__: client2_RoutesManager
+};
+var client2_SidewaysManager = function() {
+	this.inited = false;
+	this.pageIdx = 0;
+	this._sideways = sideways;
+};
+$hxClasses["client2.SidewaysManager"] = client2_SidewaysManager;
+client2_SidewaysManager.__name__ = ["client2","SidewaysManager"];
+client2_SidewaysManager.prototype = {
+	set_pageIdx: function(val) {
+		if(!this.inited) {
+			return val;
+		}
+		console.log("src/client2/SidewaysManager.hx:20:","SET PG IDX " + val);
+		val = Math.min(3,val);
+		this.pageIdx = val;
+		this.moveToPage(this.pageIdx);
+		m.redraw();
+		return this.pageIdx;
+	}
+	,setPageFromContentRef: function(ref) {
+		var pageIndex = 0;
+		if(ref.subchapterId != null) {
+			pageIndex = 2;
+		} else if(ref.chapterId != null) {
+			pageIndex = 2;
+		} else if(ref.bookId != null) {
+			pageIndex = 2;
+		} else if(ref.shelfId != null) {
+			pageIndex = 1;
+		} else if(ref.roomId != null) {
+			pageIndex = 0;
+		}
+		this.set_pageIdx(pageIndex);
+	}
+	,init: function() {
+		this._sideways.init(0);
+		this.inited = true;
+	}
+	,moveToPage: function(pageNr) {
+		this._sideways.moveToPage2(pageNr);
+	}
+	,__class__: client2_SidewaysManager
+	,__properties__: {set_pageIdx:"set_pageIdx"}
+};
+var client2_UserManager = function() {
+	this.userState = client2_UserMode.Anonymous;
+};
+$hxClasses["client2.UserManager"] = client2_UserManager;
+client2_UserManager.__name__ = ["client2","UserManager"];
+client2_UserManager.prototype = {
+	get_user: function() {
+		return client2__$UserManager_UserState_$Impl_$.toData(this.userState);
+	}
+	,set_userState: function(state) {
+		this.userState = state;
+		m.redraw();
+		return this.userState;
+	}
+	,init: function() {
+		this.set_userState(client2_UserMode.Anonymous);
+		console.log("src/client2/UserManager.hx:40:",this.get_user());
+	}
+	,getCurrentBrowserUser: function() {
+		return new Promise(function(resolve,reject) {
+			var unsubscribe = null;
+			unsubscribe = firebase.app().auth().onAuthStateChanged(function(user) {
+				unsubscribe();
+				resolve(user);
+				return;
+			},reject);
+			return unsubscribe;
+		});
+	}
+	,startSession: function() {
+		var _gthis = this;
+		this.set_userState(client2_UserMode.Loading);
+		return this.getCurrentBrowserUser().then(function(browserUser) {
+			if(browserUser == null) {
+				_gthis.set_userState(client2_UserMode.Anonymous);
+				return null;
+			}
+			console.log("src/client2/UserManager.hx:63:","Browser user found");
+			return data_ApiCalls.getAuthRequest("/api/userconfig");
+		}).then(function(dataResponse) {
+			console.log("src/client2/UserManager.hx:66:",dataResponse);
+			if(dataResponse == null) {
+				return;
+			}
+			var tmp = client2_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData));
+			_gthis.set_userState(tmp);
+			console.log("src/client2/UserManager.hx:72:","------------------------------------");
+			console.log("src/client2/UserManager.hx:73:","UserModelLoaded");
+			return;
+		}).then(function(val) {
+			return _gthis.setupOnAuthChange();
+		}).then(function(val1) {
+			console.log("src/client2/UserManager.hx:77:","finished User loading!");
+			return Promise.resolve(true);
+		});
+	}
+	,setupOnAuthChange: function() {
+		var _gthis = this;
+		haxe_Timer.delay(function() {
+			return firebase.app().auth().onAuthStateChanged(function(user) {
+				if(user != null) {
+					console.log("src/client2/UserManager.hx:86:","--- Browser session user found.");
+					console.log("src/client2/UserManager.hx:88:","compare:" + user.email + " " + client2__$UserManager_UserState_$Impl_$.toData(_gthis.userState).email);
+					var address = user.email;
+					if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
+						throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
+					}
+					if(address.toLowerCase() == client2__$UserManager_UserState_$Impl_$.toData(_gthis.userState).email) {
+						return;
+					}
+					_gthis.set_userState(client2_UserMode.Loading);
+					data_ApiCalls.getAuthRequest("/api/userconfig").then(function(dataResponse) {
+						console.log("src/client2/UserManager.hx:96:","------------------------------------");
+						console.log("src/client2/UserManager.hx:97:","UserModelLoaded : onAuthStateChanged");
+						console.log("src/client2/UserManager.hx:98:","" + Std.string(dataResponse));
+						var tmp = client2_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData));
+						return _gthis.set_userState(tmp);
+					})["catch"](function(error) {
+						console.log("src/client2/UserManager.hx:102:","--- Could not load userconfig for browser session user");
+						console.log("src/client2/UserManager.hx:103:",error);
+						return;
+					});
+					return;
+				} else {
+					console.log("src/client2/UserManager.hx:108:","--- No browser session user found.");
+					_gthis.set_userState(client2_UserMode.Anonymous);
+					return;
+				}
+			},function(error1) {
+				console.log("src/client2/UserManager.hx:113:","--- Error: " + Std.string(error1));
+				return _gthis.set_userState(client2_UserMode.Anonymous);
+			});
+		},2000);
+		return Promise.resolve(true);
+	}
+	,signIn: function(email,password) {
+		var _gthis = this;
+		this.validate(email,password).then(function(valid) {
+			_gthis.set_userState(client2_UserMode.Loading);
+			return firebase.auth().signInWithEmailAndPassword(email,password);
+		}).then(function(user) {
+			console.log("src/client2/UserManager.hx:127:","USER " + user);
+			return null;
+		})["catch"](function(error) {
+			console.log("src/client2/UserManager.hx:130:","ERROR" + error);
+			console.log("src/client2/UserManager.hx:131:","error:" + error);
+			_gthis.set_userState(client2_UserMode.Anonymous);
+			return;
+		});
+	}
+	,signOut: function() {
+		firebase.auth().signOut();
+		this.set_userState(client2_UserMode.Anonymous);
+	}
+	,validate: function(email,password) {
+		return new Promise(function(res,rej) {
+			try {
+				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(email)) {
+					throw new js__$Boot_HaxeError("User email is not valid: " + email);
+				}
+				if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(password)) {
+					throw new js__$Boot_HaxeError("User password is not valid: " + password);
+				}
+				res(true);
+			} catch( e ) {
+				rej((e instanceof js__$Boot_HaxeError) ? e.val : e);
+			}
+			return;
+		});
+	}
+	,__class__: client2_UserManager
+	,__properties__: {set_userState:"set_userState",get_user:"get_user"}
+};
+var client2__$UserManager_UserState_$Impl_$ = {};
+$hxClasses["client2._UserManager.UserState_Impl_"] = client2__$UserManager_UserState_$Impl_$;
+client2__$UserManager_UserState_$Impl_$.__name__ = ["client2","_UserManager","UserState_Impl_"];
+client2__$UserManager_UserState_$Impl_$._new = function(mode) {
+	return mode;
+};
+client2__$UserManager_UserState_$Impl_$.toData = function(this1) {
+	switch(this1._hx_index) {
+	case 0:
+		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+	case 1:
+		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+	case 2:
+		return this1.user;
+	}
+};
+client2__$UserManager_UserState_$Impl_$.fromData = function(val) {
+	return client2_UserMode.User(val);
+};
+client2__$UserManager_UserState_$Impl_$.anonymousUser = function() {
+	return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
+};
+var client2_UserMode = $hxEnums["client2.UserMode"] = { __ename__ : true, __constructs__ : ["Anonymous","Loading","User"]
+	,Anonymous: {_hx_index:0,__enum__:"client2.UserMode",toString:$estr}
+	,Loading: {_hx_index:1,__enum__:"client2.UserMode",toString:$estr}
+	,User: ($_=function(user) { return {_hx_index:2,user:user,__enum__:"client2.UserMode",toString:$estr}; },$_.__params__ = ["user"],$_)
 };
 var cx_ArrayTools = function() { };
 $hxClasses["cx.ArrayTools"] = cx_ArrayTools;
 cx_ArrayTools.__name__ = ["cx","ArrayTools"];
+cx_ArrayTools.sortA = function(a,fn) {
+	var copy = a.slice();
+	copy.sort(fn);
+	return copy;
+};
+cx_ArrayTools.str = function(a) {
+	return Std.string(a);
+};
+cx_ArrayTools.next = function(a,item) {
+	var idx = a.indexOf(item);
+	if(idx == -1) {
+		return null;
+	}
+	if(idx == a.length - 1) {
+		return null;
+	}
+	return a[idx + 1];
+};
+cx_ArrayTools.prev = function(a,item) {
+	var idx = a.indexOf(item);
+	if(idx <= 0) {
+		return null;
+	}
+	return a[idx - 1];
+};
+cx_ArrayTools.reverse = function(a) {
+	var result = [];
+	var _g = 0;
+	while(_g < a.length) result.unshift(a[_g++]);
+	return result;
+};
+cx_ArrayTools.copyUntil = function(a,f) {
+	var result = [];
+	var _g = 0;
+	while(_g < a.length) {
+		var item = a[_g];
+		++_g;
+		if(f(item)) {
+			break;
+		}
+		result.push(item);
+	}
+	return result;
+};
+cx_ArrayTools.copyUntilIncluding = function(a,f) {
+	var result = [];
+	var _g = 0;
+	while(_g < a.length) {
+		var item = a[_g];
+		++_g;
+		result.push(item);
+		if(f(item)) {
+			break;
+		}
+	}
+	return result;
+};
+cx_ArrayTools.has = function(a,item) {
+	return a.indexOf(item) != -1;
+};
+cx_ArrayTools.nextOrNull = function(a,item) {
+	var idx = a.indexOf(item) + 1;
+	if(a == null) {
+		return null;
+	} else if(idx < 0 || idx > a.length - 1) {
+		return null;
+	} else {
+		return a[idx];
+	}
+};
+cx_ArrayTools.indexOrNull = function(a,idx) {
+	if(a == null) {
+		return null;
+	}
+	if(idx < 0 || idx > a.length - 1) {
+		return null;
+	} else {
+		return a[idx];
+	}
+};
+cx_ArrayTools.nullOrEmpty = function(a) {
+	if(a != null) {
+		return a.length == 0;
+	} else {
+		return true;
+	}
+};
+cx_ArrayTools.indexOrValue = function(a,idx,fallbackValue) {
+	if((a == null ? null : idx < 0 || idx > a.length - 1 ? null : a[idx]) != null) {
+		return a[idx];
+	} else {
+		return fallbackValue;
+	}
+};
+cx_ArrayTools.equals = function(a,b) {
+	return a.toString() == b.toString();
+};
+cx_ArrayTools.unique = function(arr) {
+	var result = [];
+	var _g = 0;
+	while(_g < arr.length) {
+		var item = arr[_g];
+		++_g;
+		if(!Lambda.has(result,item)) {
+			result.push(item);
+		}
+	}
+	result.sort(function(a,b) {
+		return Reflect.compare(a,b);
+	});
+	return result;
+};
 cx_ArrayTools.fromIterator = function(it) {
 	var result = [];
 	while(it.hasNext()) result.push(it.next());
 	return result;
+};
+cx_ArrayTools.fromIterables = function(it) {
+	return cx_ArrayTools.fromIterator($getIterator(it));
 };
 cx_ArrayTools.fromHashKeys = function(it) {
 	return cx_ArrayTools.fromIterator(it);
@@ -1131,6 +2266,204 @@ cx_ArrayTools.allNull = function(it) {
 		return false;
 	}
 	return true;
+};
+cx_ArrayTools.doOverlap = function(array1,array2) {
+	var _g = 0;
+	while(_g < array1.length) if(Lambda.has(array2,array1[_g++])) {
+		return true;
+	}
+	return false;
+};
+cx_ArrayTools.overlap = function(array1,array2) {
+	return Lambda.array(array1.filter(function(value1) {
+		return Lambda.has(array2,value1);
+	}));
+};
+cx_ArrayTools.diff = function(array1,array2) {
+	var result = [];
+	var _g = 0;
+	while(_g < array1.length) {
+		var item = array1[_g];
+		++_g;
+		if(!Lambda.has(array2,item)) {
+			result.push(item);
+		}
+	}
+	var _g1 = 0;
+	while(_g1 < array2.length) {
+		var item1 = array2[_g1];
+		++_g1;
+		if(!Lambda.has(array1,item1)) {
+			result.push(item1);
+		}
+	}
+	return result;
+};
+cx_ArrayTools.hasNot = function(array1,array2) {
+	var result = [];
+	var _g = 0;
+	while(_g < array2.length) {
+		var item = array2[_g];
+		++_g;
+		if(!Lambda.has(array1,item)) {
+			result.push(item);
+		}
+	}
+	return result;
+};
+cx_ArrayTools.hasOtherThan = function(array1,array2) {
+	var _g = 0;
+	while(_g < array2.length) if(!Lambda.has(array1,array2[_g++])) {
+		return true;
+	}
+	return false;
+};
+cx_ArrayTools.first = function(array) {
+	return array[0];
+};
+cx_ArrayTools.isFirst = function(array,item) {
+	return array[0] == item;
+};
+cx_ArrayTools.last = function(array) {
+	return array[array.length - 1];
+};
+cx_ArrayTools.isLast = function(array,item) {
+	return array[array.length - 1] == item;
+};
+cx_ArrayTools.secondLast = function(array) {
+	return array[array.length - 2];
+};
+cx_ArrayTools.index = function(array,item) {
+	return Lambda.indexOf(array,item);
+};
+cx_ArrayTools.second = function(array) {
+	return array[1];
+};
+cx_ArrayTools.third = function(array) {
+	return array[2];
+};
+cx_ArrayTools.fourth = function(array) {
+	return array[3];
+};
+cx_ArrayTools.fifth = function(array) {
+	return array[4];
+};
+cx_ArrayTools.sixth = function(array) {
+	return array[5];
+};
+cx_ArrayTools.seventh = function(array) {
+	return array[6];
+};
+cx_ArrayTools.eighth = function(array) {
+	return array[7];
+};
+cx_ArrayTools.nineth = function(array) {
+	return array[8];
+};
+cx_ArrayTools.shuffle = function(a) {
+	var t = cx_ArrayTools.range(a.length);
+	var arr = [];
+	while(t.length > 0) {
+		var pos = Std.random(t.length);
+		var index = t[pos];
+		t.splice(pos,1);
+		arr.push(a[index]);
+	}
+	return arr;
+};
+cx_ArrayTools.countItem = function(a,item) {
+	var cnt = 0;
+	var _g = 0;
+	while(_g < a.length) if(a[_g++] == item) {
+		++cnt;
+	}
+	return cnt;
+};
+cx_ArrayTools.sorta = function(a) {
+	a.sort(function(a1,b) {
+		return Reflect.compare(a1,b);
+	});
+	return a;
+};
+cx_ArrayTools.range = function(start,stop,step) {
+	if(step == null) {
+		step = 1;
+	}
+	if(null == stop) {
+		stop = start;
+		start = 0;
+	}
+	if((stop - start) / step == Infinity) {
+		throw new js__$Boot_HaxeError("infinite range");
+	}
+	var range = [];
+	var i = -1;
+	var j;
+	if(step < 0) {
+		while(true) {
+			j = start + step * ++i;
+			if(!(j > stop)) {
+				break;
+			}
+			range.push(j);
+		}
+	} else {
+		while(true) {
+			j = start + step * ++i;
+			if(!(j < stop)) {
+				break;
+			}
+			range.push(j);
+		}
+	}
+	return range;
+};
+cx_ArrayTools.intsMin = function(a) {
+	var r = a[0];
+	var _g = 0;
+	while(_g < a.length) {
+		var v = a[_g];
+		++_g;
+		if(v < r) {
+			r = v;
+		}
+	}
+	return r;
+};
+cx_ArrayTools.trimStrings = function(a) {
+	return a.map(function(s) {
+		return StringTools.trim(s);
+	});
+};
+cx_ArrayTools.cleaveL = function(a,f) {
+	var l = [];
+	var r = a.slice();
+	var _g = 0;
+	while(_g < a.length) {
+		var a1 = a[_g];
+		++_g;
+		l.push(a1);
+		r.shift();
+		if(f(a1)) {
+			break;
+		}
+	}
+	return { left : l, right : r};
+};
+cx_ArrayTools.cleaveR = function(a,f) {
+	var l = [];
+	var r = a.slice();
+	var _g = 0;
+	while(_g < a.length) {
+		var a1 = a[_g];
+		++_g;
+		if(f(a1)) {
+			break;
+		}
+		l.push(a1);
+		r.shift();
+	}
+	return { left : l, right : r};
 };
 var cx_Cache = function(maxItems) {
 	if(maxItems == null) {
@@ -1172,6 +2505,44 @@ cx_Cache.prototype = {
 	}
 	,__class__: cx_Cache
 };
+var cx_CacheSingle = function() {
+	this.cache = null;
+	this.key = null;
+};
+$hxClasses["cx.CacheSingle"] = cx_CacheSingle;
+cx_CacheSingle.__name__ = ["cx","CacheSingle"];
+cx_CacheSingle.prototype = {
+	set: function(key,value) {
+		if(key != this.key) {
+			this.cache = value;
+		}
+	}
+	,get: function(key) {
+		if(this.key == key) {
+			return this.cache;
+		} else {
+			return null;
+		}
+	}
+	,__class__: cx_CacheSingle
+};
+var cx_EnumTools = function() { };
+$hxClasses["cx.EnumTools"] = cx_EnumTools;
+cx_EnumTools.__name__ = ["cx","EnumTools"];
+cx_EnumTools.createFromString = function(e,str) {
+	try {
+		var type = str;
+		var params = [];
+		if(str.indexOf("(") > -1) {
+			var parIdx = str.indexOf("(");
+			type = HxOverrides.substr(str,0,parIdx);
+			params = StringTools.replace(StringTools.replace(HxOverrides.substr(str,parIdx,null),"(",""),")","").split(",");
+		}
+		return Type.createEnum(e,type,params);
+	} catch( e1 ) {
+	}
+	return null;
+};
 var cx_GUID = function() { };
 $hxClasses["cx.GUID"] = cx_GUID;
 cx_GUID.__name__ = ["cx","GUID"];
@@ -1198,6 +2569,51 @@ cx_GUID.create = function() {
 	}
 	return uuid.join("");
 };
+var cx_Lorem = function() { };
+$hxClasses["cx.Lorem"] = cx_Lorem;
+cx_Lorem.__name__ = ["cx","Lorem"];
+cx_Lorem.getHeadlineIdx = function() {
+	return cx_Lorem.headlineIdx++ % cx_Lorem.headlines.length;
+};
+cx_Lorem.getLoremIdx = function() {
+	return cx_Lorem.loremIdx++ % cx_Lorem.lorem.length;
+};
+cx_Lorem.getNewline = function() {
+	return "\r" + "\r";
+};
+cx_Lorem.getNextChapter = function() {
+	var result = "";
+	result = "" + ("#" + cx_Lorem.headlines[cx_Lorem.getHeadlineIdx()]);
+	result += cx_Lorem.getNewline();
+	result += cx_Lorem.lorem[cx_Lorem.getLoremIdx()];
+	result += cx_Lorem.getNewline();
+	result += "##" + cx_Lorem.headlines[cx_Lorem.getHeadlineIdx()];
+	result += cx_Lorem.getNewline();
+	result += cx_Lorem.lorem[cx_Lorem.getLoremIdx()];
+	return result;
+};
+cx_Lorem.getParagraphs = function(nrOfParagraphs) {
+	if(nrOfParagraphs == null) {
+		nrOfParagraphs = 3;
+	}
+	nrOfParagraphs = Math.min(nrOfParagraphs,cx_Lorem.lorem.length);
+	return cx_Lorem.lorem.slice(0,nrOfParagraphs).join("\r" + "\r");
+};
+cx_Lorem.getMarkdownParagraphs = function(nrOfParagraphs) {
+	if(nrOfParagraphs == null) {
+		nrOfParagraphs = 3;
+	}
+	nrOfParagraphs = Math.min(nrOfParagraphs,cx_Lorem.lorem.length);
+	var ret = [];
+	var _g1 = 0;
+	var _g = nrOfParagraphs;
+	while(_g1 < _g) {
+		var i = _g1++;
+		ret.push(cx_Lorem.headlines[i]);
+		ret.push(cx_Lorem.lorem[i]);
+	}
+	return ret.join("\r" + "\r");
+};
 var cx_MapTools = function() { };
 $hxClasses["cx.MapTools"] = cx_MapTools;
 cx_MapTools.__name__ = ["cx","MapTools"];
@@ -1212,12 +2628,123 @@ cx_MapTools.sortarray = function(a) {
 	});
 	return a;
 };
+var cx_MathTools = function() { };
+$hxClasses["cx.MathTools"] = cx_MathTools;
+cx_MathTools.__name__ = ["cx","MathTools"];
+cx_MathTools.rotate = function(x,y,angleDegrees) {
+	var angleRadians = angleDegrees * cx_MathTools.PI2Over360;
+	var s = Math.sin(angleRadians);
+	if(Math.abs(s) <= 0.0000000000009) {
+		s = 0;
+	}
+	var c = Math.cos(angleRadians);
+	return { x : x * c - y * s, y : x * s + y * c};
+};
+cx_MathTools.round2 = function(number,precision) {
+	if(precision == null) {
+		precision = 6;
+	}
+	number *= Math.pow(10,precision);
+	number = Math.round(number) / Math.pow(10,precision);
+	return number;
+};
+cx_MathTools.floatEquals = function(a,b) {
+	return Math.abs(a - b) <= 0.0000000000009;
+};
+cx_MathTools.intClamp = function(val,min,max) {
+	if(val < min) {
+		return min;
+	} else if(val > max) {
+		return max;
+	} else {
+		return val;
+	}
+};
 var cx_StrTools = function() { };
 $hxClasses["cx.StrTools"] = cx_StrTools;
 cx_StrTools.__name__ = ["cx","StrTools"];
+cx_StrTools.slug = function(str,allowDash) {
+	if(allowDash == null) {
+		allowDash = true;
+	}
+	if(str == null) {
+		return null;
+	}
+	str = str.toLowerCase();
+	var _g1 = 0;
+	var _g = "åàáäâèéëêìíïîòóöôùúüûñç·/_,:;".length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		str = StringTools.replace(str,"åàáäâèéëêìíïîòóöôùúüûñç·/_,:;".charAt(i),"aaaaaeeeeiiiioooouuuunc------".charAt(i));
+	}
+	var _this_r = new RegExp("[^a-z0-9 -]","g".split("u").join(""));
+	str = str.replace(_this_r,"");
+	str = StringTools.trim(str);
+	var _this_r1 = new RegExp("\\s+","g".split("u").join(""));
+	str = str.replace(_this_r1,"-");
+	var _this_r2 = new RegExp("-+","g".split("u").join(""));
+	str = str.replace(_this_r2,"-");
+	if(!allowDash) {
+		str = str.split("-").join("");
+	}
+	return str;
+};
 cx_StrTools.replaceAll = function(str,search,replace) {
 	str = str.split(search).join(replace);
 	return str;
+};
+cx_StrTools.splitTrim = function(str,delimiter) {
+	if(delimiter == null) {
+		delimiter = ",";
+	}
+	return str.split(delimiter).map(function(segment) {
+		return StringTools.trim(segment);
+	});
+};
+cx_StrTools.trimChar = function(str,char) {
+	if(StringTools.startsWith(str,char)) {
+		str = HxOverrides.substr(str,char.length,null);
+	}
+	if(StringTools.endsWith(str,char)) {
+		str = HxOverrides.substr(str,0,str.length - char.length);
+	}
+	return str;
+};
+cx_StrTools.has = function(str,needle) {
+	return str.indexOf(needle) > -1;
+};
+cx_StrTools.hasAny = function(str,needles) {
+	Lambda.iter(needles,function(n) {
+		if(str.indexOf(n) > -1) {
+			return true;
+		} else {
+			return null;
+		}
+	});
+	return false;
+};
+cx_StrTools.removeDoubleBlanks = function(s,blanks) {
+	if(blanks == null) {
+		blanks = "  ";
+	}
+	var remove = function(s1) {
+		return StringTools.replace(s1,"  "," ");
+	};
+	var s2 = remove(s);
+	while(s2 != s) {
+		s2 = s;
+		s = remove(s);
+	}
+	return s2;
+};
+cx_StrTools.upperCaseFirst = function(str) {
+	return HxOverrides.substr(str,0,1).toUpperCase() + HxOverrides.substr(str,1,null);
+};
+cx_StrTools.after = function(str,needle,until) {
+	if(until == null) {
+		until = "";
+	}
+	return str.substring(str.indexOf(needle) + needle.length,until != "" ? str.indexOf(until) > str.indexOf(needle) ? str.indexOf(until) : null : null);
 };
 cx_StrTools.__super__ = StringTools;
 cx_StrTools.prototype = $extend(StringTools.prototype,{
@@ -1259,6 +2786,14 @@ data_ClassMap.prototype = {
 	getNew: function(cls,args) {
 		var _this = this.map;
 		return Type.createInstance(__map_reserved[cls] != null ? _this.getReserved(cls) : _this.h[cls],args);
+	}
+	,getNewWithFallback: function(cls,args,fallback) {
+		var _this = this.map;
+		if(__map_reserved[cls] != null ? _this.existsReserved(cls) : _this.h.hasOwnProperty(cls)) {
+			var _this1 = this.map;
+			return Type.createInstance(__map_reserved[cls] != null ? _this1.getReserved(cls) : _this1.h[cls],args);
+		}
+		return Type.createInstance(fallback,args);
 	}
 	,set: function(name,cls) {
 		var _this = this.map;
@@ -1347,6 +2882,65 @@ data_UserData.prototype = {
 	,__class__: data_UserData
 	,__properties__: {set_access:"set_access",set_domains:"set_domains",set_email:"set_email",set_lastname:"set_lastname",set_firstname:"set_firstname"}
 };
+var data_UserConfig = function(data1) {
+	this.domain = "";
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"domain")) {
+			this.set_domain(data1.domain);
+		}
+	}
+};
+$hxClasses["data.UserConfig"] = data_UserConfig;
+data_UserConfig.__name__ = ["data","UserConfig"];
+data_UserConfig.__interfaces__ = [DataClass];
+data_UserConfig.validate = function(data1) {
+	return [];
+};
+data_UserConfig.prototype = {
+	set_domain: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserConfig.domain.");
+		}
+		return this.domain = v;
+	}
+	,__class__: data_UserConfig
+	,__properties__: {set_domain:"set_domain"}
+};
+var data_UserResponse = function(data1) {
+	this.errors = [];
+	this.set_userData(data1.userData);
+	if(Object.prototype.hasOwnProperty.call(data1,"errors")) {
+		this.set_errors(data1.errors);
+	}
+};
+$hxClasses["data.UserResponse"] = data_UserResponse;
+data_UserResponse.__name__ = ["data","UserResponse"];
+data_UserResponse.__interfaces__ = [DataClass];
+data_UserResponse.validate = function(data1) {
+	var output = [];
+	if(!Object.prototype.hasOwnProperty.call(data1,"userData")) {
+		output.push("userData");
+	} else if(data1.userData == null) {
+		output.push("userData");
+	}
+	return output;
+};
+data_UserResponse.prototype = {
+	set_userData: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserResponse.userData.");
+		}
+		return this.userData = v;
+	}
+	,set_errors: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for UserResponse.errors.");
+		}
+		return this.errors = v;
+	}
+	,__class__: data_UserResponse
+	,__properties__: {set_errors:"set_errors",set_userData:"set_userData"}
+};
 var data_Content = function(data1) {
 	this.rooms = [];
 	this.dbpath = "content-tree";
@@ -1413,6 +3007,9 @@ var data_Room = function(data1) {
 $hxClasses["data.Room"] = data_Room;
 data_Room.__name__ = ["data","Room"];
 data_Room.__interfaces__ = [DataClass];
+data_Room.validate = function(data1) {
+	return [];
+};
 data_Room.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -1462,6 +3059,9 @@ var data_Home = function(data1) {
 $hxClasses["data.Home"] = data_Home;
 data_Home.__name__ = ["data","Home"];
 data_Home.__interfaces__ = [DataClass];
+data_Home.validate = function(data1) {
+	return [];
+};
 data_Home.prototype = {
 	set_title: function(v) {
 		if(v == null) {
@@ -1484,6 +3084,7 @@ data_IHomeSection.__name__ = ["data","IHomeSection"];
 data_IHomeSection.__interfaces__ = [DataClass];
 data_IHomeSection.prototype = {
 	__class__: data_IHomeSection
+	,__properties__: {set_sort:"set_sort",set_title:"set_title"}
 };
 var data_SectionShelves = function(data1) {
 	this.sort = 200;
@@ -1569,6 +3170,7 @@ data_IHomeCell.__name__ = ["data","IHomeCell"];
 data_IHomeCell.__interfaces__ = [DataClass];
 data_IHomeCell.prototype = {
 	__class__: data_IHomeCell
+	,__properties__: {set_url:"set_url",set_image:"set_image",set_bgimage:"set_bgimage",set_text:"set_text",set_bgcolor:"set_bgcolor",set_color:"set_color",set_sort:"set_sort",set_title:"set_title"}
 };
 var data_TextCell = function(data1) {
 	this.image = "";
@@ -1617,6 +3219,9 @@ var data_TextCell = function(data1) {
 $hxClasses["data.TextCell"] = data_TextCell;
 data_TextCell.__name__ = ["data","TextCell"];
 data_TextCell.__interfaces__ = [data_IHomeCell];
+data_TextCell.validate = function(data1) {
+	return [];
+};
 data_TextCell.prototype = {
 	set_title: function(v) {
 		if(v == null) {
@@ -1842,6 +3447,9 @@ var data_Shelf = function(data1) {
 $hxClasses["data.Shelf"] = data_Shelf;
 data_Shelf.__name__ = ["data","Shelf"];
 data_Shelf.__interfaces__ = [DataClass];
+data_Shelf.validate = function(data1) {
+	return [];
+};
 data_Shelf.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -1925,6 +3533,9 @@ var data_Book = function(data1) {
 $hxClasses["data.Book"] = data_Book;
 data_Book.__name__ = ["data","Book"];
 data_Book.__interfaces__ = [DataClass];
+data_Book.validate = function(data1) {
+	return [];
+};
 data_Book.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -2012,6 +3623,9 @@ var data_Chapter = function(data1) {
 $hxClasses["data.Chapter"] = data_Chapter;
 data_Chapter.__name__ = ["data","Chapter"];
 data_Chapter.__interfaces__ = [DataClass];
+data_Chapter.validate = function(data1) {
+	return [];
+};
 data_Chapter.prototype = {
 	set_id: function(v) {
 		if(v == null) {
@@ -2068,15 +3682,19 @@ var data_IChaptertype = function() { };
 $hxClasses["data.IChaptertype"] = data_IChaptertype;
 data_IChaptertype.__name__ = ["data","IChaptertype"];
 data_IChaptertype.__interfaces__ = [DataClass];
-var data_StandardChaptertype = function() { };
+var data_StandardChaptertype = function(data1) {
+};
 $hxClasses["data.StandardChaptertype"] = data_StandardChaptertype;
 data_StandardChaptertype.__name__ = ["data","StandardChaptertype"];
 data_StandardChaptertype.__interfaces__ = [data_IChaptertype];
 data_StandardChaptertype.validate = function(data1) {
 	return [];
 };
+data_StandardChaptertype.prototype = {
+	__class__: data_StandardChaptertype
+};
 var data_VideoChaptertype = function(data1) {
-	this.url = "/url/to/video";
+	this.url = "/test/Vinjett.mp4";
 	if(data1 != null) {
 		if(Object.prototype.hasOwnProperty.call(data1,"url")) {
 			this.set_url(data1.url);
@@ -2159,6 +3777,12 @@ data_PitchChaptertype.prototype = {
 	__class__: data_PitchChaptertype
 };
 var data_ScorxmixerChaptertype = function(data1) {
+	this.paths = ["/scorx/_test/200.mp3","/scorx/_test/100.mp3"];
+	if(data1 != null) {
+		if(Object.prototype.hasOwnProperty.call(data1,"paths")) {
+			this.set_paths(data1.paths);
+		}
+	}
 };
 $hxClasses["data.ScorxmixerChaptertype"] = data_ScorxmixerChaptertype;
 data_ScorxmixerChaptertype.__name__ = ["data","ScorxmixerChaptertype"];
@@ -2167,11 +3791,55 @@ data_ScorxmixerChaptertype.validate = function(data1) {
 	return [];
 };
 data_ScorxmixerChaptertype.prototype = {
-	__class__: data_ScorxmixerChaptertype
+	set_paths: function(v) {
+		if(v == null) {
+			throw new js__$Boot_HaxeError("DataClass validation failed for ScorxmixerChaptertype.paths.");
+		}
+		return this.paths = v;
+	}
+	,__class__: data_ScorxmixerChaptertype
+	,__properties__: {set_paths:"set_paths"}
 };
 var data_ContentFilters = function() { };
 $hxClasses["data.ContentFilters"] = data_ContentFilters;
 data_ContentFilters.__name__ = ["data","ContentFilters"];
+data_ContentFilters.filterRoom = function(ct,roomId) {
+	return new data_Content({ id : ct.id, rooms : ct.rooms.filter(function(room) {
+		return room.id == roomId;
+	})});
+};
+data_ContentFilters.fiterRoomAndShelfHome = function(ct) {
+	return new data_Content({ id : ct.id, rooms : ct.rooms.filter(function(room) {
+		return room.id == "home";
+	}).map(function(room1) {
+		return new data_Room({ id : room1.id, title : room1.title, shelves : room1.shelves.filter(function(shelf) {
+			console.log("src/data/Content.hx:190:",shelf.id);
+			return shelf.id == "home";
+		})});
+	})});
+};
+data_ContentFilters.filterAccess = function(ct,access) {
+	if(access == null) {
+		access = 0;
+	}
+	return new data_Content({ id : ct.id, rooms : ct.rooms.map(function(room) {
+		return new data_Room({ id : room.id, shelves : room.shelves.filter(function(shelf) {
+			return shelf.access <= access;
+		}).map(function(shelf1) {
+			return new data_Shelf({ id : shelf1.id, title : shelf1.title, info : "" + shelf1.info, access : shelf1.access, books : shelf1.books.filter(function(book) {
+				return book.access <= access;
+			}).map(function(book1) {
+				return new data_Book({ id : book1.id, title : book1.title, access : book1.access, type : book1.type, info : "" + book1.info, chapters : book1.chapters.filter(function(chapter) {
+					return chapter.access <= access;
+				}).map(function(chapter1) {
+					return new data_Chapter({ id : chapter1.id, title : chapter1.title, access : chapter1.access, info : chapter1.info, text : chapter1.text, subchapters : chapter1.subchapters.filter(function(s) {
+						return s.access <= access;
+					})});
+				})});
+			})});
+		})});
+	})});
+};
 data_ContentFilters.sort = function(ct) {
 	var copy = ct.rooms.slice();
 	copy.sort(function(a,b) {
@@ -2193,27 +3861,80 @@ data_ContentFilters.sort = function(ct) {
 	});
 	return ct;
 };
-var data_ContentLoader = function() {
-};
-$hxClasses["data.ContentLoader"] = data_ContentLoader;
-data_ContentLoader.__name__ = ["data","ContentLoader"];
-data_ContentLoader.prototype = {
-	loadContent: function() {
-		return data_ApiCalls.getRequest("/api/content-tree").then(function(item) {
-			data_ContentModel.instance.set_content(dataclass_TypedJsonConverter.fromTypedJson(data_Content,item.data));
-			return Promise.resolve(true);
-		});
-	}
-	,__class__: data_ContentLoader
-};
 var data_ContentUtils = function() { };
 $hxClasses["data.ContentUtils"] = data_ContentUtils;
 data_ContentUtils.__name__ = ["data","ContentUtils"];
 data_ContentUtils.getContentInit = function() {
-	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"})]}),new data_SectionCells({ sort : 300, cells : [new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", text : "/@score a b c @/", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype({ url : "/assets/video/tada.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype()})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+	return new data_Content({ id : "tree0", rooms : [new data_Room({ id : "room0", title : "TestRoom", home : new data_Home({ title : "Här är titel för hemsidan", sections : [new data_SectionShelves({ sort : 200}),new data_SectionCells({ sort : 100, cells : [new data_TextCell({ title : "Cell0", gridColumn : "span 2", gridRow : "span 2", bgcolor : "#0F154D", url : "/content/room0/shelf1/book2", text : "#Välkommen till Körakademin hösten 2018!                        \r\n\r\n###Vi lyfter svensk körsång!\r\n\r\nKörakademin finns till för att ge dej som körsångare nya möjligheter att utvecklas. Vi spelar in mängder av körmusik som du hittar på scorx.org och vi skapar övningsmaterial för rösten, notläsning mm.\r\n\r\n                        "}),new data_VideoCell({ gridColumn : "span 2"}),new data_TextCell({ title : "Cell1", bgcolor : "#43245D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n## ScorX Player                        \r\n\r\när en musikmixer som hjälper dig att öva din körstämma hemma vid datorn eller i mobilen/plattan. Lyssna, följ med i notbilden och sjung med! \r\n\r\n"})]}),new data_SectionCells({ sort : 300, cells : [new data_TextCell({ title : "Cell1", bgcolor : "#0F154D", color : "white", gridColumn : "span 2", image : "", text : "\r\n\r\n##Körakademin Plus\r\n\r\när en kostnadsfri nätbaserad distanskurs för körsångare. Här får du fri tillgång till alla våra inspelningar och allt vårt övriga övningsmaterial för notläsning, gehör, rösten med mera. \r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "span 2", image : "", text : "\r\n###Sjunger du i en Sensus-kör?                        \r\n\r\nSom registrerad körsångare i Sensus får du som medlemsförmån gratis använda 12 PLAY- titlar per termin ur vårt musikbibliotek i ScorX. Du får tillgång till detta genom att bli medlem i ScorX-gruppen **Körakademin Sensus**.\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#6E1841", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Sök bland 800 Scorx-titlar                        \r\n\r\nNu kan du hitta ännu fler...\r\n\r\n"}),new data_TextCell({ title : "Cell1", bgcolor : "#312632", color : "white", gridColumn : "", image : "", text : "\r\n                        \r\n###Möt våra inspelningsteam                        \r\n\r\nHundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna bakom inspelningarna? \r\n\r\n"})]})]}), shelves : [new data_Shelf({ id : "shelf0", title : "Default page shelves", access : 0, books : [new data_Book({ id : "book0", title : "Bok 0", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", text : "/@score a b c @/ hej /@media /test/abc.png@/", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub", access : 0}),new data_Chapter({ id : "vidc1", title : "Video", access : 0, type : new data_VideoChaptertype({ url : "/test/Stamtoner.mp4"})}),new data_Chapter({ id : "pdf1", title : "Pdf", access : 0, type : new data_PdfChaptertype()}),new data_Chapter({ id : "ros0", title : "Rosetta", access : 0, type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch", access : 0, type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx0", title : "Scorx", access : 0, type : new data_ScorxmixerChaptertype({ paths : ["/scorx/_test/200.mp3","/scorx/_test/100.mp3"]})})]}),new data_Chapter({ id : "vidc1", title : "Videokapitel 1", type : new data_VideoChaptertype()}),new data_Chapter({ id : "pdf1", title : "Pdfkapitel 1", type : new data_PdfChaptertype()}),new data_Chapter({ id : "rosetta1", title : "Rosetta 1", type : new data_RosettaChaptertype()}),new data_Chapter({ id : "pitch1", title : "Pitch 1", type : new data_PitchChaptertype()}),new data_Chapter({ id : "scorx1", title : "Scorxmixer 1", type : new data_ScorxmixerChaptertype({ paths : ["/scorx/_test/200.mp3","/scorx/_test/100.mp3"]})})]}),new data_Book({ id : "book1", title : "Bok 1", access : 1, chapters : [new data_Chapter({ id : "chapter0", title : "Kapitel 1", access : 1, subchapters : [new data_Chapter({ id : "sub0", title : "Sub0", access : 0}),new data_Chapter({ id : "sub1", title : "Sub1", access : 0})]})]})]}),new data_Shelf({ id : "shelf1", title : "Ytterligare en bokhylla", access : 0, books : [new data_Book({ id : "book2", title : "En bok bland alla andra", access : 0, chapters : [new data_Chapter({ id : "chapter0", title : "Chapter Access 0", access : 0, subchapters : []}),new data_Chapter({ id : "chapter1", title : "Chapter Access 1", access : 1, subchapters : []}),new data_Chapter({ id : "chapter2", title : "Chapter Access 2", access : 2, subchapters : []})]})]})]})]});
+};
+data_ContentUtils.randomRooms = function(count) {
+	if(count == null) {
+		count = 2;
+	}
+};
+data_ContentUtils.randomBooks = function(count) {
+	if(count == null) {
+		count = 2;
+	}
+	var _g = [];
+	var _g2 = 0;
+	while(_g2 < count) _g.push(_g2++);
+	return _g.map(function(i) {
+		var book = new data_Book({ title : "Book" + i, id : "book" + i});
+		book.set_chapters(data_ContentUtils.randomChapters(book.id,7));
+		return book;
+	});
+};
+data_ContentUtils.randomChapters = function(bookId,count) {
+	if(count == null) {
+		count = 4;
+	}
+	var _g = [];
+	var _g2 = 0;
+	while(_g2 < count) _g.push(_g2++);
+	return _g.map(function(i) {
+		var text = cx_Lorem.getNextChapter();
+		var type;
+		switch(data_ContentUtils.typeCounter++ % 8) {
+		case 2:
+			type = new data_VideoChaptertype({ url : "/assets/video/tada.mp4"});
+			break;
+		case 3:
+			type = new data_ScorxmixerChaptertype({ paths : ["/scorx/_test/200.mp3","/scorx/_test/100.mp3"]});
+			break;
+		default:
+			type = new data_StandardChaptertype();
+		}
+		var chapter = new data_Chapter({ title : "Chapter" + i, id : "" + bookId + "/chap" + i, text : text, type : type});
+		chapter.set_subchapters(data_ContentUtils.randomSubchapters(chapter.id,8));
+		return chapter;
+	});
+};
+data_ContentUtils.randomSubchapters = function(chapterId,count) {
+	if(count == null) {
+		count = 2;
+	}
+	var _g = [];
+	var _g2 = 0;
+	while(_g2 < count) _g.push(_g2++);
+	return _g.map(function(i) {
+		var text = cx_Lorem.getNextChapter();
+		var type;
+		switch(data_ContentUtils.typeCounter++ % 8) {
+		case 2:
+			type = new data_VideoChaptertype({ url : "/assets/video/tada.mp4"});
+			break;
+		case 3:
+			type = new data_ScorxmixerChaptertype({ paths : ["/scorx/_test2/200.mp3","/scorx/_test2/100.mp3","/scorx/_test2/110.mp3","/scorx/_test2/120.mp3","/scorx/_test2/130.mp3"]});
+			break;
+		default:
+			type = new data_StandardChaptertype();
+		}
+		return new data_Chapter({ title : "Subchapter" + i, id : "" + chapterId + "/sub" + i, text : text, type : type});
+	});
 };
 var data_ContentModel = function() {
-	haxe_Log.trace("new content",{ fileName : "src/data/ContentModel.hx", lineNumber : 15, className : "data.ContentModel", methodName : "new"});
+	console.log("src/data/ContentModel.hx:15:","new content");
 	this.set_content(data_ContentUtils.getContentInit());
 };
 $hxClasses["data.ContentModel"] = data_ContentModel;
@@ -2278,11 +3999,22 @@ $hxClasses["data.ErrorsAndLogs"] = data_ErrorsAndLogs;
 data_ErrorsAndLogs.__name__ = ["data","ErrorsAndLogs"];
 data_ErrorsAndLogs.addLog = function(log) {
 	data_ErrorsAndLogs.logs.unshift(log);
-	haxe_Log.trace(log,{ fileName : "src/data/ErrorsAndLogs.hx", lineNumber : 14, className : "data.ErrorsAndLogs", methodName : "addLog"});
+	console.log("src/data/ErrorsAndLogs.hx:14:",log);
+};
+data_ErrorsAndLogs.addErrors = function(err) {
+	Lambda.iter(err,function(e) {
+		data_ErrorsAndLogs.addError(e);
+		return;
+	});
 };
 data_ErrorsAndLogs.addError = function(e) {
 	data_ErrorsAndLogs.errors.unshift(e);
-	haxe_Log.trace(e,{ fileName : "src/data/ErrorsAndLogs.hx", lineNumber : 26, className : "data.ErrorsAndLogs", methodName : "addError"});
+	console.log("src/data/ErrorsAndLogs.hx:26:",e);
+};
+data_ErrorsAndLogs.addErrorsIfAny = function(err) {
+	if(err != null && err.length > 0) {
+		data_ErrorsAndLogs.addErrors(err);
+	}
 };
 var data_FilterModel = function() {
 };
@@ -2301,6 +4033,7 @@ data_FilterModel.prototype = {
 				return room.id == _gthis.filterContent.roomId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return data_ContentModel.instance.content.rooms[0];
 		}
 	}
@@ -2315,6 +4048,7 @@ data_FilterModel.prototype = {
 			}
 			return shelves;
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return [];
 		}
 	}
@@ -2325,6 +4059,7 @@ data_FilterModel.prototype = {
 				return shelf.id == _gthis.filterContent.shelfId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2335,6 +4070,7 @@ data_FilterModel.prototype = {
 				return book.id == _gthis.filterContent.bookId;
 			})[0];
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2342,6 +4078,7 @@ data_FilterModel.prototype = {
 		try {
 			return this.getBook().chapters;
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2356,6 +4093,7 @@ data_FilterModel.prototype = {
 				return this.getChapters()[0];
 			}
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2363,6 +4101,7 @@ data_FilterModel.prototype = {
 		try {
 			return this.getChapter().subchapters;
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
@@ -2377,10 +4116,24 @@ data_FilterModel.prototype = {
 				return this.getSubchapters()[0];
 			}
 		} catch( e ) {
+			(e instanceof js__$Boot_HaxeError);
 			return null;
 		}
 	}
 	,__class__: data_FilterModel
+};
+var data_FilterTools = function() { };
+$hxClasses["data.FilterTools"] = data_FilterTools;
+data_FilterTools.__name__ = ["data","FilterTools"];
+data_FilterTools.getShelvesOfType = function(shelves,type) {
+	return shelves.filter(function(shelf) {
+		return shelf.type == type;
+	});
+};
+data_FilterTools.getShelvesExcludeType = function(shelves,type) {
+	return shelves.filter(function(shelf) {
+		return shelf.type != type;
+	});
 };
 var data_FirebaseModel = function() {
 	this.app = null;
@@ -2428,249 +4181,50 @@ data_PagesModel.prototype = {
 	,__class__: data_PagesModel
 	,__properties__: {set_pageWidth:"set_pageWidth",set_pageIdx:"set_pageIdx"}
 };
-var data_PdfModel = function() {
+var data_StorageMap = function() {
 	this.map = new haxe_ds_StringMap();
 };
-$hxClasses["data.PdfModel"] = data_PdfModel;
-data_PdfModel.__name__ = ["data","PdfModel"];
-data_PdfModel.prototype = {
-	getPages: function(filename) {
+$hxClasses["data.StorageMap"] = data_StorageMap;
+data_StorageMap.__name__ = ["data","StorageMap"];
+data_StorageMap.prototype = {
+	get: function(src) {
 		var _gthis = this;
 		var _this = this.map;
-		if(__map_reserved[filename] != null ? _this.existsReserved(filename) : _this.h.hasOwnProperty(filename)) {
+		if(__map_reserved[src] != null ? _this.existsReserved(src) : _this.h.hasOwnProperty(src)) {
+			console.log("src/data/StorageMap.hx:23:","Get " + src + " from cache");
 			var _this1 = this.map;
-			if(__map_reserved[filename] != null) {
-				return _this1.getReserved(filename);
+			if(__map_reserved[src] != null) {
+				return _this1.getReserved(src);
 			} else {
-				return _this1.h[filename];
+				return _this1.h[src];
 			}
 		}
-		var _this2 = this.map;
-		if(__map_reserved[filename] != null) {
-			_this2.setReserved(filename,null);
-		} else {
-			_this2.h[filename] = null;
-		}
-		var pdfdoc = new pdfjs_PDFDoc(filename);
-		Promise.all([pdfdoc.renderPage(1),pdfdoc.renderPage(2),pdfdoc.renderPage(3)]).then(function(cs) {
-			var canvases = cs;
-			var _this3 = _gthis.map;
-			if(__map_reserved[filename] != null) {
-				_this3.setReserved(filename,canvases);
+		console.log("src/data/StorageMap.hx:26:",src + " does not exist");
+		firebase.storage().ref(src).getDownloadURL().then(function(downloadUrl) {
+			console.log("src/data/StorageMap.hx:29:","found " + src + ":" + downloadUrl);
+			var _this2 = _gthis.map;
+			if(__map_reserved[src] != null) {
+				_this2.setReserved(src,downloadUrl);
 			} else {
-				_this3.h[filename] = canvases;
+				_this2.h[src] = downloadUrl;
 			}
 			m.redraw();
-			return null;
+			return downloadUrl;
+		})["catch"](function(e) {
+			console.log("src/data/StorageMap.hx:34:","error " + e);
+			m.redraw();
+			return data_StorageMap.NONEXISTING;
 		});
-		return [];
+		return this.getDefault(src);
 	}
-	,__class__: data_PdfModel
-};
-var data_Routes = function() {
-	this.homeHandler = { onmatch : function(args,path) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path + ": " + Std.string(args) + "");
-			data_FilterModel.instance.setFilterContent(null);
-		} catch( e ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+	,getDefault: function(src) {
+		if(haxe_io_Path.extension(src) == "mp3") {
+			return data_StorageMap.DEFAULT_MP3;
+		} else {
+			return data_StorageMap.DEFAULT_IMG;
 		}
-		return null;
-	}, render : function(vnode) {
-		return m.m("div","homeHandler");
-	}};
-	this.shelvesHandler = { onmatch : function(args1,path1) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path1 + ": " + Std.string(args1) + "");
-			data_FilterModel.instance.setFilterContent(args1);
-			data_PagesModel.instance.set_pageIdx(1);
-		} catch( e1 ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e1 instanceof js__$Boot_HaxeError) ? e1.val : e1));
-		}
-		return null;
-	}, render : function(vnode1) {
-		return m.m("div","homeHandler");
-	}};
-	this.contentHandler = { onmatch : function(args2,path2) {
-		try {
-			data_ErrorsAndLogs.addLog("RouteResolver:" + path2 + ": " + Std.string(args2) + "");
-			data_FilterModel.instance.setFilterContent(args2);
-		} catch( e2 ) {
-			data_ErrorsAndLogs.addError("RouteResolver roomHandler Error: " + Std.string((e2 instanceof js__$Boot_HaxeError) ? e2.val : e2));
-		}
-		return null;
-	}, render : function(vnode2) {
-		return m.m("div","homeHandler");
-	}};
-};
-$hxClasses["data.Routes"] = data_Routes;
-data_Routes.__name__ = ["data","Routes"];
-data_Routes.prototype = {
-	init: function() {
-		var routes = { "/" : this.homeHandler, "/content/:roomId" : this.contentHandler, "/content/:roomId/shelves" : this.shelvesHandler, "/content/:roomId/:shelfId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId" : this.contentHandler, "/content/:roomId/:shelfId/:bookId/:chapterId/:subchapterId" : this.contentHandler};
-		m.route(window.document.querySelector("#routes"),"/",routes);
 	}
-	,__class__: data_Routes
-};
-var data_TestModel = function() {
-	this.counter = 0;
-};
-$hxClasses["data.TestModel"] = data_TestModel;
-data_TestModel.__name__ = ["data","TestModel"];
-data_TestModel.prototype = {
-	__class__: data_TestModel
-};
-var data_UserLoader = function() {
-};
-$hxClasses["data.UserLoader"] = data_UserLoader;
-data_UserLoader.__name__ = ["data","UserLoader"];
-data_UserLoader.prototype = {
-	startSession: function() {
-		data_UserModel.instance.set_userState(data_UserMode.Loading);
-		return data_UserLoader.instance.getCurrentBrowserUser().then(function(browserUser) {
-			if(browserUser == null) {
-				data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-				return null;
-			}
-			haxe_Log.trace("Browser user found",{ fileName : "src/data/UserLoader.hx", lineNumber : 25, className : "data.UserLoader", methodName : "startSession"});
-			return data_ApiCalls.getAuthRequest("/api/userconfig");
-		}).then(function(dataResponse) {
-			haxe_Log.trace(dataResponse,{ fileName : "src/data/UserLoader.hx", lineNumber : 29, className : "data.UserLoader", methodName : "startSession"});
-			if(dataResponse == null) {
-				return;
-			}
-			data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
-			haxe_Log.trace("------------------------------------",{ fileName : "src/data/UserLoader.hx", lineNumber : 34, className : "data.UserLoader", methodName : "startSession"});
-			haxe_Log.trace("UserModelLoaded",{ fileName : "src/data/UserLoader.hx", lineNumber : 35, className : "data.UserLoader", methodName : "startSession"});
-			return;
-		}).then(function(val) {
-			return data_UserLoader.instance.setupOnAuthChange();
-		}).then(function(val1) {
-			haxe_Log.trace("finished User loading!",{ fileName : "src/data/UserLoader.hx", lineNumber : 42, className : "data.UserLoader", methodName : "startSession"});
-			return Promise.resolve(true);
-		});
-	}
-	,signIn: function(email,password) {
-		this.validate(email,password).then(function(valid) {
-			data_UserModel.instance.set_userState(data_UserMode.Loading);
-			return firebase.auth().signInWithEmailAndPassword(email,password);
-		}).then(function(user) {
-			haxe_Log.trace("USER " + user,{ fileName : "src/data/UserLoader.hx", lineNumber : 57, className : "data.UserLoader", methodName : "signIn"});
-			return null;
-		})["catch"](function(error) {
-			haxe_Log.trace("ERROR" + error,{ fileName : "src/data/UserLoader.hx", lineNumber : 61, className : "data.UserLoader", methodName : "signIn"});
-			haxe_Log.trace("error:" + error,{ fileName : "src/data/UserLoader.hx", lineNumber : 62, className : "data.UserLoader", methodName : "signIn"});
-			data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-			return;
-		});
-	}
-	,signOut: function() {
-		firebase.auth().signOut();
-		data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-	}
-	,validate: function(email,password) {
-		return new Promise(function(res,rej) {
-			try {
-				if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(email)) {
-					throw new js__$Boot_HaxeError("User email is not valid: " + email);
-				}
-				if(!utils__$UserPassword_UserPassword_$Impl_$.isValid(password)) {
-					throw new js__$Boot_HaxeError("User password is not valid: " + password);
-				}
-				res(true);
-			} catch( e ) {
-				rej((e instanceof js__$Boot_HaxeError) ? e.val : e);
-			}
-			return;
-		});
-	}
-	,getCurrentBrowserUser: function() {
-		return new Promise(function(resolve,reject) {
-			var unsubscribe = null;
-			unsubscribe = firebase.app().auth().onAuthStateChanged(function(user) {
-				unsubscribe();
-				resolve(user);
-				return;
-			},reject);
-			return unsubscribe;
-		});
-	}
-	,setupOnAuthChange: function() {
-		haxe_Timer.delay(function() {
-			return firebase.app().auth().onAuthStateChanged(function(user) {
-				if(user != null) {
-					haxe_Log.trace("--- Browser session user found.",{ fileName : "src/data/UserLoader.hx", lineNumber : 103, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-					haxe_Log.trace("compare:" + user.email + " " + data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email,{ fileName : "src/data/UserLoader.hx", lineNumber : 105, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-					var address = user.email;
-					if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
-						throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
-					}
-					if(address.toLowerCase() == data__$UserModel_UserState_$Impl_$.toData(data_UserModel.instance.userState).email) {
-						return;
-					}
-					data_UserModel.instance.set_userState(data_UserMode.Loading);
-					data_ApiCalls.getAuthRequest("/api/userconfig").then(function(dataResponse) {
-						haxe_Log.trace("------------------------------------",{ fileName : "src/data/UserLoader.hx", lineNumber : 113, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-						haxe_Log.trace("UserModelLoaded : onAuthStateChanged",{ fileName : "src/data/UserLoader.hx", lineNumber : 114, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-						haxe_Log.trace("" + Std.string(dataResponse),{ fileName : "src/data/UserLoader.hx", lineNumber : 115, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-						return data_UserModel.instance.set_userState(data_UserMode.User(dataclass_JsonConverter.fromJson(data_UserData,dataResponse.userData)));
-					})["catch"](function(error) {
-						haxe_Log.trace("--- Could not load userconfig for browser session user",{ fileName : "src/data/UserLoader.hx", lineNumber : 121, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-						haxe_Log.trace(error,{ fileName : "src/data/UserLoader.hx", lineNumber : 122, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-						return;
-					});
-					return;
-				} else {
-					haxe_Log.trace("--- No browser session user found.",{ fileName : "src/data/UserLoader.hx", lineNumber : 128, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-					data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-					return;
-				}
-			},function(error1) {
-				haxe_Log.trace("--- Error: " + Std.string(error1),{ fileName : "src/data/UserLoader.hx", lineNumber : 133, className : "data.UserLoader", methodName : "setupOnAuthChange"});
-				return data_UserModel.instance.set_userState(data_UserMode.Anonymous);
-			});
-		},2000);
-		return Promise.resolve(true);
-	}
-	,__class__: data_UserLoader
-};
-var data_UserModel = function() {
-	this.userState = data_UserMode.Anonymous;
-};
-$hxClasses["data.UserModel"] = data_UserModel;
-data_UserModel.__name__ = ["data","UserModel"];
-data_UserModel.prototype = {
-	get_user: function() {
-		return data__$UserModel_UserState_$Impl_$.toData(this.userState);
-	}
-	,set_userState: function(state) {
-		this.userState = state;
-		m.redraw();
-		return this.userState;
-	}
-	,init: function() {
-		this.set_userState(data_UserMode.Anonymous);
-	}
-	,__class__: data_UserModel
-	,__properties__: {set_userState:"set_userState",get_user:"get_user"}
-};
-var data__$UserModel_UserState_$Impl_$ = {};
-$hxClasses["data._UserModel.UserState_Impl_"] = data__$UserModel_UserState_$Impl_$;
-data__$UserModel_UserState_$Impl_$.__name__ = ["data","_UserModel","UserState_Impl_"];
-data__$UserModel_UserState_$Impl_$.toData = function(this1) {
-	switch(this1._hx_index) {
-	case 0:
-		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
-	case 1:
-		return { userData : { firstname : "Anonymous", lastname : "Anonymousson", email : "anon@anon.abc", domains : ["domain1"], access : 0}, userConfig : { domain : "domain1"}};
-	case 2:
-		return this1.user;
-	}
-};
-var data_UserMode = $hxEnums["data.UserMode"] = { __ename__ : true, __constructs__ : ["Anonymous","Loading","User"]
-	,Anonymous: {_hx_index:0,__enum__:"data.UserMode",toString:$estr}
-	,Loading: {_hx_index:1,__enum__:"data.UserMode",toString:$estr}
-	,User: ($_=function(user) { return {_hx_index:2,user:user,__enum__:"data.UserMode",toString:$estr}; },$_.__params__ = ["user"],$_)
+	,__class__: data_StorageMap
 };
 var dataclass_CircularReferenceHandling = $hxEnums["dataclass.CircularReferenceHandling"] = { __ename__ : true, __constructs__ : ["ThrowException","SetToNull","TrackReferences"]
 	,ThrowException: {_hx_index:0,__enum__:"dataclass.CircularReferenceHandling",toString:$estr}
@@ -2750,6 +4304,13 @@ dataclass_Converter.prototype = {
 		var refCount = new haxe_ds_IntMap();
 		var refAssign = new haxe_ds_IntMap();
 		var output = this._toDataClass(cls,json,refCount,refAssign);
+		this.assignReferences(refCount,refAssign);
+		return output;
+	}
+	,toAnonymousStructure: function(cls,json) {
+		var refCount = new haxe_ds_IntMap();
+		var refAssign = new haxe_ds_IntMap();
+		var output = this._toAnonymousStructure(cls,json,refCount,refAssign,0,false);
 		this.assignReferences(refCount,refAssign);
 		return output;
 	}
@@ -2972,6 +4533,91 @@ dataclass_Converter.prototype = {
 	}
 	,__class__: dataclass_Converter
 };
+var dataclass_StringIntValueConverter = function() {
+};
+$hxClasses["dataclass.StringIntValueConverter"] = dataclass_StringIntValueConverter;
+dataclass_StringIntValueConverter.__name__ = ["dataclass","StringIntValueConverter"];
+dataclass_StringIntValueConverter.prototype = {
+	input: function(input) {
+		return Std.parseInt(StringTools.replace(input," ",""));
+	}
+	,output: function(input) {
+		if(input == null) {
+			return "null";
+		} else {
+			return "" + input;
+		}
+	}
+	,__class__: dataclass_StringIntValueConverter
+};
+var dataclass_StringBoolValueConverter = function(boolValues) {
+	this.boolValues = boolValues;
+};
+$hxClasses["dataclass.StringBoolValueConverter"] = dataclass_StringBoolValueConverter;
+dataclass_StringBoolValueConverter.__name__ = ["dataclass","StringBoolValueConverter"];
+dataclass_StringBoolValueConverter.prototype = {
+	input: function(input) {
+		return this.boolValues.tru == StringTools.trim(input);
+	}
+	,output: function(input) {
+		if(input == true) {
+			return this.boolValues.tru;
+		} else {
+			return this.boolValues.fals;
+		}
+	}
+	,__class__: dataclass_StringBoolValueConverter
+};
+var dataclass_StringFloatValueConverter = function(separator) {
+	this.separator = separator;
+	this.other = separator == "," ? "." : ",";
+};
+$hxClasses["dataclass.StringFloatValueConverter"] = dataclass_StringFloatValueConverter;
+dataclass_StringFloatValueConverter.__name__ = ["dataclass","StringFloatValueConverter"];
+dataclass_StringFloatValueConverter.prototype = {
+	input: function(input) {
+		return parseFloat(StringTools.replace(StringTools.replace(StringTools.replace(input," ",""),this.other,""),this.separator,"."));
+	}
+	,output: function(input) {
+		return StringTools.replace(input == null ? "null" : "" + input,".",this.separator);
+	}
+	,__class__: dataclass_StringFloatValueConverter
+};
+var dataclass_StringCurrencyValueConverter = function(separator,cents) {
+	if(cents == null) {
+		cents = 100;
+	}
+	this.floatConverter = new dataclass_StringFloatValueConverter(separator);
+	this.separator = separator;
+	this.cents = cents;
+};
+$hxClasses["dataclass.StringCurrencyValueConverter"] = dataclass_StringCurrencyValueConverter;
+dataclass_StringCurrencyValueConverter.__name__ = ["dataclass","StringCurrencyValueConverter"];
+dataclass_StringCurrencyValueConverter.prototype = {
+	input: function(input) {
+		return this.floatConverter.input(input) * this.cents | 0;
+	}
+	,output: function(input) {
+		var maxlen = (input == null ? "null" : "" + input).length;
+		var output = this.floatConverter.output(input / this.cents);
+		return HxOverrides.substr(output,0,maxlen + (output.indexOf(this.separator) >= 0 ? 1 : 0));
+	}
+	,__class__: dataclass_StringCurrencyValueConverter
+};
+var dataclass_StringDateValueConverter = function(format) {
+	this.format = format;
+};
+$hxClasses["dataclass.StringDateValueConverter"] = dataclass_StringDateValueConverter;
+dataclass_StringDateValueConverter.__name__ = ["dataclass","StringDateValueConverter"];
+dataclass_StringDateValueConverter.prototype = {
+	input: function(input) {
+		return HxOverrides.strDate(input);
+	}
+	,output: function(input) {
+		return DateTools.format(input,this.format);
+	}
+	,__class__: dataclass_StringDateValueConverter
+};
 var dataclass_DateValueConverter = function(format) {
 	this.format = format;
 };
@@ -3010,9 +4656,55 @@ dataclass_JsonConverter.__name__ = ["dataclass","JsonConverter"];
 dataclass_JsonConverter.fromJson = function(cls,json) {
 	return dataclass_JsonConverter.current.toDataClass(cls,json);
 };
+dataclass_JsonConverter.toJson = function(cls) {
+	return dataclass_JsonConverter.current.fromDataClass(cls);
+};
 dataclass_JsonConverter.__super__ = dataclass_Converter;
 dataclass_JsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_JsonConverter
+});
+var dataclass_StringJsonConverter = function(options) {
+	if(options == null) {
+		options = { };
+	}
+	dataclass_JsonConverter.call(this,options);
+	var value = new dataclass_StringIntValueConverter();
+	var _this = this.valueConverters;
+	if(__map_reserved["Int"] != null) {
+		_this.setReserved("Int",value);
+	} else {
+		_this.h["Int"] = value;
+	}
+	var this1 = this.valueConverters;
+	var value1 = new dataclass_StringDateValueConverter(Object.prototype.hasOwnProperty.call(options,"dateFormat") ? options.dateFormat : "%Y-%m-%d %H:%M:%S");
+	var _this1 = this1;
+	if(__map_reserved["Date"] != null) {
+		_this1.setReserved("Date",value1);
+	} else {
+		_this1.h["Date"] = value1;
+	}
+	var this2 = this.valueConverters;
+	var value2 = new dataclass_StringFloatValueConverter(Object.prototype.hasOwnProperty.call(options,"floatDelimiter") ? options.floatDelimiter : ".");
+	var _this2 = this2;
+	if(__map_reserved["Float"] != null) {
+		_this2.setReserved("Float",value2);
+	} else {
+		_this2.h["Float"] = value2;
+	}
+	var this3 = this.valueConverters;
+	var value3 = new dataclass_StringBoolValueConverter(Object.prototype.hasOwnProperty.call(options,"boolValues") ? { tru : options.boolValues.tru, fals : options.boolValues.fals} : { tru : "1", fals : "0"});
+	var _this3 = this3;
+	if(__map_reserved["Bool"] != null) {
+		_this3.setReserved("Bool",value3);
+	} else {
+		_this3.h["Bool"] = value3;
+	}
+};
+$hxClasses["dataclass.StringJsonConverter"] = dataclass_StringJsonConverter;
+dataclass_StringJsonConverter.__name__ = ["dataclass","StringJsonConverter"];
+dataclass_StringJsonConverter.__super__ = dataclass_JsonConverter;
+dataclass_StringJsonConverter.prototype = $extend(dataclass_JsonConverter.prototype,{
+	__class__: dataclass_StringJsonConverter
 });
 var dataclass_TypedJsonConverter = function(options) {
 	dataclass_Converter.call(this,options);
@@ -3030,28 +4722,6 @@ dataclass_TypedJsonConverter.__super__ = dataclass_Converter;
 dataclass_TypedJsonConverter.prototype = $extend(dataclass_Converter.prototype,{
 	__class__: dataclass_TypedJsonConverter
 });
-var haxe_Log = function() { };
-$hxClasses["haxe.Log"] = haxe_Log;
-haxe_Log.__name__ = ["haxe","Log"];
-haxe_Log.formatOutput = function(v,infos) {
-	var str = Std.string(v);
-	if(infos == null) {
-		return str;
-	}
-	var pstr = infos.fileName + ":" + infos.lineNumber;
-	if(infos != null && infos.customParams != null) {
-		var _g = 0;
-		var _g1 = infos.customParams;
-		while(_g < _g1.length) str += ", " + Std.string(_g1[_g++]);
-	}
-	return pstr + ": " + str;
-};
-haxe_Log.trace = function(v,infos) {
-	var str = haxe_Log.formatOutput(v,infos);
-	if(typeof(console) != "undefined" && console.log != null) {
-		console.log(str);
-	}
-};
 var haxe_Timer = function(time_ms) {
 	var me = this;
 	this.id = setInterval(function() {
@@ -3178,6 +4848,46 @@ haxe_ds_ObjectMap.prototype = {
 var haxe_ds_Option = $hxEnums["haxe.ds.Option"] = { __ename__ : true, __constructs__ : ["Some","None"]
 	,Some: ($_=function(v) { return {_hx_index:0,v:v,__enum__:"haxe.ds.Option",toString:$estr}; },$_.__params__ = ["v"],$_)
 	,None: {_hx_index:1,__enum__:"haxe.ds.Option",toString:$estr}
+};
+var haxe_io_Path = function(path) {
+	switch(path) {
+	case ".":case "..":
+		this.dir = path;
+		this.file = "";
+		return;
+	}
+	var c1 = path.lastIndexOf("/");
+	var c2 = path.lastIndexOf("\\");
+	if(c1 < c2) {
+		this.dir = HxOverrides.substr(path,0,c2);
+		path = HxOverrides.substr(path,c2 + 1,null);
+		this.backslash = true;
+	} else if(c2 < c1) {
+		this.dir = HxOverrides.substr(path,0,c1);
+		path = HxOverrides.substr(path,c1 + 1,null);
+	} else {
+		this.dir = null;
+	}
+	var cp = path.lastIndexOf(".");
+	if(cp != -1) {
+		this.ext = HxOverrides.substr(path,cp + 1,null);
+		this.file = HxOverrides.substr(path,0,cp);
+	} else {
+		this.ext = null;
+		this.file = path;
+	}
+};
+$hxClasses["haxe.io.Path"] = haxe_io_Path;
+haxe_io_Path.__name__ = ["haxe","io","Path"];
+haxe_io_Path.extension = function(path) {
+	var s = new haxe_io_Path(path);
+	if(s.ext == null) {
+		return "";
+	}
+	return s.ext;
+};
+haxe_io_Path.prototype = {
+	__class__: haxe_io_Path
 };
 var haxe_rtti_Meta = function() { };
 $hxClasses["haxe.rtti.Meta"] = haxe_rtti_Meta;
@@ -4030,6 +5740,15 @@ js_html_compat_Uint8Array._subarray = function(start,end) {
 var markdown_Node = function() { };
 $hxClasses["markdown.Node"] = markdown_Node;
 markdown_Node.__name__ = ["markdown","Node"];
+markdown_Node.prototype = {
+	__class__: markdown_Node
+};
+var markdown_NodeVisitor = function() { };
+$hxClasses["markdown.NodeVisitor"] = markdown_NodeVisitor;
+markdown_NodeVisitor.__name__ = ["markdown","NodeVisitor"];
+markdown_NodeVisitor.prototype = {
+	__class__: markdown_NodeVisitor
+};
 var markdown_ElementNode = function(tag,children) {
 	this.tag = tag;
 	this.children = children;
@@ -4048,7 +5767,18 @@ markdown_ElementNode.text = function(tag,text) {
 	return new markdown_ElementNode(tag,[new markdown_TextNode(text)]);
 };
 markdown_ElementNode.prototype = {
-	__class__: markdown_ElementNode
+	isEmpty: function() {
+		return this.children == null;
+	}
+	,accept: function(visitor) {
+		if(visitor.visitElementBefore(this)) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) _g1[_g++].accept(visitor);
+			visitor.visitElementAfter(this);
+		}
+	}
+	,__class__: markdown_ElementNode
 };
 var markdown_TextNode = function(text) {
 	this.text = text;
@@ -4057,7 +5787,10 @@ $hxClasses["markdown.TextNode"] = markdown_TextNode;
 markdown_TextNode.__name__ = ["markdown","TextNode"];
 markdown_TextNode.__interfaces__ = [markdown_Node];
 markdown_TextNode.prototype = {
-	__class__: markdown_TextNode
+	accept: function(visitor) {
+		visitor.visitText(this);
+	}
+	,__class__: markdown_TextNode
 };
 var markdown_BlockParser = function(lines,document) {
 	this.lines = lines;
@@ -4067,7 +5800,10 @@ var markdown_BlockParser = function(lines,document) {
 $hxClasses["markdown.BlockParser"] = markdown_BlockParser;
 markdown_BlockParser.__name__ = ["markdown","BlockParser"];
 markdown_BlockParser.prototype = {
-	get_next: function() {
+	get_current: function() {
+		return this.lines[this.pos];
+	}
+	,get_next: function() {
 		if(this.pos >= this.lines.length - 1) {
 			return null;
 		}
@@ -4075,6 +5811,9 @@ markdown_BlockParser.prototype = {
 	}
 	,advance: function() {
 		this.pos++;
+	}
+	,get_isDone: function() {
+		return this.pos >= this.lines.length;
 	}
 	,matches: function(ereg) {
 		if(this.pos >= this.lines.length) {
@@ -4089,7 +5828,7 @@ markdown_BlockParser.prototype = {
 		return ereg.match(this.get_next());
 	}
 	,__class__: markdown_BlockParser
-	,__properties__: {get_next:"get_next"}
+	,__properties__: {get_isDone:"get_isDone",get_next:"get_next",get_current:"get_current"}
 };
 var markdown_BlockSyntax = function() {
 };
@@ -4129,6 +5868,17 @@ markdown_BlockSyntax.prototype = {
 	}
 	,parse: function(parser) {
 		return null;
+	}
+	,parseChildLines: function(parser) {
+		var childLines = [];
+		while(parser.pos < parser.lines.length) {
+			if(!this.get_pattern().match(parser.lines[parser.pos])) {
+				break;
+			}
+			childLines.push(this.get_pattern().matched(1));
+			parser.advance();
+		}
+		return childLines;
 	}
 	,__class__: markdown_BlockSyntax
 	,__properties__: {get_canEndBlock:"get_canEndBlock",get_pattern:"get_pattern"}
@@ -4561,6 +6311,58 @@ markdown_TableSyntax.prototype = $extend(markdown_BlockSyntax.prototype,{
 	}
 	,__class__: markdown_TableSyntax
 });
+var markdown_HtmlRenderer = function() {
+};
+$hxClasses["markdown.HtmlRenderer"] = markdown_HtmlRenderer;
+markdown_HtmlRenderer.__name__ = ["markdown","HtmlRenderer"];
+markdown_HtmlRenderer.__interfaces__ = [markdown_NodeVisitor];
+markdown_HtmlRenderer.sortAttributes = function(a,b) {
+	var ia = markdown_HtmlRenderer.attributeOrder.indexOf(a);
+	var ib = markdown_HtmlRenderer.attributeOrder.indexOf(a);
+	if(ia > -1 && ib > -1) {
+		return ia - ib;
+	}
+	return Reflect.compare(a,b);
+};
+markdown_HtmlRenderer.prototype = {
+	render: function(nodes) {
+		this.buffer = new StringBuf();
+		var _g = 0;
+		while(_g < nodes.length) nodes[_g++].accept(this);
+		return this.buffer.b;
+	}
+	,visitText: function(text) {
+		this.buffer.b += Std.string(text.text);
+	}
+	,visitElementBefore: function(element) {
+		if(this.buffer.b != "" && markdown_HtmlRenderer.BLOCK_TAGS.match(element.tag)) {
+			this.buffer.b += "\n";
+		}
+		this.buffer.b += Std.string("<" + element.tag);
+		var _g = [];
+		var k = element.attributes.keys();
+		while(k.hasNext()) _g.push(k.next());
+		_g.sort(markdown_HtmlRenderer.sortAttributes);
+		var _g1 = 0;
+		while(_g1 < _g.length) {
+			var name = _g[_g1];
+			++_g1;
+			var _this = element.attributes;
+			this.buffer.b += Std.string(" " + name + "=\"" + (__map_reserved[name] != null ? _this.getReserved(name) : _this.h[name]) + "\"");
+		}
+		if(element.children == null) {
+			this.buffer.b += " />";
+			return false;
+		} else {
+			this.buffer.b += ">";
+			return true;
+		}
+	}
+	,visitElementAfter: function(element) {
+		this.buffer.b += Std.string("</" + element.tag + ">");
+	}
+	,__class__: markdown_HtmlRenderer
+};
 var markdown_InlineSyntax = function(pattern) {
 	this.pattern = new EReg(pattern,"m");
 };
@@ -4984,9 +6786,108 @@ markdown_MarkdownTools.getBlocks = function(markdown1,additionalInlineSyntaxes) 
 		blocks = document.parseLines(lines);
 		return blocks;
 	} catch( e ) {
-		haxe_Log.trace((e instanceof js__$Boot_HaxeError) ? e.val : e,{ fileName : "src/markdown/MarkdownTools.hx", lineNumber : 37, className : "markdown.MarkdownTools", methodName : "getBlocks"});
+		console.log("src/markdown/MarkdownTools.hx:37:",(e instanceof js__$Boot_HaxeError) ? e.val : e);
 		return null;
 	}
+};
+var markdown_MithrilRenderer = function() {
+	this.syntaxRenderers = [];
+};
+$hxClasses["markdown.MithrilRenderer"] = markdown_MithrilRenderer;
+markdown_MithrilRenderer.__name__ = ["markdown","MithrilRenderer"];
+markdown_MithrilRenderer.prototype = {
+	markdownToView: function(md,syntaxRenderers) {
+		this.syntaxRenderers = syntaxRenderers;
+		return this.buildView(markdown_MarkdownTools.getBlocks(md,this.syntaxRenderers),{ tag : "div", attrs : { className : "markdown"}, children : []});
+	}
+	,buildView: function(mdNodes,parent) {
+		var _g = 0;
+		while(_g < mdNodes.length) {
+			var mdNode = mdNodes[_g];
+			++_g;
+			switch(mdNode == null ? null : js_Boot.getClass(mdNode)) {
+			case markdown_ElementNode:
+				var node = mdNode;
+				var attributes = { };
+				var _g1 = [];
+				var k = node.attributes.keys();
+				while(k.hasNext()) _g1.push(k.next());
+				var _g2 = 0;
+				while(_g2 < _g1.length) {
+					var name = _g1[_g2];
+					++_g2;
+					var _this = node.attributes;
+					attributes[name] = __map_reserved[name] != null ? _this.getReserved(name) : _this.h[name];
+				}
+				if(node.tag == "a") {
+					attributes["target"] = "_blank";
+				}
+				var child = { tag : node.tag, attrs : attributes, children : []};
+				parent.children.push(child);
+				this.buildView(node.children,child);
+				break;
+			case markdown_TextNode:
+				parent.children.push({ tag : "span", text : mdNode.text});
+				break;
+			case markdown_inlineRenderer_SyntaxRendererNode:
+				var node1 = [mdNode];
+				try {
+					this.syntaxRenderers.filter((function(node2) {
+						return function(sr) {
+							return node2[0].tag == Type.getClassName(sr == null ? null : js_Boot.getClass(sr));
+						};
+					})(node1))[0].render(parent,node1[0].data);
+				} catch( e ) {
+					console.log("src/markdown/MithrilRenderer.hx:82:","error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+				}
+				break;
+			}
+		}
+		return parent;
+	}
+	,__class__: markdown_MithrilRenderer
+};
+var markdown_MithrilRendererCache = function() {
+	this.cache = new haxe_ds_StringMap();
+};
+$hxClasses["markdown.MithrilRendererCache"] = markdown_MithrilRendererCache;
+markdown_MithrilRendererCache.__name__ = ["markdown","MithrilRendererCache"];
+markdown_MithrilRendererCache.prototype = {
+	clearCache: function() {
+		var key = this.cache.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			console.log("src/markdown/MithrilRendererCache.hx:16:","clear markdown dache");
+			this.cache.remove(key1);
+		}
+	}
+	,clearCacheKey: function(key) {
+		var _this = this.cache;
+		if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+			this.cache.remove(key);
+		}
+	}
+	,markdownToView: function(id,md,syntaxRenderers) {
+		var _this = this.cache;
+		if(__map_reserved[id] != null ? _this.existsReserved(id) : _this.h.hasOwnProperty(id)) {
+			var _this1 = this.cache;
+			if(__map_reserved[id] != null) {
+				return _this1.getReserved(id);
+			} else {
+				return _this1.h[id];
+			}
+		}
+		var view = markdown_MithrilRenderer.instance.markdownToView(md,syntaxRenderers);
+		console.log("src/markdown/MithrilRendererCache.hx:35:","save " + id + " to cache");
+		var _this2 = this.cache;
+		if(__map_reserved[id] != null) {
+			_this2.setReserved(id,view);
+		} else {
+			_this2.h[id] = view;
+		}
+		return view;
+	}
+	,__class__: markdown_MithrilRendererCache
 };
 var markdown_MithrilTools = function() { };
 $hxClasses["markdown.MithrilTools"] = markdown_MithrilTools;
@@ -5039,17 +6940,34 @@ markdown_MithrilTools.buildView = function(mdNodes,parent) {
 		case markdown_ast_ErrorNode:
 			parent.children.push({ tag : "span", attrs : { className : "error"}, children : ["Error: " + mdNode.msg]});
 			break;
+		case ui_MediaNode:
+			var node2 = mdNode;
+			var child3 = "media-node: " + Std.string(node2.data);
+			parent.children.push({ tag : "h3", attrs : { }, children : [{ tag : "span", text : child3}]});
+			var child4 = new ui_media_StorageMedia(node2.data).view();
+			parent.children.push(child4);
+			break;
 		case ui_StringRenderNode:
 			var code = mdNode.code;
-			var child3 = m.m("div",m.trust(ui_StringRendererMapper.instance.get("score").renderFromCode(code)));
-			parent.children.push(child3);
+			var child5 = m.m("div",m.trust(ui_StringRendererMapper.instance.get("score").renderFromCode(code)));
+			parent.children.push(child5);
 			break;
 		default:
-			haxe_Log.trace("OTHER NODE",{ fileName : "src/markdown/MithrilTools.hx", lineNumber : 114, className : "markdown.MithrilTools", methodName : "buildView"});
+			console.log("src/markdown/MithrilTools.hx:124:","OTHER NODE");
 		}
 	}
 	return parent;
 };
+var markdown_XNode = function(data) {
+	markdown_ElementNode.call(this,"xnode",[]);
+	this.data = data;
+};
+$hxClasses["markdown.XNode"] = markdown_XNode;
+markdown_XNode.__name__ = ["markdown","XNode"];
+markdown_XNode.__super__ = markdown_ElementNode;
+markdown_XNode.prototype = $extend(markdown_ElementNode.prototype,{
+	__class__: markdown_XNode
+});
 var markdown_ast_DataNode = function(tag,data) {
 	markdown_ElementNode.call(this,tag,[]);
 	this.data = data;
@@ -5069,6 +6987,61 @@ markdown_ast_ErrorNode.__name__ = ["markdown","ast","ErrorNode"];
 markdown_ast_ErrorNode.__super__ = markdown_ElementNode;
 markdown_ast_ErrorNode.prototype = $extend(markdown_ElementNode.prototype,{
 	__class__: markdown_ast_ErrorNode
+});
+var markdown_inlineRenderer_InlineSyntaxRenderer = function(pattern) {
+	markdown_InlineSyntax.call(this,pattern);
+};
+$hxClasses["markdown.inlineRenderer.InlineSyntaxRenderer"] = markdown_inlineRenderer_InlineSyntaxRenderer;
+markdown_inlineRenderer_InlineSyntaxRenderer.__name__ = ["markdown","inlineRenderer","InlineSyntaxRenderer"];
+markdown_inlineRenderer_InlineSyntaxRenderer.__super__ = markdown_InlineSyntax;
+markdown_inlineRenderer_InlineSyntaxRenderer.prototype = $extend(markdown_InlineSyntax.prototype,{
+	render: function(parent,code) {
+		parent.children.push({ tag : "h1", attrs : { className : "error"}, text : ["InlineSyntaxRenderer"]});
+	}
+	,__class__: markdown_inlineRenderer_InlineSyntaxRenderer
+});
+var markdown_inlineRenderer_SyntaxRendererNode = function(tag,data) {
+	markdown_ast_DataNode.call(this,tag,data);
+};
+$hxClasses["markdown.inlineRenderer.SyntaxRendererNode"] = markdown_inlineRenderer_SyntaxRendererNode;
+markdown_inlineRenderer_SyntaxRendererNode.__name__ = ["markdown","inlineRenderer","SyntaxRendererNode"];
+markdown_inlineRenderer_SyntaxRendererNode.__super__ = markdown_ast_DataNode;
+markdown_inlineRenderer_SyntaxRendererNode.prototype = $extend(markdown_ast_DataNode.prototype,{
+	__class__: markdown_inlineRenderer_SyntaxRendererNode
+});
+var markdown_inlineRenderer_QInlineSyntaxRenderer = function() {
+	markdown_inlineRenderer_InlineSyntaxRenderer.call(this,markdown_inlineRenderer_QInlineSyntaxRenderer.REGEX);
+};
+$hxClasses["markdown.inlineRenderer.QInlineSyntaxRenderer"] = markdown_inlineRenderer_QInlineSyntaxRenderer;
+markdown_inlineRenderer_QInlineSyntaxRenderer.__name__ = ["markdown","inlineRenderer","QInlineSyntaxRenderer"];
+markdown_inlineRenderer_QInlineSyntaxRenderer.__super__ = markdown_inlineRenderer_InlineSyntaxRenderer;
+markdown_inlineRenderer_QInlineSyntaxRenderer.prototype = $extend(markdown_inlineRenderer_InlineSyntaxRenderer.prototype,{
+	onMatch: function(parser) {
+		var code = this.pattern.matched(1);
+		parser.addNode(new markdown_inlineRenderer_SyntaxRendererNode(Type.getClassName(js_Boot.getClass(this)),code));
+		return true;
+	}
+	,render: function(parent,code) {
+		var renderer = ui_StringRendererMapper.instance.get("score");
+		renderer.renderFromCode(code);
+		parent.children.push({ tag : "div", attrs : { className : "score"}, text : ["Hello from QSyntaxRenderer "]});
+		var child = m.m("div",m.trust(renderer.renderFromCode(code)));
+		parent.children.push(child);
+	}
+	,__class__: markdown_inlineRenderer_QInlineSyntaxRenderer
+});
+var markdown_syntax_TestcodeSyntax = function() {
+	markdown_InlineSyntax.call(this,markdown_syntax_TestcodeSyntax.REGEX);
+};
+$hxClasses["markdown.syntax.TestcodeSyntax"] = markdown_syntax_TestcodeSyntax;
+markdown_syntax_TestcodeSyntax.__name__ = ["markdown","syntax","TestcodeSyntax"];
+markdown_syntax_TestcodeSyntax.__super__ = markdown_InlineSyntax;
+markdown_syntax_TestcodeSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		parser.addNode(new markdown_ast_DataNode("testcode",this.pattern.matched(1)));
+		return true;
+	}
+	,__class__: markdown_syntax_TestcodeSyntax
 });
 var mithril__$M_M_$Impl_$ = function() { };
 $hxClasses["mithril._M.M_Impl_"] = mithril__$M_M_$Impl_$;
@@ -5132,9 +7105,32 @@ var nx3_EDirectionUAD = $hxEnums["nx3.EDirectionUAD"] = { __ename__ : true, __co
 	,Auto: {_hx_index:1,__enum__:"nx3.EDirectionUAD",toString:$estr}
 	,Down: {_hx_index:2,__enum__:"nx3.EDirectionUAD",toString:$estr}
 };
+var nx3_EDirectionUADTools = function() { };
+$hxClasses["nx3.EDirectionUADTools"] = nx3_EDirectionUADTools;
+nx3_EDirectionUADTools.__name__ = ["nx3","EDirectionUADTools"];
+nx3_EDirectionUADTools.toUD = function(direction) {
+	switch(direction._hx_index) {
+	case 0:
+		return nx3_EDirectionUD.Up;
+	case 2:
+		return nx3_EDirectionUD.Down;
+	default:
+		return nx3_EDirectionUD.Down;
+	}
+};
 var nx3_EDirectionUD = $hxEnums["nx3.EDirectionUD"] = { __ename__ : true, __constructs__ : ["Up","Down"]
 	,Up: {_hx_index:0,__enum__:"nx3.EDirectionUD",toString:$estr}
 	,Down: {_hx_index:1,__enum__:"nx3.EDirectionUD",toString:$estr}
+};
+var nx3_EDirectionUDTools = function() { };
+$hxClasses["nx3.EDirectionUDTools"] = nx3_EDirectionUDTools;
+nx3_EDirectionUDTools.__name__ = ["nx3","EDirectionUDTools"];
+nx3_EDirectionUDTools.toUAD = function(direction) {
+	if(direction == nx3_EDirectionUD.Up) {
+		return nx3_EDirectionUAD.Up;
+	} else {
+		return nx3_EDirectionUAD.Down;
+	}
 };
 var nx3_EDisplayALN = $hxEnums["nx3.EDisplayALN"] = { __ename__ : true, __constructs__ : ["Always","Layout","Never"]
 	,Always: {_hx_index:0,__enum__:"nx3.EDisplayALN",toString:$estr}
@@ -5242,6 +7238,380 @@ nx3_EKeysTools.getSigncode = function(key) {
 		return -1;
 	default:
 		return 0;
+	}
+};
+nx3_EKeysTools.getKeyNr = function(key) {
+	switch(key._hx_index) {
+	case 0:
+		return 6;
+	case 1:
+		return 5;
+	case 2:
+		return 4;
+	case 3:
+		return 3;
+	case 4:
+		return 2;
+	case 5:
+		return 1;
+	case 7:
+		return -1;
+	case 8:
+		return -2;
+	case 9:
+		return -3;
+	case 10:
+		return -4;
+	case 11:
+		return -5;
+	case 12:
+		return -6;
+	default:
+		return 0;
+	}
+};
+nx3_EKeysTools.getNotenrBaseMap = function(key) {
+	if(key == null) {
+		var _g = new haxe_ds_IntMap();
+		_g.h[0] = 11;
+		_g.h[1] = 9;
+		_g.h[2] = 7;
+		_g.h[3] = 5;
+		_g.h[4] = 4;
+		_g.h[5] = 2;
+		_g.h[6] = 0;
+		return _g;
+	}
+	if(key == null) {
+		var _g1 = new haxe_ds_IntMap();
+		_g1.h[0] = 11;
+		_g1.h[1] = 9;
+		_g1.h[2] = 7;
+		_g1.h[3] = 5;
+		_g1.h[4] = 4;
+		_g1.h[5] = 2;
+		_g1.h[6] = 0;
+		return _g1;
+	} else {
+		switch(key._hx_index) {
+		case 0:
+			var _g2 = new haxe_ds_IntMap();
+			_g2.h[0] = 11;
+			_g2.h[1] = 10;
+			_g2.h[2] = 8;
+			_g2.h[3] = 6;
+			_g2.h[4] = 5;
+			_g2.h[5] = 3;
+			_g2.h[6] = 1;
+			return _g2;
+		case 1:
+			var _g3 = new haxe_ds_IntMap();
+			_g3.h[0] = 11;
+			_g3.h[1] = 10;
+			_g3.h[2] = 8;
+			_g3.h[3] = 6;
+			_g3.h[4] = 4;
+			_g3.h[5] = 3;
+			_g3.h[6] = 1;
+			return _g3;
+		case 2:
+			var _g4 = new haxe_ds_IntMap();
+			_g4.h[0] = 11;
+			_g4.h[1] = 9;
+			_g4.h[2] = 8;
+			_g4.h[3] = 6;
+			_g4.h[4] = 4;
+			_g4.h[5] = 3;
+			_g4.h[6] = 1;
+			return _g4;
+		case 3:
+			var _g5 = new haxe_ds_IntMap();
+			_g5.h[0] = 11;
+			_g5.h[1] = 9;
+			_g5.h[2] = 8;
+			_g5.h[3] = 6;
+			_g5.h[4] = 4;
+			_g5.h[5] = 2;
+			_g5.h[6] = 1;
+			return _g5;
+		case 4:
+			var _g6 = new haxe_ds_IntMap();
+			_g6.h[0] = 11;
+			_g6.h[1] = 9;
+			_g6.h[2] = 7;
+			_g6.h[3] = 6;
+			_g6.h[4] = 4;
+			_g6.h[5] = 2;
+			_g6.h[6] = 1;
+			return _g6;
+		case 5:
+			var _g7 = new haxe_ds_IntMap();
+			_g7.h[0] = 11;
+			_g7.h[1] = 9;
+			_g7.h[2] = 7;
+			_g7.h[3] = 6;
+			_g7.h[4] = 4;
+			_g7.h[5] = 2;
+			_g7.h[6] = 0;
+			return _g7;
+		case 7:
+			var _g8 = new haxe_ds_IntMap();
+			_g8.h[0] = 10;
+			_g8.h[1] = 9;
+			_g8.h[2] = 7;
+			_g8.h[3] = 5;
+			_g8.h[4] = 4;
+			_g8.h[5] = 2;
+			_g8.h[6] = 0;
+			return _g8;
+		case 8:
+			var _g9 = new haxe_ds_IntMap();
+			_g9.h[0] = 10;
+			_g9.h[1] = 9;
+			_g9.h[2] = 7;
+			_g9.h[3] = 5;
+			_g9.h[4] = 3;
+			_g9.h[5] = 2;
+			_g9.h[6] = 0;
+			return _g9;
+		case 9:
+			var _g10 = new haxe_ds_IntMap();
+			_g10.h[0] = 10;
+			_g10.h[1] = 8;
+			_g10.h[2] = 7;
+			_g10.h[3] = 5;
+			_g10.h[4] = 3;
+			_g10.h[5] = 2;
+			_g10.h[6] = 0;
+			return _g10;
+		case 10:
+			var _g11 = new haxe_ds_IntMap();
+			_g11.h[0] = 10;
+			_g11.h[1] = 8;
+			_g11.h[2] = 7;
+			_g11.h[3] = 5;
+			_g11.h[4] = 3;
+			_g11.h[5] = 1;
+			_g11.h[6] = 0;
+			return _g11;
+		case 11:
+			var _g12 = new haxe_ds_IntMap();
+			_g12.h[0] = 10;
+			_g12.h[1] = 8;
+			_g12.h[2] = 6;
+			_g12.h[3] = 5;
+			_g12.h[4] = 3;
+			_g12.h[5] = 1;
+			_g12.h[6] = 0;
+			return _g12;
+		case 12:
+			var _g13 = new haxe_ds_IntMap();
+			_g13.h[0] = 10;
+			_g13.h[1] = 8;
+			_g13.h[2] = 6;
+			_g13.h[3] = 5;
+			_g13.h[4] = 3;
+			_g13.h[5] = 1;
+			_g13.h[6] = -1;
+			return _g13;
+		default:
+			var _g14 = new haxe_ds_IntMap();
+			_g14.h[0] = 11;
+			_g14.h[1] = 9;
+			_g14.h[2] = 7;
+			_g14.h[3] = 5;
+			_g14.h[4] = 4;
+			_g14.h[5] = 2;
+			_g14.h[6] = 0;
+			return _g14;
+		}
+	}
+};
+nx3_EKeysTools.getSignsBaseMap = function(key) {
+	if(key == null) {
+		var _g = new haxe_ds_IntMap();
+		_g.h[0] = nx3_ESign.Natural;
+		_g.h[1] = nx3_ESign.Natural;
+		_g.h[2] = nx3_ESign.Natural;
+		_g.h[3] = nx3_ESign.Natural;
+		_g.h[4] = nx3_ESign.Natural;
+		_g.h[5] = nx3_ESign.Natural;
+		_g.h[6] = nx3_ESign.Natural;
+		return _g;
+	}
+	if(key == null) {
+		var _g1 = new haxe_ds_IntMap();
+		_g1.h[0] = nx3_ESign.Natural;
+		_g1.h[1] = nx3_ESign.Natural;
+		_g1.h[2] = nx3_ESign.Natural;
+		_g1.h[3] = nx3_ESign.Natural;
+		_g1.h[4] = nx3_ESign.Natural;
+		_g1.h[5] = nx3_ESign.Natural;
+		_g1.h[6] = nx3_ESign.Natural;
+		return _g1;
+	} else {
+		switch(key._hx_index) {
+		case 0:
+			var _g2 = new haxe_ds_IntMap();
+			_g2.h[0] = nx3_ESign.Natural;
+			_g2.h[1] = nx3_ESign.Sharp;
+			_g2.h[2] = nx3_ESign.Sharp;
+			_g2.h[3] = nx3_ESign.Sharp;
+			_g2.h[4] = nx3_ESign.Sharp;
+			_g2.h[5] = nx3_ESign.Sharp;
+			_g2.h[6] = nx3_ESign.Sharp;
+			return _g2;
+		case 1:
+			var _g3 = new haxe_ds_IntMap();
+			_g3.h[0] = nx3_ESign.Natural;
+			_g3.h[1] = nx3_ESign.Sharp;
+			_g3.h[2] = nx3_ESign.Sharp;
+			_g3.h[3] = nx3_ESign.Sharp;
+			_g3.h[4] = nx3_ESign.Natural;
+			_g3.h[5] = nx3_ESign.Sharp;
+			_g3.h[6] = nx3_ESign.Sharp;
+			return _g3;
+		case 2:
+			var _g4 = new haxe_ds_IntMap();
+			_g4.h[0] = nx3_ESign.Natural;
+			_g4.h[1] = nx3_ESign.Natural;
+			_g4.h[2] = nx3_ESign.Sharp;
+			_g4.h[3] = nx3_ESign.Sharp;
+			_g4.h[4] = nx3_ESign.Natural;
+			_g4.h[5] = nx3_ESign.Sharp;
+			_g4.h[6] = nx3_ESign.Sharp;
+			return _g4;
+		case 3:
+			var _g5 = new haxe_ds_IntMap();
+			_g5.h[0] = nx3_ESign.Natural;
+			_g5.h[1] = nx3_ESign.Natural;
+			_g5.h[2] = nx3_ESign.Sharp;
+			_g5.h[3] = nx3_ESign.Sharp;
+			_g5.h[4] = nx3_ESign.Natural;
+			_g5.h[5] = nx3_ESign.Natural;
+			_g5.h[6] = nx3_ESign.Sharp;
+			return _g5;
+		case 4:
+			var _g6 = new haxe_ds_IntMap();
+			_g6.h[0] = nx3_ESign.Natural;
+			_g6.h[1] = nx3_ESign.Natural;
+			_g6.h[2] = nx3_ESign.Natural;
+			_g6.h[3] = nx3_ESign.Sharp;
+			_g6.h[4] = nx3_ESign.Natural;
+			_g6.h[5] = nx3_ESign.Natural;
+			_g6.h[6] = nx3_ESign.Sharp;
+			return _g6;
+		case 5:
+			var _g7 = new haxe_ds_IntMap();
+			_g7.h[0] = nx3_ESign.Natural;
+			_g7.h[1] = nx3_ESign.Natural;
+			_g7.h[2] = nx3_ESign.Natural;
+			_g7.h[3] = nx3_ESign.Sharp;
+			_g7.h[4] = nx3_ESign.Natural;
+			_g7.h[5] = nx3_ESign.Natural;
+			_g7.h[6] = nx3_ESign.Natural;
+			return _g7;
+		case 7:
+			var _g8 = new haxe_ds_IntMap();
+			_g8.h[0] = nx3_ESign.Flat;
+			_g8.h[1] = nx3_ESign.Natural;
+			_g8.h[2] = nx3_ESign.Natural;
+			_g8.h[3] = nx3_ESign.Natural;
+			_g8.h[4] = nx3_ESign.Natural;
+			_g8.h[5] = nx3_ESign.Natural;
+			_g8.h[6] = nx3_ESign.Natural;
+			return _g8;
+		case 8:
+			var _g9 = new haxe_ds_IntMap();
+			_g9.h[0] = nx3_ESign.Flat;
+			_g9.h[1] = nx3_ESign.Natural;
+			_g9.h[2] = nx3_ESign.Natural;
+			_g9.h[3] = nx3_ESign.Natural;
+			_g9.h[4] = nx3_ESign.Flat;
+			_g9.h[5] = nx3_ESign.Natural;
+			_g9.h[6] = nx3_ESign.Natural;
+			return _g9;
+		case 9:
+			var _g10 = new haxe_ds_IntMap();
+			_g10.h[0] = nx3_ESign.Flat;
+			_g10.h[1] = nx3_ESign.Flat;
+			_g10.h[2] = nx3_ESign.Natural;
+			_g10.h[3] = nx3_ESign.Natural;
+			_g10.h[4] = nx3_ESign.Flat;
+			_g10.h[5] = nx3_ESign.Natural;
+			_g10.h[6] = nx3_ESign.Natural;
+			return _g10;
+		case 10:
+			var _g11 = new haxe_ds_IntMap();
+			_g11.h[0] = nx3_ESign.Flat;
+			_g11.h[1] = nx3_ESign.Flat;
+			_g11.h[2] = nx3_ESign.Natural;
+			_g11.h[3] = nx3_ESign.Natural;
+			_g11.h[4] = nx3_ESign.Flat;
+			_g11.h[5] = nx3_ESign.Flat;
+			_g11.h[6] = nx3_ESign.Natural;
+			return _g11;
+		case 11:
+			var _g12 = new haxe_ds_IntMap();
+			_g12.h[0] = nx3_ESign.Flat;
+			_g12.h[1] = nx3_ESign.Flat;
+			_g12.h[2] = nx3_ESign.Flat;
+			_g12.h[3] = nx3_ESign.Natural;
+			_g12.h[4] = nx3_ESign.Flat;
+			_g12.h[5] = nx3_ESign.Flat;
+			_g12.h[6] = nx3_ESign.Natural;
+			return _g12;
+		case 12:
+			var _g13 = new haxe_ds_IntMap();
+			_g13.h[0] = nx3_ESign.Flat;
+			_g13.h[1] = nx3_ESign.Flat;
+			_g13.h[2] = nx3_ESign.Flat;
+			_g13.h[3] = nx3_ESign.Natural;
+			_g13.h[4] = nx3_ESign.Flat;
+			_g13.h[5] = nx3_ESign.Flat;
+			_g13.h[6] = nx3_ESign.Flat;
+			return _g13;
+		default:
+			var _g14 = new haxe_ds_IntMap();
+			_g14.h[0] = nx3_ESign.Natural;
+			_g14.h[1] = nx3_ESign.Natural;
+			_g14.h[2] = nx3_ESign.Natural;
+			_g14.h[3] = nx3_ESign.Natural;
+			_g14.h[4] = nx3_ESign.Natural;
+			_g14.h[5] = nx3_ESign.Natural;
+			_g14.h[6] = nx3_ESign.Natural;
+			return _g14;
+		}
+	}
+};
+nx3_EKeysTools.getKeyRootShift = function(key) {
+	switch(key._hx_index) {
+	case 0:
+		return 6;
+	case 1:
+		return 11;
+	case 2:
+		return 4;
+	case 3:
+		return 9;
+	case 4:
+		return 2;
+	case 5:
+		return 7;
+	case 6:
+		return 0;
+	case 7:
+		return 5;
+	case 8:
+		return 10;
+	case 9:
+		return 3;
+	case 10:
+		return 8;
+	case 11:
+		return 1;
+	case 12:
+		return 4;
 	}
 };
 var nx3_ELyricContinuation = $hxEnums["nx3.ELyricContinuation"] = { __ename__ : true, __constructs__ : ["Hyphen","Melisma"]
@@ -5435,6 +7805,172 @@ nx3_ENoteValTools.value = function(noteval) {
 		return 251;
 	}
 };
+nx3_ENoteValTools.getFromValue = function(value) {
+	switch(value) {
+	case 251:
+		return nx3_ENoteVal.Nv32tri;
+	case 378:
+		return nx3_ENoteVal.Nv32;
+	case 503:
+		return nx3_ENoteVal.Nv16tri;
+	case 567:
+		return nx3_ENoteVal.Nv32dot;
+	case 661:
+		return nx3_ENoteVal.Nv32ddot;
+	case 756:
+		return nx3_ENoteVal.Nv16;
+	case 1007:
+		return nx3_ENoteVal.Nv8tri;
+	case 1134:
+		return nx3_ENoteVal.Nv16dot;
+	case 1323:
+		return nx3_ENoteVal.Nv16ddot;
+	case 1512:
+		return nx3_ENoteVal.Nv8;
+	case 2015:
+		return nx3_ENoteVal.Nv4tri;
+	case 2268:
+		return nx3_ENoteVal.Nv8dot;
+	case 2646:
+		return nx3_ENoteVal.Nv8ddot;
+	case 3024:
+		return nx3_ENoteVal.Nv4;
+	case 4031:
+		return nx3_ENoteVal.Nv2tri;
+	case 4536:
+		return nx3_ENoteVal.Nv4dot;
+	case 5292:
+		return nx3_ENoteVal.Nv4ddot;
+	case 6048:
+		return nx3_ENoteVal.Nv2;
+	case 8063:
+		return nx3_ENoteVal.Nv1tri;
+	case 9072:
+		return nx3_ENoteVal.Nv2dot;
+	case 10584:
+		return nx3_ENoteVal.Nv2ddot;
+	case 12096:
+		return nx3_ENoteVal.Nv1;
+	case 18144:
+		return nx3_ENoteVal.Nv1dot;
+	case 21168:
+		return nx3_ENoteVal.Nv1ddot;
+	default:
+		return null;
+	}
+};
+nx3_ENoteValTools.toValString = function(val) {
+	switch(val._hx_index) {
+	case 0:
+		return "1";
+	case 1:
+		return "1.";
+	case 2:
+		return "1..";
+	case 3:
+		return "1-3";
+	case 4:
+		return "2";
+	case 5:
+		return "2.";
+	case 6:
+		return "2..";
+	case 7:
+		return "2-3";
+	case 8:
+		return "4";
+	case 9:
+		return "4.";
+	case 10:
+		return "4..";
+	case 11:
+		return "4-3";
+	case 12:
+		return "8";
+	case 13:
+		return "8.";
+	case 14:
+		return "8..";
+	case 15:
+		return "8-3";
+	case 16:
+		return "16";
+	case 17:
+		return "16.";
+	case 18:
+		return "16..";
+	case 19:
+		return "16-3";
+	case 20:
+		return "32";
+	case 21:
+		return "32.";
+	case 22:
+		return "32..";
+	case 23:
+		return "32-3";
+	}
+};
+nx3_ENoteValTools.fromValString = function(valString) {
+	if(valString == null) {
+		return nx3_ENoteVal.Nv4;
+	} else {
+		switch(valString) {
+		case "":
+			return nx3_ENoteVal.Nv4;
+		case "1":
+			return nx3_ENoteVal.Nv1;
+		case "1-3":
+			return nx3_ENoteVal.Nv1tri;
+		case "1.":
+			return nx3_ENoteVal.Nv1dot;
+		case "1..":
+			return nx3_ENoteVal.Nv1ddot;
+		case "16":
+			return nx3_ENoteVal.Nv16;
+		case "16-3":
+			return nx3_ENoteVal.Nv16tri;
+		case "16.":
+			return nx3_ENoteVal.Nv16dot;
+		case "16..":
+			return nx3_ENoteVal.Nv16ddot;
+		case "2":
+			return nx3_ENoteVal.Nv2;
+		case "2-3":
+			return nx3_ENoteVal.Nv2tri;
+		case "2.":
+			return nx3_ENoteVal.Nv2dot;
+		case "2..":
+			return nx3_ENoteVal.Nv2ddot;
+		case "32":
+			return nx3_ENoteVal.Nv32;
+		case "32-3":
+			return nx3_ENoteVal.Nv32tri;
+		case "32.":
+			return nx3_ENoteVal.Nv32dot;
+		case "32..":
+			return nx3_ENoteVal.Nv32ddot;
+		case "4":
+			return nx3_ENoteVal.Nv4;
+		case "4-3":
+			return nx3_ENoteVal.Nv4tri;
+		case "4.":
+			return nx3_ENoteVal.Nv4dot;
+		case "4..":
+			return nx3_ENoteVal.Nv4ddot;
+		case "8":
+			return nx3_ENoteVal.Nv8;
+		case "8-3":
+			return nx3_ENoteVal.Nv8tri;
+		case "8.":
+			return nx3_ENoteVal.Nv8dot;
+		case "8..":
+			return nx3_ENoteVal.Nv8ddot;
+		default:
+			throw new js__$Boot_HaxeError("unhandled note value: " + valString);
+		}
+	}
+};
 var nx3_EOctave = $hxEnums["nx3.EOctave"] = { __ename__ : true, __constructs__ : ["Normal","Up","Down"]
 	,Normal: {_hx_index:0,__enum__:"nx3.EOctave",toString:$estr}
 	,Up: {_hx_index:1,__enum__:"nx3.EOctave",toString:$estr}
@@ -5542,6 +8078,53 @@ nx3_ETimeUtils.toString = function(time) {
 		return "AllaBreve";
 	}
 };
+nx3_ETimeUtils.fromString = function(str) {
+	if(str == null) {
+		return null;
+	}
+	switch(str) {
+	case "12/8":
+		return nx3_ETime.Time12_8;
+	case "2/4":
+		return nx3_ETime.Time2_4;
+	case "2/8":
+		return nx3_ETime.Time2_8;
+	case "224":
+		return nx3_ETime.Time2_2;
+	case "3/2":
+		return nx3_ETime.Time3_2;
+	case "3/4":
+		return nx3_ETime.Time3_4;
+	case "3/8":
+		return nx3_ETime.Time3_8;
+	case "4/2":
+		return nx3_ETime.Time4_2;
+	case "4/4":
+		return nx3_ETime.Time4_4;
+	case "4/8":
+		return nx3_ETime.Time4_8;
+	case "5/4":
+		return nx3_ETime.Time5_4;
+	case "5/8":
+		return nx3_ETime.Time5_8;
+	case "6/4":
+		return nx3_ETime.Time6_4;
+	case "6/8":
+		return nx3_ETime.Time6_8;
+	case "7/4":
+		return nx3_ETime.Time7_4;
+	case "7/8":
+		return nx3_ETime.Time7_8;
+	case "9/8":
+		return nx3_ETime.Time9_8;
+	case "AllaBreve":
+		return nx3_ETime.TimeAllabreve;
+	case "C":
+		return nx3_ETime.TimeCommon;
+	default:
+		return null;
+	}
+};
 var nx3_EVoiceType = $hxEnums["nx3.EVoiceType"] = { __ename__ : true, __constructs__ : ["Normal","Barpause"]
 	,Normal: {_hx_index:0,__enum__:"nx3.EVoiceType",toString:$estr}
 	,Barpause: ($_=function(level) { return {_hx_index:1,level:level,__enum__:"nx3.EVoiceType",toString:$estr}; },$_.__params__ = ["level"],$_)
@@ -5549,6 +8132,9 @@ var nx3_EVoiceType = $hxEnums["nx3.EVoiceType"] = { __ename__ : true, __construc
 var nx3_IBarWidthCalculator = function() { };
 $hxClasses["nx3.IBarWidthCalculator"] = nx3_IBarWidthCalculator;
 nx3_IBarWidthCalculator.__name__ = ["nx3","IBarWidthCalculator"];
+nx3_IBarWidthCalculator.prototype = {
+	__class__: nx3_IBarWidthCalculator
+};
 var nx3_NBar = function(parts,type,time,timeDisplay,allotment,spacing) {
 	if(spacing == null) {
 		spacing = 0;
@@ -5565,7 +8151,31 @@ var nx3_NBar = function(parts,type,time,timeDisplay,allotment,spacing) {
 $hxClasses["nx3.NBar"] = nx3_NBar;
 nx3_NBar.__name__ = ["nx3","NBar"];
 nx3_NBar.prototype = {
-	__class__: nx3_NBar
+	getNNote: function(partIdx,voiceIdx,noteIdx) {
+		return this.getNPart(partIdx).getNVoice(voiceIdx).getNNote(noteIdx);
+	}
+	,getNPart: function(idx) {
+		if(idx < 0 || idx > this.nparts.length) {
+			return null;
+		} else {
+			return this.nparts[idx];
+		}
+	}
+	,iterator: function() {
+		return HxOverrides.iter(this.nparts);
+	}
+	,get_length: function() {
+		return this.nparts.length;
+	}
+	,getTag: function() {
+		var partstags = "";
+		Lambda.iter(this.nparts,function(npart) {
+			partstags += npart.getTag();
+		});
+		return "/" + nx3_NTags.nbarTypeTag(this.type) + partstags + (nx3_NTags.timeTag(this.time) + nx3_NTags.displayALNTag(this.timeDisplay)) + nx3_NTags.nbarAllotmentTag(this.allotment) + (this.spacing != 8 ? "sp:" + this.spacing : "");
+	}
+	,__class__: nx3_NBar
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_NHead = function(type,level,sign,tie,tieTo) {
 	if(level == null) {
@@ -5580,7 +8190,30 @@ var nx3_NHead = function(type,level,sign,tie,tieTo) {
 $hxClasses["nx3.NHead"] = nx3_NHead;
 nx3_NHead.__name__ = ["nx3","NHead"];
 nx3_NHead.prototype = {
-	__class__: nx3_NHead
+	toString: function() {
+		var str = "" + this.level;
+		var str1;
+		if(this.type != nx3_EHeadType.Normal) {
+			var e = this.type;
+			str1 = " " + $hxEnums[e.__enum__].__constructs__[e._hx_index];
+		} else {
+			str1 = "";
+		}
+		str += str1;
+		var str2;
+		if(this.sign != nx3_ESign.None) {
+			var e1 = this.sign;
+			str2 = " " + $hxEnums[e1.__enum__].__constructs__[e1._hx_index];
+		} else {
+			str2 = "";
+		}
+		str += str2;
+		return "NHead(" + str + ")";
+	}
+	,getTag: function() {
+		return "&" + nx3_NTags.headTypetag(this.type) + Std.string(this.level) + nx3_NTags.headSignTag(this.sign) + (this.tie != null ? "_" : "");
+	}
+	,__class__: nx3_NHead
 };
 var nx3_NNote = function(type,heads,value,direction) {
 	if(type == null) {
@@ -5600,6 +8233,9 @@ nx3_NNote.__interfaces__ = [hxlazy_Lazy];
 nx3_NNote.prototype = {
 	iterator: function() {
 		return HxOverrides.iter(this.get_nheads());
+	}
+	,get_length: function() {
+		return this.get_nheads().length;
 	}
 	,get_nheads: function() {
 		if(this.nheads_ != null) {
@@ -5621,6 +8257,45 @@ nx3_NNote.prototype = {
 			this.nheads_ = [new nx3_NHead(nx3_EHeadType.Other,0)];
 		}
 		return this.nheads_;
+	}
+	,getNHead: function(idx) {
+		if(idx < 0 || idx > this.get_nheads().length) {
+			return null;
+		} else {
+			return this.get_nheads()[idx];
+		}
+	}
+	,toString: function() {
+		var str = "";
+		var str1;
+		var e = this.type;
+		if($hxEnums[e.__enum__].__constructs__[e._hx_index] != "Note") {
+			var e1 = this.type;
+			str1 = " " + $hxEnums[e1.__enum__].__constructs__[e1._hx_index];
+		} else {
+			str1 = "";
+		}
+		str = "" + str1;
+		var heads = "";
+		var _g = 0;
+		var _g1 = this.get_nheads();
+		while(_g < _g1.length) heads += _g1[_g++].toString();
+		return "NNote(" + str + "):" + heads;
+	}
+	,getTag: function() {
+		var headstags = "";
+		Lambda.iter(this,function(nhead) {
+			headstags += nhead.getTag();
+		});
+		return "%l" + nx3_NTags.noteTypeTag(this.type) + headstags + nx3_ENoteValTools.toValString(this.value);
+	}
+	,get_headLevels: function() {
+		if(this.__lazyheadLevels != null) {
+			return this.__lazyheadLevels;
+		}
+		return this.__lazyheadLevels = Lambda.array(Lambda.map(this,function(head) {
+			return head.level;
+		}));
 	}
 	,get_topLevel: function() {
 		if(this.__lazytopLevel != null) {
@@ -5645,7 +8320,7 @@ nx3_NNote.prototype = {
 		}));
 	}
 	,__class__: nx3_NNote
-	,__properties__: {get_ties:"get_ties",get_bottomLevel:"get_bottomLevel",get_topLevel:"get_topLevel",get_nheads:"get_nheads"}
+	,__properties__: {get_ties:"get_ties",get_bottomLevel:"get_bottomLevel",get_topLevel:"get_topLevel",get_headLevels:"get_headLevels",get_length:"get_length",get_nheads:"get_nheads"}
 };
 var nx3_NPart = function(voices,type,clef,clefDisplay,key,keyDisplay,sound) {
 	if(sound == null) {
@@ -5670,9 +8345,28 @@ nx3_NPart.prototype = {
 	iterator: function() {
 		return HxOverrides.iter(this.nvoices);
 	}
+	,get_length: function() {
+		return this.nvoices.length;
+	}
+	,getNVoice: function(idx) {
+		if(idx < 0 || idx > this.nvoices.length) {
+			return null;
+		} else {
+			return this.nvoices[idx];
+		}
+	}
+	,getTag: function() {
+		var voicestags = "";
+		Lambda.iter(this,function(nvoice) {
+			voicestags += nvoice.getTag();
+		});
+		return "!" + nx3_NTags.npartTypeTag(this.type) + voicestags + (nx3_NTags.clefTag(this.clef) + nx3_NTags.displayALNTag(this.clefDisplay)) + (nx3_NTags.keyTag(this.key) + nx3_NTags.displayALNTag(this.keyDisplay));
+	}
 	,__class__: nx3_NPart
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_NScore = function(nbars) {
+	this.tag = null;
 	this.nbars = nbars;
 	var _g = 0;
 	while(_g < nbars.length) nbars[_g++].nscore = this;
@@ -5686,7 +8380,211 @@ var nx3_NScore = function(nbars) {
 $hxClasses["nx3.NScore"] = nx3_NScore;
 nx3_NScore.__name__ = ["nx3","NScore"];
 nx3_NScore.prototype = {
-	__class__: nx3_NScore
+	getNBar: function(idx) {
+		if(idx < 0 || idx > this.nbars.length) {
+			return null;
+		} else {
+			return this.nbars[idx];
+		}
+	}
+	,iterator: function() {
+		return HxOverrides.iter(this.nbars);
+	}
+	,get_length: function() {
+		return this.nbars.length;
+	}
+	,getTag: function() {
+		if(this.tag != null) {
+			return this.tag;
+		}
+		var bartags = "";
+		Lambda.iter(this.nbars,function(nbar) {
+			bartags += nbar.getTag();
+		});
+		return this.tag = "#" + bartags;
+	}
+	,__class__: nx3_NScore
+	,__properties__: {get_length:"get_length"}
+};
+var nx3_NTags = function() {
+};
+$hxClasses["nx3.NTags"] = nx3_NTags;
+nx3_NTags.__name__ = ["nx3","NTags"];
+nx3_NTags.nbarAllotmentTag = function(allotment) {
+	if(allotment == null) {
+		return "";
+	}
+	switch(allotment._hx_index) {
+	case 0:
+		return "aLA";
+	case 1:
+		return "aEQ";
+	case 2:
+		return "";
+	case 3:
+		return "aLN";
+	}
+};
+nx3_NTags.nbarTypeTag = function(type) {
+	if(type == null) {
+		return "";
+	}
+	switch(type._hx_index) {
+	case 1:
+		return "bRP";
+	case 2:
+		return "bIG";
+	case 3:
+		return "bFO";
+	default:
+		return "";
+	}
+};
+nx3_NTags.timeTag = function(time) {
+	if(time == null) {
+		return "";
+	}
+	return nx3_ETimeUtils.toString(time);
+};
+nx3_NTags.npartTypeTag = function(type) {
+	if(type == null) {
+		return "";
+	}
+	switch(type._hx_index) {
+	case 1:
+		return "pLY";
+	case 2:
+		return "pTR";
+	case 3:
+		return "pTC";
+	case 4:
+		return "pDY";
+	case 5:
+		return "pCH";
+	case 6:
+		return "pIG";
+	case 7:
+		return "pHI";
+	case 8:
+		return "pPR";
+	default:
+		return "";
+	}
+};
+nx3_NTags.keyTag = function(key) {
+	if(key == null) {
+		return "";
+	}
+	return Std.string(nx3_EKeysTools.getKeyNr(key));
+};
+nx3_NTags.clefTag = function(clef) {
+	if(clef == null) {
+		return "";
+	}
+	switch(clef._hx_index) {
+	case 0:
+		return "G";
+	case 1:
+		return "F";
+	case 2:
+		return "C";
+	}
+};
+nx3_NTags.displayALNTag = function(display) {
+	if(display == null) {
+		return "";
+	}
+	switch(display._hx_index) {
+	case 0:
+		return "dA";
+	case 2:
+		return "dN";
+	default:
+		return "";
+	}
+};
+nx3_NTags.nvoiceTypeTag = function(type) {
+	if(type._hx_index == 1) {
+		return "vBP";
+	} else {
+		return "";
+	}
+};
+nx3_NTags.directionUADTag = function(dir) {
+	if(dir == null) {
+		return "";
+	}
+	switch(dir._hx_index) {
+	case 0:
+		return "U";
+	case 2:
+		return "D";
+	default:
+		return "";
+	}
+};
+nx3_NTags.noteTypeTag = function(type) {
+	if(type == null) {
+		return "";
+	}
+	switch(type._hx_index) {
+	case 1:
+		return "tP" + type.level;
+	case 2:
+		return "tB";
+	case 3:
+		var pause = type.pause;
+		return "tT" + type.level + ":" + Std.string(type.sign) + ":" + (pause == null ? "null" : "" + pause);
+	case 4:
+		return "tL" + type.text + ":" + Std.string(type.offset);
+	case 5:
+		return "tC";
+	case 6:
+		return "tD";
+	case 7:
+		return "tI" + type.level + ":midinote";
+	default:
+		return "";
+	}
+};
+nx3_NTags.headSignTag = function(sign) {
+	if(sign == null) {
+		return "";
+	}
+	switch(sign._hx_index) {
+	case 1:
+		return "N";
+	case 2:
+		return "b";
+	case 3:
+		return "#";
+	case 4:
+		return "bb";
+	case 5:
+		return "##";
+	default:
+		return "";
+	}
+};
+nx3_NTags.headTypetag = function(type) {
+	if(type == null) {
+		return "";
+	}
+	switch(type._hx_index) {
+	case 1:
+		return "tR";
+	case 2:
+		return "tC";
+	case 3:
+		return "tP";
+	case 4:
+		return "tO";
+	default:
+		return "";
+	}
+};
+nx3_NTags.prototype = {
+	__class__: nx3_NTags
 };
 var nx3_NVoice = function(notes,type,direction) {
 	if(notes == null || notes.length == 0) {
@@ -5706,7 +8604,27 @@ nx3_NVoice.prototype = {
 	iterator: function() {
 		return HxOverrides.iter(this.nnotes);
 	}
+	,get_length: function() {
+		return this.nnotes.length;
+	}
+	,getNNote: function(idx) {
+		if(idx < 0 || idx > this.nnotes.length) {
+			return null;
+		} else {
+			return this.nnotes[idx];
+		}
+	}
+	,getTag: function() {
+		var dir = nx3_NTags.directionUADTag(this.direction);
+		var type = nx3_NTags.nvoiceTypeTag(this.type);
+		var notestags = "";
+		Lambda.iter(this,function(nnote) {
+			notestags += nnote.getTag();
+		});
+		return "@" + type + notestags + dir;
+	}
 	,__class__: nx3_NVoice
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_PAttributesRectsCalculator = function() { };
 $hxClasses["nx3.PAttributesRectsCalculator"] = nx3_PAttributesRectsCalculator;
@@ -5723,14 +8641,14 @@ nx3_PAttributesRectsCalculator.getClefRect = function(clef) {
 };
 nx3_PAttributesRectsCalculator.getKeyRect = function(key) {
 	switch(key._hx_index) {
-	case 6:
-		return new nx3_geom_Rectangle(0,-3,1,6);
-	case 5:case 7:
-		return new nx3_geom_Rectangle(0,-3,4.4,6);
-	case 4:case 8:
-		return new nx3_geom_Rectangle(0,-3,6.8,6);
 	case 3:case 9:
 		return new nx3_geom_Rectangle(0,-3,9.2,6);
+	case 5:case 7:
+		return new nx3_geom_Rectangle(0,-3,4.4,6);
+	case 6:
+		return new nx3_geom_Rectangle(0,-3,1,6);
+	case 4:case 8:
+		return new nx3_geom_Rectangle(0,-3,6.8,6);
 	case 2:case 10:
 		return new nx3_geom_Rectangle(0,-3,11.6,6);
 	case 1:case 11:
@@ -5761,6 +8679,33 @@ var nx3_PBamegroupFrameTipCalculator = function(notelevels,direction) {
 };
 $hxClasses["nx3.PBamegroupFrameTipCalculator"] = nx3_PBamegroupFrameTipCalculator;
 nx3_PBamegroupFrameTipCalculator.__name__ = ["nx3","PBamegroupFrameTipCalculator"];
+nx3_PBamegroupFrameTipCalculator.floatMin = function(levels) {
+	var result = levels[0];
+	if(levels.length == 1) {
+		return result;
+	}
+	var _g = 0;
+	while(_g < levels.length) result = Math.min(result,levels[_g++]);
+	return result;
+};
+nx3_PBamegroupFrameTipCalculator.intMin = function(levels) {
+	var result = levels[0];
+	if(levels.length == 1) {
+		return result;
+	}
+	var _g = 0;
+	while(_g < levels.length) result = Math.min(result,levels[_g++]) | 0;
+	return result;
+};
+nx3_PBamegroupFrameTipCalculator.intMax = function(levels) {
+	var result = levels[0];
+	if(levels.length == 1) {
+		return result;
+	}
+	var _g = 0;
+	while(_g < levels.length) result = Math.max(result,levels[_g++]) | 0;
+	return result;
+};
 nx3_PBamegroupFrameTipCalculator.prototype = {
 	getTips: function() {
 		var levels = this.notelevels;
@@ -5847,6 +8792,7 @@ nx3_PBamegroupFrameTipCalculator.prototype = {
 	,__class__: nx3_PBamegroupFrameTipCalculator
 };
 var nx3_PBar = function(nbar) {
+	this.stretchwidth = 0;
 	this._keys = null;
 	this._clefs = null;
 	this.nbar = nbar;
@@ -5855,7 +8801,19 @@ var nx3_PBar = function(nbar) {
 $hxClasses["nx3.PBar"] = nx3_PBar;
 nx3_PBar.__name__ = ["nx3","PBar"];
 nx3_PBar.prototype = {
-	get_clefs: function() {
+	iterator: function() {
+		return HxOverrides.iter(this.getParts());
+	}
+	,get_length: function() {
+		return this.getParts().length;
+	}
+	,getScore: function() {
+		return this.score;
+	}
+	,getSystembar: function() {
+		return this.systembar;
+	}
+	,get_clefs: function() {
 		if(this._clefs != null) {
 			return this._clefs;
 		}
@@ -5950,6 +8908,9 @@ nx3_PBar.prototype = {
 		this.calculateMDistances();
 		return this.columns;
 	}
+	,getIndex: function() {
+		return this.getScore().getBars().indexOf(this);
+	}
 	,calculateMDistances: function() {
 		if(this.columns == null) {
 			this.getColumns();
@@ -5988,8 +8949,69 @@ nx3_PBar.prototype = {
 		this.getContentwidth();
 		return this.allottedDistanceSum;
 	}
+	,getStretchWidth: function() {
+		return this.stretchwidth;
+	}
+	,getTieConnections: function() {
+		if(this.tieconnections != null) {
+			return this.tieconnections;
+		}
+		this.tieconnections = [];
+		var a = this.score.getBars();
+		var idx = this.getIndex() + 1;
+		var nextBar = a == null ? null : idx < 0 || idx > a.length - 1 ? null : a[idx];
+		if(nextBar == null) {
+			return this.tieconnections;
+		}
+		var _g = 0;
+		var _g1 = this.getParts();
+		while(_g < _g1.length) {
+			var part = _g1[_g];
+			++_g;
+			var a1 = nextBar.getParts();
+			var idx1 = part.getIndex();
+			if(a1 != null) {
+				idx1 < 0 || idx1 > a1.length - 1;
+			}
+			var _g2 = 0;
+			var _g3 = part.getVoices();
+			while(_g2 < _g3.length) {
+				var array = _g3[_g2++].getNotes();
+				var lastnote = array[array.length - 1];
+				if(!lastnote.getHasTie()) {
+					continue;
+				}
+				var _g4 = 0;
+				var _g5 = lastnote.nnote.get_nheads();
+				while(_g4 < _g5.length) {
+					var nhead = _g5[_g4];
+					++_g4;
+					if(nhead.tie != null) {
+						var a2 = nextBar.getParts();
+						var idx2 = part.getIndex();
+						var nextPart = a2 == null ? null : idx2 < 0 || idx2 > a2.length - 1 ? null : a2[idx2];
+						if(nextPart == null) {
+							break;
+						}
+						var _g6 = 0;
+						var _g7 = nextPart.getVoices();
+						while(_g6 < _g7.length) {
+							var nextnote = _g7[_g6++].getNotes()[0];
+							var _g8 = 0;
+							var _g9 = nextnote.nnote.get_nheads();
+							while(_g8 < _g9.length) if(_g9[_g8++].level == nhead.level) {
+								this.tieconnections.push({ from : lastnote, to : nextnote, level : nhead.level, tie : nhead.tie});
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return this.tieconnections;
+	}
 	,__class__: nx3_PBar
-	,__properties__: {get_displayTime:"get_displayTime",get_displayKeys:"get_displayKeys",get_displayClefs:"get_displayClefs",get_time:"get_time",get_keys:"get_keys",get_clefs:"get_clefs"}
+	,__properties__: {get_displayTime:"get_displayTime",get_displayKeys:"get_displayKeys",get_displayClefs:"get_displayClefs",get_time:"get_time",get_keys:"get_keys",get_clefs:"get_clefs",get_length:"get_length"}
 };
 var nx3_PBarConfig = function(showClef,showKey,showTime,showCautClef,showCautKey,showCautTime) {
 	if(showCautTime == null) {
@@ -6085,7 +9107,13 @@ $hxClasses["nx3.PBarWidthCalculator"] = nx3_PBarWidthCalculator;
 nx3_PBarWidthCalculator.__name__ = ["nx3","PBarWidthCalculator"];
 nx3_PBarWidthCalculator.__interfaces__ = [nx3_IBarWidthCalculator];
 nx3_PBarWidthCalculator.prototype = {
-	getTimeWidth: function(time) {
+	getClefWidth: function(clef) {
+		return nx3_PAttributesRectsCalculator.getClefRect(clef).width;
+	}
+	,getKeyWidth: function(key) {
+		return nx3_PAttributesRectsCalculator.getKeyRect(key).width;
+	}
+	,getTimeWidth: function(time) {
 		return nx3_PAttributesRectsCalculator.getTimeRect(time).width;
 	}
 	,getContentLeftMarginWidth: function(bar) {
@@ -6270,6 +9298,9 @@ nx3_PBeamgroup.prototype = {
 		this.frame = new nx3_PBeamgroupFrameCalculator(this).getFrame();
 		return this.frame;
 	}
+	,toString: function() {
+		return "PBeamgroup \r";
+	}
 	,__class__: nx3_PBeamgroup
 };
 var nx3_PBeamgroupDirectionCalculator = function(beamgroup) {
@@ -6374,6 +9405,9 @@ nx3_PColumn.prototype = {
 	getComplexes: function() {
 		return this.complexes;
 	}
+	,getValueposition: function() {
+		return this.valueposition;
+	}
 	,getValue: function() {
 		if(this.value == null) {
 			throw new js__$Boot_HaxeError("value shouldnt be null");
@@ -6385,6 +9419,13 @@ nx3_PColumn.prototype = {
 			throw new js__$Boot_HaxeError("mdistance shouldnt be null");
 		}
 		return this.mdistance;
+	}
+	,getMDistanceBenefit: function() {
+		if(this.mdistanceBenefit != null) {
+			return this.mdistanceBenefit;
+		}
+		this.mdistanceBenefit = Math.max(0,this.getMDistance() - 3.2);
+		return this.mdistanceBenefit;
 	}
 	,getDistanceDelta: function() {
 		if(this.distancedelta != null) {
@@ -6451,6 +9492,25 @@ nx3_PColumn.prototype = {
 			}
 		}
 		return this.leftX;
+	}
+	,getNextComplex: function(complex) {
+		var array = this.bar.getColumns();
+		if(this == array[array.length - 1]) {
+			return null;
+		}
+		var partIndex = this.getComplexes().indexOf(complex);
+		var _g1 = this.bar.getColumns().indexOf(this) + 1;
+		var _g = this.bar.getColumns().length;
+		while(_g1 < _g) {
+			var complex1 = this.bar.getColumns()[_g1++].getComplexes()[partIndex];
+			if(complex1 != null) {
+				return complex1;
+			}
+		}
+		return null;
+	}
+	,toString: function() {
+		return "PColumn";
 	}
 	,__class__: nx3_PColumn
 };
@@ -6699,6 +9759,13 @@ nx3_PComplex.prototype = {
 		this.secondoffset = new nx3_PNoteOffsetCalculator(this).getNoteOffset(this.getNotes()[1]);
 		return this.secondoffset;
 	}
+	,getSigns: function() {
+		if(this.signs != null) {
+			return this.signs;
+		}
+		this.signs = new nx3_PSignsCalculator(this.getNotes()).getSigns();
+		return this.signs;
+	}
 	,getVisibleSigns: function() {
 		if(this.visiblesigns != null) {
 			return this.visiblesigns;
@@ -6780,6 +9847,9 @@ nx3_PComplex.prototype = {
 		this.xposition = this.getColumn().getSPosition();
 		return this.xposition;
 	}
+	,getIndex: function() {
+		return this.part.getComplexes().indexOf(this);
+	}
 	,getLeftX: function() {
 		if(this.leftX != null) {
 			return this.leftX;
@@ -6794,6 +9864,13 @@ nx3_PComplex.prototype = {
 		this.rightX = this.getRect().x + this.getRect().width;
 		return this.rightX;
 	}
+	,getNext: function() {
+		if(this.next != null) {
+			return this.next;
+		}
+		this.next = this.getColumn().getNextComplex(this);
+		return this.next;
+	}
 	,setTieinfos: function(val) {
 		this.tieinfos = val;
 	}
@@ -6807,6 +9884,47 @@ nx3_PComplex.prototype = {
 		this.tieinfos = new nx3_PComplexTieTargetCalculator(this.tieinfos).findTargetHeads();
 		return this.tieinfos;
 	}
+	,getHeads: function() {
+		var result = [];
+		var _g = 0;
+		var _g1 = this.getNotes();
+		while(_g < _g1.length) result = result.concat(_g1[_g++].heads);
+		return result;
+	}
+	,getHasTie: function() {
+		if(this.hasTie != null) {
+			return this.hasTie;
+		}
+		var _g = 0;
+		var _g1 = this.getNotes();
+		while(_g < _g1.length) if(_g1[_g++].getHasTie() == true) {
+			this.hasTie = true;
+			return this.hasTie;
+		}
+		this.hasTie = false;
+		return this.hasTie;
+	}
+	,getHeadLevels: function() {
+		if(this.headlevels != null) {
+			return this.headlevels;
+		}
+		this.headlevels = [];
+		var _g = 0;
+		var _g1 = this.getNotes();
+		while(_g < _g1.length) {
+			var _g2 = 0;
+			var _g3 = _g1[_g++].nnote.get_nheads();
+			while(_g2 < _g3.length) this.headlevels.push(_g3[_g2++].level);
+		}
+		return this.headlevels;
+	}
+	,toString: function() {
+		var str = "PComplex: \r";
+		var _g = 0;
+		var _g1 = this.getNotes();
+		while(_g < _g1.length) str += "- Note: " + Std.string(_g1[_g++].nnote) + "\r";
+		return str;
+	}
 	,__class__: nx3_PComplex
 };
 var nx3_PComplexDistancesCalculator = function() {
@@ -6816,6 +9934,13 @@ nx3_PComplexDistancesCalculator.__name__ = ["nx3","PComplexDistancesCalculator"]
 nx3_PComplexDistancesCalculator.prototype = {
 	getDistance: function(leftComplex,rightComplex) {
 		return Math.max(nx3_geom_RectanglesTools.getXIntersection([leftComplex.getBaseRect()],[rightComplex.getBaseRect()]),nx3_geom_RectanglesTools.getXIntersection(leftComplex.getAllRects(),rightComplex.getAllRects()) + 0.6);
+	}
+	,getRects: function(complex) {
+		var rects = [];
+		rects.concat(complex.getHeadsRects());
+		rects.concat(complex.getStavesRects());
+		rects.concat(complex.getSignsRects());
+		return rects;
 	}
 	,__class__: nx3_PComplexDistancesCalculator
 };
@@ -7001,6 +10126,8 @@ nx3_PComplexTierectsCalculator.prototype = {
 		this.complex.setTieinfos(tieinfos);
 		return rects;
 	}
+	,getNoteTies: function(note) {
+	}
 	,__class__: nx3_PComplexTierectsCalculator
 };
 var nx3_PHead = function(nhead) {
@@ -7011,6 +10138,9 @@ nx3_PHead.__name__ = ["nx3","PHead"];
 nx3_PHead.prototype = {
 	getNote: function() {
 		return this.note;
+	}
+	,toString: function() {
+		return "PHead  \r" + Std.string(this.nhead);
 	}
 	,__class__: nx3_PHead
 };
@@ -7100,6 +10230,29 @@ nx3_PHeadsRectsCalculator.prototype = {
 		}
 		return rects;
 	}
+	,headRect: function(type,notevalue) {
+		switch(type._hx_index) {
+		case 0:
+			if(nx3_ENoteValTools.head(this.notevalue)._hx_index == 2) {
+				return new nx3_geom_Rectangle(-2.2,-1,4.4,2);
+			} else {
+				return new nx3_geom_Rectangle(-1.6,-1,3.2,2);
+			}
+			break;
+		case 3:
+			switch(nx3_ENoteValTools.beaminglevel(this.notevalue)) {
+			case 1:
+				return new nx3_geom_Rectangle(-1.8,-3,3.6,6);
+			case 2:
+				return new nx3_geom_Rectangle(-2,-3,4,6);
+			default:
+				return new nx3_geom_Rectangle(-1.6,-3.3,3.2,6.6);
+			}
+			break;
+		default:
+			return new nx3_geom_Rectangle(-2,-2,4,4);
+		}
+	}
 	,__class__: nx3_PHeadsRectsCalculator
 };
 var nx3_PNote = function(nnote) {
@@ -7108,7 +10261,13 @@ var nx3_PNote = function(nnote) {
 $hxClasses["nx3.PNote"] = nx3_PNote;
 nx3_PNote.__name__ = ["nx3","PNote"];
 nx3_PNote.prototype = {
-	getVoice: function() {
+	iterator: function() {
+		return HxOverrides.iter(this.heads);
+	}
+	,get_length: function() {
+		return this.heads.length;
+	}
+	,getVoice: function() {
 		return this.voice;
 	}
 	,getHeads: function() {
@@ -7233,7 +10392,13 @@ nx3_PNote.prototype = {
 		this.next = a == null ? null : idx1 < 0 || idx1 > a.length - 1 ? null : a[idx1];
 		return this.next;
 	}
+	,getHasTie: function() {
+		return !Lambda.foreach(this.nnote,function(nhead) {
+			return nhead.tie == null;
+		});
+	}
 	,__class__: nx3_PNote
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_PNoteHeadsRectTplCalculator = function(note) {
 	this.note = note;
@@ -7399,7 +10564,13 @@ var nx3_PPart = function(npart) {
 $hxClasses["nx3.PPart"] = nx3_PPart;
 nx3_PPart.__name__ = ["nx3","PPart"];
 nx3_PPart.prototype = {
-	getBar: function() {
+	iterator: function() {
+		return HxOverrides.iter(this.getVoices());
+	}
+	,get_length: function() {
+		return this.getVoices().length;
+	}
+	,getBar: function() {
 		return this.bar;
 	}
 	,getVoices: function() {
@@ -7415,6 +10586,13 @@ nx3_PPart.prototype = {
 			this.voices.push(voice);
 		}
 		return this.voices;
+	}
+	,getVoice: function(idx) {
+		if(idx < 0 || idx > this.getVoices().length) {
+			return null;
+		} else {
+			return this.getVoices()[idx];
+		}
 	}
 	,getComplexes: function() {
 		if(this.complexes != null) {
@@ -7436,6 +10614,9 @@ nx3_PPart.prototype = {
 			this.positionsComplexes.h[complex.getValueposition()] = complex;
 		}
 		return this.positionsComplexes;
+	}
+	,getIndex: function() {
+		return this.bar.getParts().indexOf(this);
 	}
 	,getValue: function() {
 		if(this.value != 0) {
@@ -7474,7 +10655,18 @@ nx3_PPart.prototype = {
 		this.rect = result;
 		return result;
 	}
+	,getYAbove: function() {
+		var result = 0.0;
+		var index = this.bar.getParts().indexOf(this);
+		if(index == 0) {
+			result = this.getRect().y;
+		} else {
+			result = this.bar.getPart(index - 1).getRect().get_bottom() + -this.getRect().y;
+		}
+		return result;
+	}
 	,__class__: nx3_PPart
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_PPartComplexesGenerator = function(part) {
 	this.part = part;
@@ -7632,6 +10824,13 @@ nx3_PScore.prototype = {
 		}
 		return this.bars;
 	}
+	,getNBars: function() {
+		var result = [];
+		var _g = 0;
+		var _g1 = this.getBars();
+		while(_g < _g1.length) result.push(_g1[_g++].nbar);
+		return result;
+	}
 	,getSystems: function(systemwidth) {
 		if(systemwidth != this.prevSystemwidth) {
 			this.systems = null;
@@ -7652,6 +10851,13 @@ nx3_PScore.prototype = {
 			new nx3_PScoreSystemStretcher(system).stretchTo(system.getSystemBreakWidth(),system != array[array.length - 1] ? 0 : system.getSystemBreakWidth() * .7);
 		}
 		return this.systems;
+	}
+	,getBar: function(idx) {
+		if(idx < 0 || idx > this.getBars().length) {
+			return null;
+		} else {
+			return this.getBars()[idx];
+		}
 	}
 	,getSystemY: function(system) {
 		if(this.systems == null) {
@@ -7905,7 +11111,10 @@ var nx3_PSystem = function(score) {
 $hxClasses["nx3.PSystem"] = nx3_PSystem;
 nx3_PSystem.__name__ = ["nx3","PSystem"];
 nx3_PSystem.prototype = {
-	getWidth: function() {
+	getStatus: function() {
+		return this.status;
+	}
+	,getWidth: function() {
 		return this.width;
 	}
 	,getSystembars: function() {
@@ -7951,7 +11160,7 @@ nx3_PSystem.prototype = {
 			++_g;
 			var part = systembar.bar.getPart(partIdx);
 			if(part == null) {
-				haxe_Log.trace("part == null",{ fileName : "../cx/src/nx3/PSystem.hx", lineNumber : 71, className : "nx3.PSystem", methodName : "getSpaceAbovePart"});
+				console.log("src/nx3/PSystem.hx:71:","part == null");
 				continue;
 			}
 			var partdistance = 0.0;
@@ -7971,6 +11180,12 @@ nx3_PSystem.prototype = {
 		var _g = partidx + 1;
 		while(_g1 < _g) party += this.getSpaceAbovePart(_g1++);
 		return party;
+	}
+	,getTopPartY: function() {
+		return this.getPartY(0);
+	}
+	,getBottomPartY: function() {
+		return this.getPartY(this.getSystembars()[0].bar.getParts().length - 1);
 	}
 	,getHeight: function() {
 		var partcount = this.getSystembars()[0].bar.getParts().length - 1;
@@ -8037,6 +11252,9 @@ nx3_PSystemBar.prototype = {
 		}
 		this.barMeasurements = new nx3_PSystembarMeasurements(this.bar).init(this.actAttributes,this.barConfig,this.caAttributes);
 		return this.barMeasurements;
+	}
+	,getXPosition: function() {
+		return this.xposition;
 	}
 	,getX: function() {
 		if(this.system == null) {
@@ -8363,6 +11581,9 @@ nx3_PSystembarMeasurements.prototype = {
 	,getLeftContentMarginXPosition: function() {
 		return this.getTimeXPosition() + this.timeWidth;
 	}
+	,getContentXZero: function() {
+		return this.contentXZero;
+	}
 	,getContentXPosition: function() {
 		return this.getLeftContentMarginXPosition() + this.leftContentMarginWidth;
 	}
@@ -8422,7 +11643,13 @@ var nx3_PVoice = function(nvoice) {
 $hxClasses["nx3.PVoice"] = nx3_PVoice;
 nx3_PVoice.__name__ = ["nx3","PVoice"];
 nx3_PVoice.prototype = {
-	getPart: function() {
+	iterator: function() {
+		return HxOverrides.iter(this.getNotes());
+	}
+	,get_length: function() {
+		return this.getNotes().length;
+	}
+	,getPart: function() {
 		return this.part;
 	}
 	,getNotes: function() {
@@ -8438,6 +11665,13 @@ nx3_PVoice.prototype = {
 			this.notes.push(pnote);
 		}
 		return this.notes;
+	}
+	,getNote: function(idx) {
+		if(idx < 0 || idx > this.getNotes().length) {
+			return null;
+		} else {
+			return this.getNotes()[idx];
+		}
 	}
 	,getValue: function() {
 		if(this.value != null) {
@@ -8483,6 +11717,7 @@ nx3_PVoice.prototype = {
 		return this.pnotePositions;
 	}
 	,__class__: nx3_PVoice
+	,__properties__: {get_length:"get_length"}
 };
 var nx3_PVoiceBeamgroupsGenerator = function(pnotes,pattern) {
 	if(pattern == null) {
@@ -8660,9 +11895,76 @@ nx3_geom_BezieerTool.bezieerCoordinates = function(anchor1,control1,control2,anc
 	coord.push(anchor2);
 	return coord;
 };
-var nx3_geom_Point = function() { };
+var nx3_geom_Point = function(x,y) {
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	this.x = x;
+	this.y = y;
+};
 $hxClasses["nx3.geom.Point"] = nx3_geom_Point;
 nx3_geom_Point.__name__ = ["nx3","geom","Point"];
+nx3_geom_Point.distance = function(pt1,pt2) {
+	var dx = pt1.x - pt2.x;
+	var dy = pt1.y - pt2.y;
+	return Math.sqrt(dx * dx + dy * dy);
+};
+nx3_geom_Point.interpolate = function(pt1,pt2,f) {
+	return new nx3_geom_Point(pt2.x + f * (pt1.x - pt2.x),pt2.y + f * (pt1.y - pt2.y));
+};
+nx3_geom_Point.polar = function(len,angle) {
+	return new nx3_geom_Point(len * Math.cos(angle),len * Math.sin(angle));
+};
+nx3_geom_Point.prototype = {
+	add: function(v) {
+		return new nx3_geom_Point(v.x + this.x,v.y + this.y);
+	}
+	,clone: function() {
+		return new nx3_geom_Point(this.x,this.y);
+	}
+	,copyFrom: function(sourcePoint) {
+		this.x = sourcePoint.x;
+		this.y = sourcePoint.y;
+	}
+	,equals: function(toCompare) {
+		if(toCompare.x == this.x) {
+			return toCompare.y == this.y;
+		} else {
+			return false;
+		}
+	}
+	,normalize: function(thickness) {
+		if(this.x == 0 && this.y == 0) {
+			return;
+		} else {
+			var norm = thickness / Math.sqrt(this.x * this.x + this.y * this.y);
+			this.x *= norm;
+			this.y *= norm;
+		}
+	}
+	,offset: function(dx,dy) {
+		this.x += dx;
+		this.y += dy;
+	}
+	,setTo: function(x,y) {
+		this.x = x;
+		this.y = y;
+	}
+	,subtract: function(v) {
+		return new nx3_geom_Point(this.x - v.x,this.y - v.y);
+	}
+	,toString: function() {
+		return "(" + this.x + ", " + this.y + ")";
+	}
+	,get_length: function() {
+		return Math.sqrt(this.x * this.x + this.y * this.y);
+	}
+	,__class__: nx3_geom_Point
+	,__properties__: {get_length:"get_length"}
+};
 var nx3_geom_Rectangle = function(x,y,width,height) {
 	if(height == null) {
 		height = 0;
@@ -8687,11 +11989,68 @@ nx3_geom_Rectangle.prototype = {
 	clone: function() {
 		return new nx3_geom_Rectangle(this.x,this.y,this.width,this.height);
 	}
+	,contains: function(x,y) {
+		if(x >= this.x && y >= this.y && x < this.get_right()) {
+			return y < this.get_bottom();
+		} else {
+			return false;
+		}
+	}
+	,containsPoint: function(point) {
+		return this.contains(point.x,point.y);
+	}
+	,containsRect: function(rect) {
+		if(rect.width <= 0 || rect.height <= 0) {
+			if(rect.x > this.x && rect.y > this.y && rect.get_right() < this.get_right()) {
+				return rect.get_bottom() < this.get_bottom();
+			} else {
+				return false;
+			}
+		} else if(rect.x >= this.x && rect.y >= this.y && rect.get_right() <= this.get_right()) {
+			return rect.get_bottom() <= this.get_bottom();
+		} else {
+			return false;
+		}
+	}
+	,copyFrom: function(sourceRect) {
+		this.x = sourceRect.x;
+		this.y = sourceRect.y;
+		this.width = sourceRect.width;
+		this.height = sourceRect.height;
+	}
+	,equals: function(toCompare) {
+		if(this.x == toCompare.x && this.y == toCompare.y && this.width == toCompare.width) {
+			return this.height == toCompare.height;
+		} else {
+			return false;
+		}
+	}
+	,extendBounds: function(r) {
+		var dx = this.x - r.x;
+		if(dx > 0) {
+			this.x -= dx;
+			this.width += dx;
+		}
+		var dy = this.y - r.y;
+		if(dy > 0) {
+			this.y -= dy;
+			this.height += dy;
+		}
+		if(r.get_right() > this.get_right()) {
+			this.set_right(r.get_right());
+		}
+		if(r.get_bottom() > this.get_bottom()) {
+			this.set_bottom(r.get_bottom());
+		}
+	}
 	,inflate: function(dx,dy) {
 		this.x -= dx;
 		this.y -= dy;
 		this.width += dx * 2;
 		this.height += dy * 2;
+	}
+	,inflatePoint: function(point) {
+		this.inflate(point.x,point.y);
 	}
 	,intersection: function(toIntersect) {
 		var x0 = this.x < toIntersect.x ? toIntersect.x : this.x;
@@ -8712,6 +12071,19 @@ nx3_geom_Rectangle.prototype = {
 		number1 = Math.round(number1) / Math.pow(10,6);
 		return new nx3_geom_Rectangle(x0,y0,number,number1);
 	}
+	,intersects: function(toIntersect) {
+		if((this.get_right() > toIntersect.get_right() ? toIntersect.get_right() : this.get_right()) <= (this.x < toIntersect.x ? toIntersect.x : this.x)) {
+			return false;
+		}
+		return (this.get_bottom() > toIntersect.get_bottom() ? toIntersect.get_bottom() : this.get_bottom()) > (this.y < toIntersect.y ? toIntersect.y : this.y);
+	}
+	,isEmpty: function() {
+		if(!(this.width <= 0)) {
+			return this.height <= 0;
+		} else {
+			return true;
+		}
+	}
 	,offset: function(dx,dy) {
 		var number = this.x + dx;
 		number *= Math.pow(10,6);
@@ -8722,6 +12094,19 @@ nx3_geom_Rectangle.prototype = {
 		number1 = Math.round(number1) / Math.pow(10,6);
 		this.y = number1;
 	}
+	,offsetPoint: function(point) {
+		this.x += point.x;
+		this.y += point.y;
+	}
+	,setEmpty: function() {
+		this.x = 0;
+		this.y = 0;
+		this.width = 0;
+		this.height = 0;
+	}
+	,toString: function() {
+		return "(x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
+	}
 	,union: function(toUnion) {
 		var x0 = this.x > toUnion.x ? toUnion.x : this.x;
 		var y0 = this.y > toUnion.y ? toUnion.y : this.y;
@@ -8730,14 +12115,59 @@ nx3_geom_Rectangle.prototype = {
 	,get_bottom: function() {
 		return this.y + this.height;
 	}
+	,set_bottom: function(value) {
+		this.height = value - this.y;
+		return value;
+	}
+	,get_bottomRight: function() {
+		return new nx3_geom_Point(this.x + this.width,this.y + this.height);
+	}
+	,set_bottomRight: function(value) {
+		this.width = value.x - this.x;
+		this.height = value.y - this.y;
+		return value.clone();
+	}
+	,get_left: function() {
+		return this.x;
+	}
+	,set_left: function(value) {
+		this.width -= value - this.x;
+		this.x = value;
+		return value;
+	}
 	,get_right: function() {
 		return this.x + this.width;
+	}
+	,set_right: function(value) {
+		this.width = value - this.x;
+		return value;
+	}
+	,get_size: function() {
+		return new nx3_geom_Point(this.width,this.height);
+	}
+	,set_size: function(value) {
+		this.width = value.x;
+		this.height = value.y;
+		return value.clone();
 	}
 	,get_top: function() {
 		return this.y;
 	}
+	,set_top: function(value) {
+		this.height -= value - this.y;
+		this.y = value;
+		return value;
+	}
+	,get_topLeft: function() {
+		return new nx3_geom_Point(this.x,this.y);
+	}
+	,set_topLeft: function(value) {
+		this.x = value.x;
+		this.y = value.y;
+		return value.clone();
+	}
 	,__class__: nx3_geom_Rectangle
-	,__properties__: {get_top:"get_top",get_right:"get_right",get_bottom:"get_bottom"}
+	,__properties__: {set_topLeft:"set_topLeft",get_topLeft:"get_topLeft",set_top:"set_top",get_top:"get_top",set_size:"set_size",get_size:"get_size",set_right:"set_right",get_right:"get_right",set_left:"set_left",get_left:"get_left",set_bottomRight:"set_bottomRight",get_bottomRight:"get_bottomRight",set_bottom:"set_bottom",get_bottom:"get_bottom"}
 };
 var nx3_geom_RectanglesTools = function() { };
 $hxClasses["nx3.geom.RectanglesTools"] = nx3_geom_RectanglesTools;
@@ -8774,6 +12204,15 @@ nx3_geom_RectanglesTools.getXIntersection = function(rectsA,rectsB) {
 	}
 	return x;
 };
+nx3_geom_RectanglesTools.clone = function(rects) {
+	if(rects == null) {
+		return null;
+	}
+	var result = [];
+	var _g = 0;
+	while(_g < rects.length) result.push(rects[_g++]);
+	return result;
+};
 nx3_geom_RectanglesTools.offset = function(rects,x,y) {
 	var _g = 0;
 	while(_g < rects.length) rects[_g++].offset(x,y);
@@ -8796,6 +12235,27 @@ nx3_geom_RectanglesTools.concat = function(rectsA,rectsB) {
 	while(_g < rectsB.length) rectsA.push(rectsB[_g++]);
 	return rectsA;
 };
+var nx3_qs_QSExamples = function() { };
+$hxClasses["nx3.qs.QSExamples"] = nx3_qs_QSExamples;
+nx3_qs_QSExamples.__name__ = ["nx3","qs","QSExamples"];
+nx3_qs_QSExamples.run = function() {
+	new nx3_qs_QSParser("#test |C /Gbbb %up c d e16 f g a ").parse();
+	new nx3_qs_QSParser("c c").parse();
+	new nx3_qs_QSParser("#test a+16 2a-,b a+,b-,cN8 ").parse();
+	new nx3_qs_QSParser("#test 4a,b 8 16 | b b b").parse();
+	new nx3_qs_QSParser("c2_,d pu d /F c /C c").parse();
+	new nx3_qs_QSParser("/tpl 1 2 3 y t r").parse();
+	var nscore = new nx3_qs_QSParser("/lyr Hej- san hopp- san.").parse();
+	new nx3_qs_QSParser("c d e f g a ").parse();
+	new nx3_qs_QSParser("c d e % f g a ").parse();
+	new nx3_qs_QSParser("c d e % f g a / a b c ").parse();
+	new nx3_qs_QSParser("a | a").parse();
+	new nx3_qs_QSParser("a a a / b b b | a / b ").parse();
+	new nx3_qs_QSParser("a % b | a  ").parse();
+	new nx3_qs_QSParser("a % b / a | a / b % c  ").parse();
+	new nx3_qs_QSParser("a aa % b bb / a | a aa / b bb % c cc  ").parse();
+	console.log("src/nx3/qs/QSParser.hx:39:",haxe_xml_Printer.print(nx3_xml_ScoreXML.toXml(nscore)));
+};
 var nx3_qs_Qs1 = $hxEnums["nx3.qs.Qs1"] = { __ename__ : true, __constructs__ : ["S","B","P","V","N"]
 	,S: ($_=function(s) { return {_hx_index:0,s:s,__enum__:"nx3.qs.Qs1",toString:$estr}; },$_.__params__ = ["s"],$_)
 	,B: ($_=function(s) { return {_hx_index:1,s:s,__enum__:"nx3.qs.Qs1",toString:$estr}; },$_.__params__ = ["s"],$_)
@@ -8815,7 +12275,9 @@ var nx3_qs_QSParser = function(str) {
 $hxClasses["nx3.qs.QSParser"] = nx3_qs_QSParser;
 nx3_qs_QSParser.__name__ = ["nx3","qs","QSParser"];
 nx3_qs_QSParser.prototype = {
-	initBarGlobals: function(s) {
+	init: function() {
+	}
+	,initBarGlobals: function(s) {
 		this.barGlobals = { time : null};
 		if(nx3_qs_StrTools.has(s,"2/8")) {
 			this.barGlobals.time = nx3_ETime.Time2_8;
@@ -9243,7 +12705,7 @@ nx3_qs_QSParser.prototype = {
 				while(partLength < firstLenght) {
 					b.parts.push({ part : "pp", voices : [{ voice : "vv", notes : []}]});
 					++partLength;
-					haxe_Log.trace("Inconsistent part numbers: " + firstLenght + " " + partLength + " " + this.str,{ fileName : "../cx/src/nx3/qs/QSParser.hx", lineNumber : 350, className : "nx3.qs.QSParser", methodName : "checkParts"});
+					console.log("src/nx3/qs/QSParser.hx:350:","Inconsistent part numbers: " + firstLenght + " " + partLength + " " + this.str);
 				}
 				return false;
 			}
@@ -9311,11 +12773,11 @@ nx3_qs_QSParser.prototype = {
 		}
 		try {
 			while(nx3_qs_ArrTools.last(nx3_qs_ArrTools.last(nx3_qs_ArrTools.last(matrix2).parts).voices).notes.length == 0) {
-				haxe_Log.trace("pop",{ fileName : "../cx/src/nx3/qs/QSParser.hx", lineNumber : 415, className : "nx3.qs.QSParser", methodName : "createMatrix"});
+				console.log("src/nx3/qs/QSParser.hx:415:","pop");
 				matrix2.pop();
 			}
 		} catch( e ) {
-			haxe_Log.trace((e instanceof js__$Boot_HaxeError) ? e.val : e,{ fileName : "../cx/src/nx3/qs/QSParser.hx", lineNumber : 419, className : "nx3.qs.QSParser", methodName : "createMatrix"});
+			console.log("src/nx3/qs/QSParser.hx:419:",(e instanceof js__$Boot_HaxeError) ? e.val : e);
 		}
 		return matrix2;
 	}
@@ -9324,6 +12786,21 @@ nx3_qs_QSParser.prototype = {
 			bar = "-";
 		}
 		matrix.push({ bar : bar, parts : [{ part : "pp", voices : [{ voice : "vv", notes : []}]}]});
+	}
+	,resetBar: function() {
+		this.barGlobals = { time : nx3_ETime.Time4_4};
+	}
+	,resetPart: function() {
+		this.partGlobals = { clef : nx3_EClef.ClefG, key : nx3_EKey.Natural, type : nx3_EPartType.Normal};
+	}
+	,resetVoice: function() {
+		this.voiceGlobals = { dir : nx3_EDirectionUAD.Auto};
+	}
+	,traceCurrent: function(str) {
+		if(str == null) {
+			str = "";
+		}
+		console.log("src/nx3/qs/QSParser.hx:436:","" + this.barIdx + ":" + this.partIdx + ":" + this.voiceIdx + ":" + this.noteIdx + " : " + str);
 	}
 	,__class__: nx3_qs_QSParser
 };
@@ -9342,8 +12819,17 @@ nx3_qs_ArrTools.last = function(arr) {
 var nx3_qs_QSParserTools = function() { };
 $hxClasses["nx3.qs.QSParserTools"] = nx3_qs_QSParserTools;
 nx3_qs_QSParserTools.__name__ = ["nx3","qs","QSParserTools"];
+nx3_qs_QSParserTools.urlEncode = function(qcode) {
+	return StringTools.replace(qcode,"/",nx3_qs_QSParserTools.relaceSlash);
+};
 nx3_qs_QSParserTools.urlDecode = function(qcode) {
 	return StringTools.replace(qcode,nx3_qs_QSParserTools.relaceSlash,"/");
+};
+nx3_qs_QSParserTools.filterLyrics = function(qcode) {
+	if(qcode.indexOf("/lyr") > -1) {
+		qcode = HxOverrides.substr(qcode,qcode.indexOf("/lyr") + 4,null);
+	}
+	return qcode;
 };
 var nx3_render_ITarget = function() { };
 $hxClasses["nx3.render.ITarget"] = nx3_render_ITarget;
@@ -9367,7 +12853,28 @@ var nx3_render_Renderer = function(target,targetX,targetY,interactions) {
 $hxClasses["nx3.render.Renderer"] = nx3_render_Renderer;
 nx3_render_Renderer.__name__ = ["nx3","render","Renderer"];
 nx3_render_Renderer.prototype = {
-	renderScore: function(score,newX,newY,systemwidth) {
+	xToUnitX: function(x) {
+		return x * (1 / this.scaling.unitX);
+	}
+	,yToUnitY: function(y) {
+		return y * (1 / this.scaling.unitY);
+	}
+	,renderSystem: function(system,newX,newY) {
+		if(newY == null) {
+			newY = -1;
+		}
+		if(newX == null) {
+			newX = -1;
+		}
+		if(newX != -1) {
+			this.targetX = newX;
+		}
+		if(newY != -1) {
+			this.targetY = newY;
+		}
+		this.drawSystem(system);
+	}
+	,renderScore: function(score,newX,newY,systemwidth) {
 		if(systemwidth == null) {
 			systemwidth = 400;
 		}
@@ -9390,9 +12897,97 @@ nx3_render_Renderer.prototype = {
 		this.target.totalHeight = tmp1 * this.scaling.unitY;
 		return { width : score.getWidth() * this.scaling.unitX, height : score.getHeight() * this.scaling.unitY};
 	}
+	,testText: function() {
+		this.target.setFont(nx3_Constants.FONT_TEXT_DEFAULTFORMAT);
+		this.target.text(0,0,"ABC abc 123");
+		var w = this.target.textwidth("ABC abc 123");
+		var h = this.target.textheight("ABC abc 123");
+		this.target.rectangle(0,0,new nx3_geom_Rectangle(0,0,w,h),1,16711680);
+	}
+	,addInteraction: function(interaction) {
+		this.interactions.push(interaction);
+	}
 	,drawSystems: function(systems) {
 		var _g = 0;
 		while(_g < systems.length) this.drawSystem(systems[_g++]);
+	}
+	,drawSystemExtras: function(systems,system,nx,ny) {
+		if(ny == null) {
+			ny = 0;
+		}
+		if(nx == null) {
+			nx = 0;
+		}
+		var tx = this.targetX + nx * this.scaling.unitX;
+		var ty = this.targetY + ny * this.scaling.unitY;
+		var _g = 0;
+		var _g1 = system.getSystembars();
+		while(_g < _g1.length) {
+			var systembar = _g1[_g];
+			++_g;
+			if(systembar == system.getSystembars()[0]) {
+				if(system != systems[0]) {
+					var idx = systems.indexOf(system);
+					var array = (idx <= 0 ? null : systems[idx - 1]).getSystembars();
+					var tieconnections = array[array.length - 1].bar.getTieConnections();
+					var _g2 = 0;
+					while(_g2 < tieconnections.length) {
+						var connection = tieconnections[_g2];
+						++_g2;
+						var fromBarX = systembar.getXPosition();
+						var fromNoteX = systembar.getBarMeasurements().getLeftContentMarginXPosition() + connection.from.getXPosition();
+						var part = connection.to.getComplex().getPart();
+						var party = part.getBar().getParts().indexOf(part) * 20 * this.scaling.unitY;
+						var tielevel = 0;
+						var _g3 = connection.tie;
+						if(_g3._hx_index == 0) {
+							tielevel = _g3.level;
+						}
+						this.drawTie(system,tx,ty + party,new nx3_geom_Rectangle(fromBarX + fromNoteX + -5,connection.level + tielevel,3,1),nx3_EDirectionUD.Down);
+					}
+				}
+			}
+			var array1 = system.getSystembars();
+			if(systembar == array1[array1.length - 1]) {
+				var tieconnections1 = systembar.bar.getTieConnections();
+				var _g21 = 0;
+				while(_g21 < tieconnections1.length) {
+					var connection1 = tieconnections1[_g21];
+					++_g21;
+					var fromBarX1 = systembar.getXPosition();
+					var fromNoteX1 = systembar.getBarMeasurements().getLeftContentMarginXPosition() + connection1.from.getXPosition();
+					var toBarX = systembar.getXPosition() + systembar.getBarMeasurements().getTotalWidth();
+					var part1 = connection1.to.getComplex().getPart();
+					var party1 = part1.getBar().getParts().indexOf(part1) * 20 * this.scaling.unitY;
+					var tielevel1 = 0;
+					var _g31 = connection1.tie;
+					if(_g31._hx_index == 0) {
+						tielevel1 = _g31.level;
+					}
+					this.drawTie(system,tx,ty + party1,new nx3_geom_Rectangle(fromBarX1 + fromNoteX1 + 2,connection1.level + tielevel1,toBarX - (fromBarX1 + fromNoteX1),2),nx3_EDirectionUD.Down);
+				}
+			} else {
+				var tieconnections2 = systembar.bar.getTieConnections();
+				var _g22 = 0;
+				while(_g22 < tieconnections2.length) {
+					var connection2 = tieconnections2[_g22];
+					++_g22;
+					var fromBarX2 = systembar.getXPosition();
+					var nextsystembar = connection2.to.getComplex().getPart().getBar().getSystembar();
+					var toBarX1 = nextsystembar.getXPosition();
+					var fromNoteX2 = systembar.getBarMeasurements().getLeftContentMarginXPosition() + connection2.from.getXPosition();
+					var toNoteX = nextsystembar.getBarMeasurements().getLeftContentMarginXPosition() + connection2.to.getXPosition();
+					var part2 = connection2.to.getComplex().getPart();
+					var party2 = part2.getBar().getParts().indexOf(part2) * 20 * this.scaling.unitY;
+					var tielevel2 = 0;
+					var _g32 = connection2.tie;
+					if(_g32._hx_index == 0) {
+						tielevel2 = _g32.level;
+					}
+					this.drawTie(system,tx,ty + party2,new nx3_geom_Rectangle(fromBarX2 + fromNoteX2 + 2,connection2.level + tielevel2,toBarX1 + toNoteX - (fromBarX2 + fromNoteX2) - 2 - 2,2),nx3_EDirectionUD.Down);
+				}
+			}
+		}
 	}
 	,drawSystem: function(system) {
 		this.drawBarlines(system,system.getSystembars());
@@ -9584,7 +13179,7 @@ nx3_render_Renderer.prototype = {
 			}
 			if(pause) {
 				numSvgStr = StringTools.replace(numSvgStr,"fill:#000000","fill:#AAAAAA");
-				haxe_Log.trace(numSvgStr,{ fileName : "../cx/src/nx3/render/Renderer.hx", lineNumber : 581, className : "nx3.render.Renderer", methodName : "drawNoteHeads"});
+				console.log("src/nx3/render/Renderer.hx:581:",numSvgStr);
 			}
 			var tx = this.scaling == nx3_render_scaling_Scaling.NORMAL ? x - this.scaling.unitX * 5 : x - this.scaling.unitX * 5.5;
 			var e = note.getVoice().getPart().npart.type;
@@ -9863,6 +13458,89 @@ nx3_render_Renderer.prototype = {
 			++idx;
 		}
 	}
+	,drawBeamgroupX: function(system,beamgroup,nx,ny) {
+		if(ny == null) {
+			ny = 0;
+		}
+		if(nx == null) {
+			nx = 0;
+		}
+		var frame = beamgroup.getFrame();
+		if(frame == null) {
+			return;
+		}
+		var part = beamgroup.getPVoice().getPart();
+		var part_getYPosition = part.getBar().getParts().indexOf(part) * 20;
+		var rightY = this.targetY + part_getYPosition * this.target.getScaling().unitY;
+		beamgroup.getDirection();
+		var firstnote = beamgroup.pnotes[0];
+		var leftX = beamgroup.getNotesStemXPositions()[0] * this.scaling.unitX;
+		var leftTipY = frame.leftTipY * this.scaling.unitY;
+		this.target.line(this.targetX + leftX,rightY + frame.leftInnerY * this.scaling.unitY,this.targetX + leftX,rightY + leftTipY,1,0);
+		if(beamgroup.pnotes.length == 1) {
+			if(nx3_ENoteValTools.beaminglevel(firstnote.nnote.value) > 0) {
+				if(beamgroup.getDirection() == nx3_EDirectionUD.Up) {
+					this.target.shape(null,this.targetX + leftX - 0.6 * this.scaling.unitX,rightY + this.scaling.unitY + leftTipY,nx3_ENoteValTools.beaminglevel(firstnote.nnote.value) == 2 ? nx3_render_svg_SvgElements.flagUp16 : nx3_render_svg_SvgElements.flagUp8,0);
+				} else {
+					this.target.shape(null,this.targetX + leftX - 0.6 * this.scaling.unitX,rightY + -3 * this.scaling.unitY + leftTipY,nx3_ENoteValTools.beaminglevel(firstnote.nnote.value) == 2 ? nx3_render_svg_SvgElements.flagDown16 : nx3_render_svg_SvgElements.flagDown8,0);
+				}
+			}
+		}
+		if(beamgroup.pnotes.length < 2) {
+			return;
+		}
+		var storeY = [rightY + leftTipY];
+		var storeX = [this.targetX + leftX];
+		var array = beamgroup.getNotesStemXPositions();
+		var rightX = array[array.length - 1] * this.scaling.unitX;
+		var rightTipY = frame.rightTipY * this.scaling.unitY;
+		this.target.line(this.targetX + rightX,rightY + frame.rightInnerY * this.scaling.unitY,this.targetX + rightX,rightY + rightTipY,1,0);
+		var beamh = 0.95 * this.scaling.unitY;
+		beamh = beamgroup.getDirection() == nx3_EDirectionUD.Up ? -beamh : beamh;
+		this.target.parallellogram(this.targetX + leftX,rightY + leftTipY - beamh,this.targetX + rightX,rightY + rightTipY - beamh,beamh,0,0,0);
+		if(beamgroup.pnotes.length > 2) {
+			var _g1 = 1;
+			var _g = frame.outerLevels.length - 1;
+			while(_g1 < _g) {
+				var i = _g1++;
+				var midX = beamgroup.getNotesStemXPositions()[i] * this.scaling.unitX;
+				var midTipY = leftTipY + (rightTipY - leftTipY) * ((midX - leftX) / (rightX - leftX));
+				this.target.line(this.targetX + midX,rightY + frame.innerLevels[i] * this.scaling.unitY,this.targetX + midX,rightY + midTipY,1,0);
+				storeY.push(rightY + midTipY);
+				storeX.push(this.targetX + midX);
+			}
+		}
+		storeY.push(rightY + rightTipY);
+		storeX.push(this.targetX + rightX);
+		var idx = 0;
+		var beamh1 = 0.95 * this.scaling.unitY;
+		var _g2 = 0;
+		var _g11 = beamgroup.getFrame().beamflags;
+		while(_g2 < _g11.length) {
+			var flagtype = _g11[_g2++];
+			var adjustY = beamgroup.getDirection() == nx3_EDirectionUD.Up ? 2.1 : -2.1;
+			adjustY *= this.scaling.unitY;
+			var currX = storeX[idx];
+			var currY = storeY[idx] + adjustY;
+			var nextX = storeX[idx + 1];
+			var nextY = storeY[idx + 1] + adjustY;
+			var factor = 2.2 * this.scaling.unitX;
+			switch(flagtype._hx_index) {
+			case 1:
+				this.target.parallellogram(currX,currY - beamh1 / 2,currX + factor,factor / (nextX - currX) * (nextY - currY) + currY - beamh1 / 2,beamh1,0,0,0);
+				break;
+			case 2:
+				var startX = nextX - factor;
+				this.target.parallellogram(startX,-((nextX - startX) / (nextX - currX)) * (nextY - currY) + nextY - beamh1 / 2,nextX,nextY - beamh1 / 2,beamh1,0,0,0);
+				break;
+			case 3:
+				this.target.parallellogram(currX,currY - beamh1 / 2,nextX,nextY - beamh1 / 2,beamh1,0,0,0);
+				break;
+			default:
+			}
+			++idx;
+		}
+	}
 	,drawTie: function(system,x,y,rect,direction) {
 		var a1 = null;
 		var c1 = null;
@@ -9923,6 +13601,29 @@ nx3_render_Renderer.prototype = {
 		default:
 			return "";
 		}
+	}
+	,getTarget: function() {
+		return this.target;
+	}
+	,interactiveComplex: function(system,complex,nx,ny) {
+		if(complex == null) {
+			return;
+		}
+		var part = complex.getPart();
+		part.getBar().getParts();
+		complex.getXPosition();
+		this.target.getScaling();
+		this.target.getScaling();
+		var _g = 0;
+		var _g1 = complex.getNotes();
+		while(_g < _g1.length) this.interactiveNote(system,_g1[_g++],nx,ny);
+	}
+	,interactiveNote: function(system,note,nx,ny) {
+		var part = note.getComplex().getPart();
+		part.getBar().getParts();
+		note.getComplex().getXPosition();
+		this.target.getScaling();
+		this.target.getScaling();
 	}
 	,__class__: nx3_render_Renderer
 };
@@ -9993,6 +13694,8 @@ nx3_render_TargetSvgXml.prototype = {
 			this.line(x,cy,x + width,cy,this.scaling.linesWidth,0);
 		}
 	}
+	,rect: function(x,y,rect,lineWidth,lineColor) {
+	}
 	,rectangle: function(x,y,rect,lineWidth,lineColor) {
 		if(lineColor == null) {
 			lineColor = 0;
@@ -10009,6 +13712,8 @@ nx3_render_TargetSvgXml.prototype = {
 		r.set("stroke","#eee");
 		r.set("stroke-width",Std.string(lineWidth * this.scaling.linesWidth));
 		this.svg.addChild(r);
+	}
+	,rectangles: function(x,y,rects,lineWidth,lineColor) {
 	}
 	,filledrectangle: function(x,y,rect,lineWidth,lineColor,fillColor) {
 	}
@@ -10106,6 +13811,18 @@ nx3_render_TargetSvgXml.prototype = {
 		el.set("style","stroke-width:" + lineWidth * this.scaling.linesWidth);
 		this.svg.addChild(el);
 	}
+	,clear: function() {
+		this.svg = Xml.createElement("svg");
+		this.svg.set("id",this.svgId);
+	}
+	,polyline: function(x,y,coordinates,lineWidth,lineColor) {
+		if(lineColor == null) {
+			lineColor = 0;
+		}
+		if(lineWidth == null) {
+			lineWidth = 1;
+		}
+	}
 	,polyfill: function(x,y,coordinates,lineWidth,lineColor,fillColor) {
 		if(fillColor == null) {
 			fillColor = 255;
@@ -10116,7 +13833,7 @@ nx3_render_TargetSvgXml.prototype = {
 		if(lineWidth == null) {
 			lineWidth = 1;
 		}
-		haxe_Log.trace("Polyfill: " + x + " " + y,{ fileName : "../cx/src/nx3/render/TargetSvgXml.hx", lineNumber : 192, className : "nx3.render.TargetSvgXml", methodName : "polyfill"});
+		console.log("src/nx3/render/TargetSvgXml.hx:192:","Polyfill: " + x + " " + y);
 		var coord = coordinates.shift();
 		var path = "M " + Std.string(coord.x * this.scaling.unitX + x) + " " + Std.string(coord.y * this.scaling.unitY + y) + " ";
 		var _g = 0;
@@ -10125,7 +13842,7 @@ nx3_render_TargetSvgXml.prototype = {
 			++_g;
 			path += "L " + Std.string(coord1.x * this.scaling.unitX + x) + " " + Std.string(coord1.y * this.scaling.unitY + y) + " ";
 		}
-		haxe_Log.trace(path,{ fileName : "../cx/src/nx3/render/TargetSvgXml.hx", lineNumber : 203, className : "nx3.render.TargetSvgXml", methodName : "polyfill"});
+		console.log("src/nx3/render/TargetSvgXml.hx:203:",path);
 		var el = Xml.createElement("path");
 		el.set("d",path);
 		el.set("fill","#000");
@@ -10133,7 +13850,25 @@ nx3_render_TargetSvgXml.prototype = {
 		el.set("style","stroke-width:" + lineWidth * this.scaling.linesWidth);
 		this.svg.addChild(el);
 	}
+	,sline: function(x,y,start,end,lineWidth,lineColor) {
+	}
 	,interactiveEllipse: function(x,y,rect,lineWidth,lineColor,fillColor,cb) {
+	}
+	,scaleRect: function(rect,inflateX,inflateY) {
+		if(inflateY == null) {
+			inflateY = 0;
+		}
+		if(inflateX == null) {
+			inflateX = 0;
+		}
+		return null;
+	}
+	,tooltipShow: function(rect,text) {
+	}
+	,tooltipHide: function() {
+	}
+	,setFont: function(font) {
+		this.font = font;
 	}
 	,text: function(x,y,text) {
 		x += 4 * this.scaling.fontScaling;
@@ -10146,58 +13881,492 @@ nx3_render_TargetSvgXml.prototype = {
 		txt.addChild(Xml.createPCData(text));
 		this.svg.addChild(txt);
 	}
+	,textwidth: function(text) {
+		if(this.context == null) {
+			var canvas = window.document.getElementById("CanvasTextMeasurement");
+			if(canvas == null) {
+				console.log("src/nx3/render/TargetSvgXml.hx:300:","creating a canvas for text measurement");
+				canvas = window.document.createElement("canvas");
+				canvas.id = "CanvasTextMeasurement";
+			}
+			this.context = canvas.getContext("2d",null);
+		}
+		this.context.font = "" + this.font.size * this.scaling.fontScaling + "px " + this.font.name;
+		return this.context.measureText(text).width / this.scaling.unitX;
+	}
+	,textheight: function(text) {
+		return this.font.size / 3.8;
+	}
+	,addToDomElement: function(elementId) {
+		var tmp = haxe_xml_Printer.print(this.getXml());
+		window.document.getElementById(elementId).innerHTML = tmp;
+	}
 	,__class__: nx3_render_TargetSvgXml
 };
 var nx3_render_scaling_Scaling = function() { };
 $hxClasses["nx3.render.scaling.Scaling"] = nx3_render_scaling_Scaling;
 nx3_render_scaling_Scaling.__name__ = ["nx3","render","scaling","Scaling"];
+nx3_render_scaling_Scaling.scaleRect = function(scaling,rect) {
+	return new nx3_geom_Rectangle(rect.x * scaling.unitX,rect.y * scaling.unitY,rect.width * scaling.unitX,rect.height * scaling.unitY);
+};
 var nx3_render_svg_SvgElements = function() { };
 $hxClasses["nx3.render.svg.SvgElements"] = nx3_render_svg_SvgElements;
 nx3_render_svg_SvgElements.__name__ = ["nx3","render","svg","SvgElements"];
-var pdfjs_PDF = function() {
-	this.pdflib = window["pdfjs-dist/build/pdf"];
+var nx3_xml_BarXML = function() { };
+$hxClasses["nx3.xml.BarXML"] = nx3_xml_BarXML;
+nx3_xml_BarXML.__name__ = ["nx3","xml","BarXML"];
+nx3_xml_BarXML.copy = function(bar) {
+	return nx3_xml_BarXML.fromXmlStr(haxe_xml_Printer.print(nx3_xml_BarXML.toXml(bar)));
 };
-$hxClasses["pdfjs.PDF"] = pdfjs_PDF;
-pdfjs_PDF.__name__ = ["pdfjs","PDF"];
-pdfjs_PDF.prototype = {
-	getDocument: function(url) {
-		return this.pdflib.getDocument(url);
+nx3_xml_BarXML.toXml = function(bar) {
+	var xml = Xml.createElement("bar");
+	var _g = 0;
+	var _g1 = bar.nparts;
+	while(_g < _g1.length) xml.addChild(nx3_xml_PartXML.toXml(_g1[_g++]));
+	if(bar.type._hx_index != 0) {
+		xml.set("type",Std.string(bar.type));
 	}
-	,__class__: pdfjs_PDF
-};
-var pdfjs_PDFDoc = function(url) {
-	this.url = url;
-	this.pdf = new pdfjs_PDF();
-};
-$hxClasses["pdfjs.PDFDoc"] = pdfjs_PDFDoc;
-pdfjs_PDFDoc.__name__ = ["pdfjs","PDFDoc"];
-pdfjs_PDFDoc.prototype = {
-	getDocument: function() {
-		if(this.document != null) {
-			return Promise.resolve(this.document);
+	if(bar.time != null) {
+		if(bar.time._hx_index != 5) {
+			xml.set("time",Std.string(nx3_ETimeUtils.toString(bar.time)));
 		}
-		return this.pdf.getDocument(this.url);
 	}
-	,renderPage: function(pageNr,scale) {
-		if(scale == null) {
-			scale = 1.8;
+	if(bar.timeDisplay._hx_index != 1) {
+		xml.set("timedisplay",Std.string(bar.timeDisplay));
+	}
+	return xml;
+};
+nx3_xml_BarXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	var parts = [];
+	var p = xml.elements();
+	while(p.hasNext()) parts.push(nx3_xml_PartXML.fromXmlStr(haxe_xml_Printer.print(p.next())));
+	var typeStr = xml.get("type");
+	var type = typeStr == null ? nx3_EBarType.Normal : cx_EnumTools.createFromString(nx3_EBarType,typeStr);
+	var time = null;
+	var timeStr = xml.get("time");
+	if(timeStr != null) {
+		time = nx3_ETimeUtils.fromString(timeStr);
+	}
+	var timeDisplayStr = xml.get("timedisplay");
+	return new nx3_NBar(parts,type,time,timeDisplayStr == null ? nx3_EDisplayALN.Layout : cx_EnumTools.createFromString(nx3_EDisplayALN,timeDisplayStr));
+};
+nx3_xml_BarXML.test = function(item) {
+	var str = haxe_xml_Printer.print(nx3_xml_BarXML.toXml(item));
+	var str2 = haxe_xml_Printer.print(nx3_xml_BarXML.toXml(nx3_xml_BarXML.fromXmlStr(str)));
+	console.log("src/nx3/xml/BarXML.hx:102:",str);
+	console.log("src/nx3/xml/BarXML.hx:103:",str2);
+	return str == str2;
+};
+var nx3_xml_HeadXML = function() { };
+$hxClasses["nx3.xml.HeadXML"] = nx3_xml_HeadXML;
+nx3_xml_HeadXML.__name__ = ["nx3","xml","HeadXML"];
+nx3_xml_HeadXML.toXml = function(head) {
+	var xml = Xml.createElement(nx3_xml_HeadXML.XHEAD);
+	switch(head.type._hx_index) {
+	case 1:case 2:
+		xml.set(nx3_xml_HeadXML.XHEAD_TYPE,Std.string(head.type));
+		break;
+	default:
+	}
+	xml.set(nx3_xml_HeadXML.XHEAD_LEVEL,head.level == null ? "null" : "" + head.level);
+	if(head.sign != nx3_ESign.None) {
+		xml.set(nx3_xml_HeadXML.XHEAD_SIGN,Std.string(head.sign));
+	}
+	if(head.tie != null) {
+		var _g1 = head.tie;
+		switch(_g1._hx_index) {
+		case 0:
+			var level = _g1.level;
+			var direction = _g1.direction;
+			xml.set(nx3_xml_HeadXML.XHEAD_TIE,"true");
+			if(level != 0) {
+				xml.set(nx3_xml_HeadXML.XHEAD_TIE_LEVEL,level == null ? "null" : "" + level);
+			}
+			if(direction != nx3_EDirectionUAD.Auto) {
+				xml.set(nx3_xml_HeadXML.XHEAD_TIE_DIRECTION,Std.string($hxEnums[direction.__enum__].__constructs__[direction._hx_index]));
+			}
+			break;
+		case 1:
+			var levelLeft = _g1.levelLeft;
+			xml.set(nx3_xml_HeadXML.XHEAD_TIE,levelLeft == null ? "null" : "" + levelLeft);
+			break;
 		}
-		return this.getDocument().then(function(doc) {
-			return doc.getPage(pageNr);
-		}).then(function(p) {
-			var page = p;
-			var viewport = page.getViewport(scale);
-			var canvas = window.document.createElement("canvas");
-			canvas.height = viewport.height;
-			canvas.width = viewport.width;
-			return page.render({ canvasContext : canvas.getContext("2d",null), viewport : viewport}).then(function(x) {
-				haxe_Log.trace("renderd page " + pageNr,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 76, className : "pdfjs.PDFDoc", methodName : "renderPage"});
-				haxe_Log.trace(canvas.width + " " + canvas.height,{ fileName : "src/pdfjs/PDF.hx", lineNumber : 77, className : "pdfjs.PDFDoc", methodName : "renderPage"});
-				return canvas;
-			});
-		});
 	}
-	,__class__: pdfjs_PDFDoc
+	if(head.tieTo != null) {
+		switch(head.tieTo._hx_index) {
+		case 0:
+			xml.set(nx3_xml_HeadXML.XHEAD_TIETO,Std.string(head.tieTo));
+			break;
+		case 1:
+			xml.set(nx3_xml_HeadXML.XHEAD_TIETO,Std.string(head.tieTo));
+			break;
+		}
+	}
+	return xml;
+};
+nx3_xml_HeadXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	var type = cx_EnumTools.createFromString(nx3_EHeadType,xml.get(nx3_xml_HeadXML.XHEAD_TYPE));
+	var level = Std.parseInt(xml.get(nx3_xml_HeadXML.XHEAD_LEVEL));
+	var sign = cx_EnumTools.createFromString(nx3_ESign,xml.get(nx3_xml_HeadXML.XHEAD_SIGN));
+	var tie = null;
+	if(xml.get(nx3_xml_HeadXML.XHEAD_TIE) != null) {
+		tie = nx3_ETie.Tie(xml.get(nx3_xml_HeadXML.XHEAD_TIE_DIRECTION) == null ? nx3_EDirectionUAD.Auto : nx3_EDirectionUAD.Up,xml.get(nx3_xml_HeadXML.XHEAD_TIE_LEVEL) == null ? 0 : Std.parseInt(xml.get(nx3_xml_HeadXML.XHEAD_TIE_LEVEL)));
+	}
+	return new nx3_NHead(type,level,sign,tie,cx_EnumTools.createFromString(nx3_ETie,xml.get(nx3_xml_HeadXML.XHEAD_TIETO)));
+};
+nx3_xml_HeadXML.test = function(item) {
+	var str = haxe_xml_Printer.print(nx3_xml_HeadXML.toXml(item));
+	var str2 = haxe_xml_Printer.print(nx3_xml_HeadXML.toXml(nx3_xml_HeadXML.fromXmlStr(str)));
+	console.log("src/nx3/xml/HeadXML.hx:152:",str);
+	console.log("src/nx3/xml/HeadXML.hx:153:",str2);
+	return str == str2;
+};
+var nx3_xml_NoteXML = function() { };
+$hxClasses["nx3.xml.NoteXML"] = nx3_xml_NoteXML;
+nx3_xml_NoteXML.__name__ = ["nx3","xml","NoteXML"];
+nx3_xml_NoteXML.toXml = function(note) {
+	var xml = null;
+	var _g = note.type;
+	switch(_g._hx_index) {
+	case 0:
+		var attributes = _g.attributes;
+		var articulations = _g.articulations;
+		var variant = _g.variant;
+		var heads = _g.heads;
+		xml = Xml.createElement("note");
+		var _g1 = 0;
+		while(_g1 < heads.length) xml.addChild(nx3_xml_HeadXML.toXml(heads[_g1++]));
+		if(variant != null) {
+			xml.set("variant",Std.string(variant));
+		}
+		if(articulations != null) {
+			var articulationStrings = [];
+			var _g2 = 0;
+			while(_g2 < articulations.length) articulationStrings.push(Std.string(articulations[_g2++]));
+			xml.set("articulations",articulationStrings.join(";"));
+		}
+		if(attributes != null) {
+			var attributesStrings = [];
+			var _g3 = 0;
+			while(_g3 < attributes.length) attributesStrings.push(Std.string(attributes[_g3++]));
+			xml.set("attributes",attributesStrings.join(";"));
+		}
+		break;
+	case 1:
+		var level = _g.level;
+		xml = Xml.createElement("pause");
+		if(level != 0) {
+			xml.set("level",level == null ? "null" : "" + level);
+		}
+		break;
+	case 3:
+		var sign = _g.sign;
+		var level1 = _g.level;
+		xml = Xml.createElement("tpl");
+		xml.set("level",level1 == null ? "null" : "" + level1);
+		if(sign != nx3_ESign.None) {
+			xml.set("sign",Std.string(sign));
+		}
+		if(_g.pause == true) {
+			xml.set("pause","true");
+		}
+		break;
+	case 4:
+		var format = _g.font;
+		var continuation = _g.continuation;
+		var offset = _g.offset;
+		xml = Xml.createElement("lyric");
+		xml.set("text",_g.text);
+		if(continuation != null) {
+			xml.set("continuation",Std.string(continuation));
+		}
+		if(offset != null) {
+			xml.set("offset",Std.string(offset));
+		}
+		if(format != null) {
+			xml.set("format",Std.string(format));
+		}
+		break;
+	case 7:
+		var midinote = _g.midinote;
+		var level2 = _g.level;
+		xml = Xml.createElement("pitch");
+		if(level2 != 0) {
+			xml.set("level",level2 == null ? "null" : "" + level2);
+		}
+		if(midinote != 0) {
+			xml.set("midinote",midinote == null ? "null" : "" + midinote);
+		}
+		break;
+	default:
+		xml = Xml.createElement("undefined");
+	}
+	if(nx3_ENoteValTools.value(note.value) != nx3_ENoteValTools.value(nx3_ENoteVal.Nv4)) {
+		xml.set("val",Std.string(nx3_ENoteValTools.toValString(note.value)));
+	}
+	if(note.direction != nx3_EDirectionUAD.Auto) {
+		xml.set("direction",Std.string(note.direction));
+	}
+	return xml;
+};
+nx3_xml_NoteXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	if(xml.nodeType != Xml.Element) {
+		throw new js__$Boot_HaxeError("Bad node type, expected Element but found " + xml.nodeType);
+	}
+	var type = null;
+	switch(xml.nodeName) {
+	case "lyric":
+		type = nx3_ENoteType.Lyric(xml.get("text"),cx_EnumTools.createFromString(nx3_EPosition,xml.get("offset")),cx_EnumTools.createFromString(nx3_ELyricContinuation,xml.get("continuation")));
+		break;
+	case "note":
+		var heads = [];
+		var h = xml.elementsNamed(nx3_xml_HeadXML.XHEAD);
+		while(h.hasNext()) heads.push(nx3_xml_HeadXML.fromXmlStr(haxe_xml_Printer.print(h.next())));
+		var variant = cx_EnumTools.createFromString(nx3_ENotationVariant,xml.get("variant"));
+		var articulations = [];
+		var articulationsStr = xml.get("articulations");
+		if(articulationsStr != null) {
+			var articulationStrings = articulationsStr.split(";");
+			var _g = 0;
+			while(_g < articulationStrings.length) articulations.push(cx_EnumTools.createFromString(nx3_ENoteArticulation,articulationStrings[_g++]));
+		}
+		if(articulations.length == 0) {
+			articulations = null;
+		}
+		var attributes = [];
+		var attributesStr = xml.get("attributes");
+		if(attributesStr != null) {
+			var attributesStrings = attributesStr.split(";");
+			var _g1 = 0;
+			while(_g1 < attributesStrings.length) attributes.push(cx_EnumTools.createFromString(nx3_ENoteAttributes,attributesStrings[_g1++]));
+		}
+		if(attributes.length == 0) {
+			attributes = null;
+		}
+		type = nx3_ENoteType.Note(heads,variant,articulations,attributes);
+		break;
+	case "pause":
+		var pauseLevelStr = xml.get("level");
+		type = nx3_ENoteType.Pause(pauseLevelStr == null ? 0 : Std.parseInt(pauseLevelStr));
+		break;
+	case "pitch":
+		var levelstr = xml.get("level");
+		var level = levelstr != null ? Std.parseInt(levelstr) : 0;
+		var midinotestr = xml.get("midinote");
+		type = nx3_ENoteType.Pitch(level,midinotestr != null ? Std.parseInt(midinotestr) : 0);
+		break;
+	case "tpl":
+		var levelstr1 = xml.get("level");
+		var level1 = levelstr1 != null ? Std.parseInt(levelstr1) : 0;
+		var sign = cx_EnumTools.createFromString(nx3_ESign,xml.get("sign"));
+		var pausestr = xml.get("pause");
+		type = nx3_ENoteType.Tpl(level1,sign,pausestr != null && pausestr.toLowerCase() == "true");
+		break;
+	}
+	return new nx3_NNote(type,null,nx3_ENoteValTools.fromValString(xml.get("val")),cx_EnumTools.createFromString(nx3_EDirectionUAD,xml.get("direction")));
+};
+nx3_xml_NoteXML.test = function(item) {
+	var str = haxe_xml_Printer.print(nx3_xml_NoteXML.toXml(item));
+	var str2 = haxe_xml_Printer.print(nx3_xml_NoteXML.toXml(nx3_xml_NoteXML.fromXmlStr(str)));
+	console.log("src/nx3/xml/NoteXML.hx:245:",str);
+	console.log("src/nx3/xml/NoteXML.hx:246:",str2);
+	return str == str2;
+};
+nx3_xml_NoteXML.clone = function(nnote) {
+	return nx3_xml_NoteXML.fromXmlStr(haxe_xml_Printer.print(nx3_xml_NoteXML.toXml(nnote)));
+};
+var nx3_xml_PartXML = function() { };
+$hxClasses["nx3.xml.PartXML"] = nx3_xml_PartXML;
+nx3_xml_PartXML.__name__ = ["nx3","xml","PartXML"];
+nx3_xml_PartXML.toXml = function(part) {
+	var xml = Xml.createElement("part");
+	var _g = 0;
+	var _g1 = part.nvoices;
+	while(_g < _g1.length) xml.addChild(nx3_xml_VoiceXML.toXml(_g1[_g++]));
+	var _g2 = part.type;
+	switch(_g2._hx_index) {
+	case 0:
+		break;
+	case 2:
+		var octave = _g2.octave;
+		var modus = _g2.modus;
+		xml.set("type","tplchain");
+		if(modus != null) {
+			if(modus != nx3_EModus.Major) {
+				xml.set("modus",Std.string(modus));
+			}
+		}
+		if(octave != null) {
+			if(octave != nx3_EOctave.Normal || octave != null) {
+				xml.set("octave",Std.string(octave));
+			}
+		}
+		break;
+	case 3:
+		var octave1 = _g2.octave;
+		var modus1 = _g2.modus;
+		xml.set("type","tplchain");
+		if(modus1 != null) {
+			if(modus1 != nx3_EModus.Major) {
+				xml.set("modus",Std.string(modus1));
+			}
+		}
+		if(octave1 != null) {
+			if(octave1 != nx3_EOctave.Normal || octave1 != null) {
+				xml.set("octave",Std.string(octave1));
+			}
+		}
+		break;
+	case 9:
+		var leveloffset = _g2.leveloffset;
+		xml.set("type","pitchchain");
+		xml.set("leveloffset",leveloffset == null ? "null" : "" + leveloffset);
+		break;
+	default:
+		xml.set("type",Std.string(part.type));
+	}
+	if(part.clef != null) {
+		if(part.clef._hx_index != 0) {
+			xml.set("clef",Std.string(part.clef));
+		}
+	}
+	if(part.key != null) {
+		if(part.key._hx_index != 6) {
+			xml.set("key",Std.string(part.key));
+		}
+	}
+	if(part.clefDisplay._hx_index != 1) {
+		xml.set("clefdisplay",Std.string(part.clefDisplay));
+	}
+	if(part.keyDisplay._hx_index != 1) {
+		xml.set("keydisplay",Std.string(part.keyDisplay));
+	}
+	return xml;
+};
+nx3_xml_PartXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	var voices = [];
+	var v = xml.elements();
+	while(v.hasNext()) voices.push(nx3_xml_VoiceXML.fromXmlStr(haxe_xml_Printer.print(v.next())));
+	var type = null;
+	var typeStr = xml.get("type");
+	if(typeStr == "pitchchain") {
+		type = nx3_EPartType.PitchChain(Std.parseInt(xml.get("leveloffset")));
+	} else if(typeStr == "tplchain" || typeStr == "tplrow") {
+		var oct = xml.get("octave");
+		var octave = null;
+		if(oct != null) {
+			octave = cx_EnumTools.createFromString(nx3_EOctave,oct);
+		}
+		var mod = xml.get("modus");
+		var modus = null;
+		if(mod != null) {
+			modus = cx_EnumTools.createFromString(nx3_EModus,mod);
+		}
+		type = nx3_EPartType.Tplchain(modus,octave);
+	} else {
+		type = cx_EnumTools.createFromString(nx3_EPartType,typeStr);
+	}
+	var str = xml.get("clef");
+	var clef = null;
+	if(str != null) {
+		clef = cx_EnumTools.createFromString(nx3_EClef,str);
+	}
+	var clefDisplayStr = xml.get("clefdisplay");
+	var clefDisplay = clefDisplayStr == null ? nx3_EDisplayALN.Layout : cx_EnumTools.createFromString(nx3_EDisplayALN,clefDisplayStr);
+	var str1 = xml.get("key");
+	var key = null;
+	if(str1 != null) {
+		key = cx_EnumTools.createFromString(nx3_EKey,str1);
+	}
+	var keyDisplayStr = xml.get("keydisplay");
+	return new nx3_NPart(voices,type,clef,clefDisplay,key,keyDisplayStr == null ? nx3_EDisplayALN.Layout : cx_EnumTools.createFromString(nx3_EDisplayALN,keyDisplayStr));
+};
+var nx3_xml_ScoreXML = function() { };
+$hxClasses["nx3.xml.ScoreXML"] = nx3_xml_ScoreXML;
+nx3_xml_ScoreXML.__name__ = ["nx3","xml","ScoreXML"];
+nx3_xml_ScoreXML.toXml = function(score) {
+	var xml = Xml.createElement("score");
+	var config = Xml.createElement("config");
+	config.set("test","12345");
+	xml.addChild(config);
+	var bar = score.iterator();
+	while(bar.hasNext()) xml.addChild(nx3_xml_BarXML.toXml(bar.next()));
+	return xml;
+};
+nx3_xml_ScoreXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	var bars = [];
+	var config = xml.elementsNamed("config").next();
+	var configObject = { };
+	if(config != null) {
+		var attr = config.attributes();
+		while(attr.hasNext()) {
+			var attr1 = attr.next();
+			configObject[attr1] = config.get(attr1);
+		}
+	}
+	var b = xml.elementsNamed("bar");
+	while(b.hasNext()) bars.push(nx3_xml_BarXML.fromXmlStr(haxe_xml_Printer.print(b.next())));
+	var score = new nx3_NScore(bars);
+	score.configuration = configObject;
+	return score;
+};
+var nx3_xml_VoiceXML = function() { };
+$hxClasses["nx3.xml.VoiceXML"] = nx3_xml_VoiceXML;
+nx3_xml_VoiceXML.__name__ = ["nx3","xml","VoiceXML"];
+nx3_xml_VoiceXML.toXml = function(voice) {
+	var xml = Xml.createElement("voice");
+	if(voice.type._hx_index == 1) {
+		xml.set("type",Std.string(voice.type));
+	}
+	if(voice.direction != nx3_EDirectionUAD.Auto) {
+		xml.set("direction",Std.string(voice.direction));
+	}
+	if(voice.nnotes != null) {
+		var _g1 = 0;
+		var _g2 = voice.nnotes;
+		while(_g1 < _g2.length) xml.addChild(nx3_xml_NoteXML.toXml(_g2[_g1++]));
+	}
+	return xml;
+};
+nx3_xml_VoiceXML.fromXmlStr = function(xmlStr) {
+	var xml = Xml.parse(xmlStr).firstElement();
+	var type = cx_EnumTools.createFromString(nx3_EVoiceType,xml.get("type"));
+	var directionStr = xml.get("direction");
+	var direction = null;
+	direction = directionStr == null ? nx3_EDirectionUAD.Auto : cx_EnumTools.createFromString(nx3_EDirectionUAD,directionStr);
+	var notes = [];
+	var n = xml.elements();
+	while(n.hasNext()) notes.push(nx3_xml_NoteXML.fromXmlStr(haxe_xml_Printer.print(n.next())));
+	return new nx3_NVoice(notes,type,direction);
+};
+nx3_xml_VoiceXML.test = function(item) {
+	var str = haxe_xml_Printer.print(nx3_xml_VoiceXML.toXml(item));
+	var str2 = haxe_xml_Printer.print(nx3_xml_VoiceXML.toXml(nx3_xml_VoiceXML.fromXmlStr(str)));
+	console.log("src/nx3/xml/VoiceXML.hx:76:",str);
+	console.log("src/nx3/xml/VoiceXML.hx:77:",str2);
+	return str == str2;
+};
+var storage_StorageSource = function() {
+};
+$hxClasses["storage.StorageSource"] = storage_StorageSource;
+storage_StorageSource.__name__ = ["storage","StorageSource"];
+storage_StorageSource.prototype = {
+	getUrl: function(storagePath) {
+		console.log("src/storage/StorageSource.hx:9:","download " + storagePath);
+		return firebase.storage().ref(storagePath).getDownloadURL();
+	}
+	,getUrls: function(storagePaths) {
+		var _gthis = this;
+		return Promise.all(storagePaths.map(function(sp) {
+			return _gthis.getUrl(sp);
+		}));
+	}
+	,__class__: storage_StorageSource
 };
 var ui_QSyntax = function() {
 	markdown_InlineSyntax.call(this,ui_QSyntax.REGEX);
@@ -10208,11 +14377,42 @@ ui_QSyntax.__super__ = markdown_InlineSyntax;
 ui_QSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
 	onMatch: function(parser) {
 		var code = this.pattern.matched(1);
-		haxe_Log.trace("found QSyntax: " + code,{ fileName : "src/ui/Bookpage.hx", lineNumber : 27, className : "ui.QSyntax", methodName : "onMatch"});
+		console.log("src/ui/Bookpage.hx:30:","found QSyntax: " + code);
 		parser.addNode(new ui_StringRenderNode("score",code));
 		return true;
 	}
+	,getRenderer: function(code) {
+		return ui_StringRendererMapper.instance.get("score");
+	}
 	,__class__: ui_QSyntax
+});
+var ui_MediaSyntax = function() {
+	markdown_InlineSyntax.call(this,ui_MediaSyntax.REGEX);
+};
+$hxClasses["ui.MediaSyntax"] = ui_MediaSyntax;
+ui_MediaSyntax.__name__ = ["ui","MediaSyntax"];
+ui_MediaSyntax.__super__ = markdown_InlineSyntax;
+ui_MediaSyntax.prototype = $extend(markdown_InlineSyntax.prototype,{
+	onMatch: function(parser) {
+		var url = this.pattern.matched(1);
+		console.log("src/ui/Bookpage.hx:51:","found MediaSyntax: " + url);
+		parser.addNode(new ui_MediaNode("media",url));
+		return true;
+	}
+	,getRenderer: function(code) {
+		return ui_StringRendererMapper.instance.get("score");
+	}
+	,__class__: ui_MediaSyntax
+});
+var ui_MediaNode = function(tag,data) {
+	markdown_ElementNode.call(this,tag,[]);
+	this.data = data;
+};
+$hxClasses["ui.MediaNode"] = ui_MediaNode;
+ui_MediaNode.__name__ = ["ui","MediaNode"];
+ui_MediaNode.__super__ = markdown_ElementNode;
+ui_MediaNode.prototype = $extend(markdown_ElementNode.prototype,{
+	__class__: ui_MediaNode
 });
 var ui_StringRenderNode = function(tag,code) {
 	markdown_ElementNode.call(this,tag,[]);
@@ -10225,8 +14425,7 @@ ui_StringRenderNode.prototype = $extend(markdown_ElementNode.prototype,{
 	__class__: ui_StringRenderNode
 });
 var ui_Bookpage = function() {
-	ui_Bookpage.bpcount++;
-	haxe_Log.trace("bookpage new: " + ui_Bookpage.bpcount + " " + data_FilterModel.instance.getBook().path,{ fileName : "src/ui/Bookpage.hx", lineNumber : 51, className : "ui.Bookpage", methodName : "new"});
+	ui_Bookpage.BP_RENDER_COUNT++;
 };
 $hxClasses["ui.Bookpage"] = ui_Bookpage;
 ui_Bookpage.__name__ = ["ui","Bookpage"];
@@ -10238,7 +14437,7 @@ ui_Bookpage.prototype = {
 				return null;
 			}
 			if(chapter.type == null || (chapter.type instanceof data_StandardChaptertype)) {
-				return m.m("section",[m.m("h1","" + chapter.title),markdown_MithrilTools.markdownToView(chapter.text,[new ui_QSyntax()])]);
+				return m.m("section",[m.m("h1","" + chapter.title),markdown_MithrilRendererCache.instance.markdownToView(chapter.path,chapter.text,[new markdown_inlineRenderer_QInlineSyntaxRenderer()])]);
 			} else {
 				return null;
 			}
@@ -10273,11 +14472,12 @@ ui_Bookpage.prototype = {
 		}
 		try {
 			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
+				markdown_MithrilRendererCache.instance.clearCacheKey(chapter.path);
 				return chapter.set_text(e.target.value);
 			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
-				haxe_Log.trace(chapter.dbpath,{ fileName : "src/ui/Bookpage.hx", lineNumber : 118, className : "ui.Bookpage", methodName : "editChapterView"});
+				console.log("src/ui/Bookpage.hx:155:",chapter.dbpath);
 				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
-					haxe_Log.trace("after update " + Std.string(e2),{ fileName : "src/ui/Bookpage.hx", lineNumber : 120, className : "ui.Bookpage", methodName : "editChapterView"});
+					console.log("src/ui/Bookpage.hx:157:","after update " + Std.string(e2));
 					return;
 				});
 			}},"Save")]);
@@ -10285,10 +14485,28 @@ ui_Bookpage.prototype = {
 			return m.m("div.error","editChapterView: " + Std.string((e3 instanceof js__$Boot_HaxeError) ? e3.val : e3));
 		}
 	}
+	,editSubchapterView: function(chapter) {
+		try {
+			if(chapter.subchapters == null || chapter.subchapters == []) {
+				return null;
+			}
+			return m.m("details",[m.m("textarea",{ style : { width : "100%", height : "300px"}, oninput : function(e) {
+				return chapter.set_text(e.target.value);
+			}, value : chapter.text}),m.m("button",{ onclick : function(e1) {
+				console.log("src/ui/Bookpage.hx:179:",chapter.dbpath);
+				return firebase.database().ref(chapter.dbpath).update({ text : chapter.text},function(e2) {
+					console.log("src/ui/Bookpage.hx:181:","after update " + Std.string(e2));
+					return;
+				});
+			}},"Save")]);
+		} catch( e3 ) {
+			return m.m("div.error","editSubchapterView: " + Std.string((e3 instanceof js__$Boot_HaxeError) ? e3.val : e3));
+		}
+	}
 	,headerView: function(book) {
 		try {
 			if(book != null) {
-				return m.m("header",[m.m("div",book.title)]);
+				return m.m("header",[m.m("div",book.title + " " + ui_Bookpage.BP_RENDER_COUNT)]);
 			} else {
 				return "No book selected";
 			}
@@ -10298,24 +14516,7 @@ ui_Bookpage.prototype = {
 	}
 	,specialChapterView: function(chapter) {
 		try {
-			if(chapter == null || chapter.type == null) {
-				return null;
-			}
-			var o = chapter.type;
-			switch(o == null ? null : js_Boot.getClass(o)) {
-			case data_PdfChaptertype:
-				return ui_ViewMapper.instance.getNew("ui.PdfChapter",[chapter.type]).view();
-			case data_PitchChaptertype:
-				return ui_ViewMapper.instance.getNew("ui.PitchChapter",[chapter.type]).view();
-			case data_RosettaChaptertype:
-				return ui_ViewMapper.instance.getNew("ui.RosettaChapter",[chapter.type]).view();
-			case data_ScorxmixerChaptertype:
-				return ui_ViewMapper.instance.getNew("ui.ScorxmixerChapter",[chapter.type]).view();
-			case data_VideoChaptertype:
-				return ui_ViewMapper.instance.getNew("ui.VideoChapter",[chapter.type]).view();
-			default:
-				return m.m("div","Undefined special chapter: " + Std.string(chapter.type));
-			}
+			return ui_ChapterTypeViewCache.instance.getTypeView(chapter);
 		} catch( e ) {
 			return m.m("div.error","specialChapterView: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
 		}
@@ -10331,398 +14532,72 @@ ui_Bookpage.prototype = {
 	}
 	,__class__: ui_Bookpage
 };
-var ui_BookpageCache = function() {
-	this.currentBookpage = null;
-	this.currentPath = null;
+var ui_ChapterTypeViewCache = function() {
+	this.cache = new haxe_ds_StringMap();
 };
-$hxClasses["ui.BookpageCache"] = ui_BookpageCache;
-ui_BookpageCache.__name__ = ["ui","BookpageCache"];
-ui_BookpageCache.prototype = {
-	getBookpageView: function() {
-		var book = data_FilterModel.instance.getBook();
-		if(book == null) {
-			return null;
+$hxClasses["ui.ChapterTypeViewCache"] = ui_ChapterTypeViewCache;
+ui_ChapterTypeViewCache.__name__ = ["ui","ChapterTypeViewCache"];
+ui_ChapterTypeViewCache.prototype = {
+	clearCache: function() {
+		var key = this.cache.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			this.cache.remove(key1);
 		}
-		if(this.currentPath == book.path && this.currentBookpage != null) {
-			haxe_Log.trace("get bookpage from cache",{ fileName : "src/ui/BookpageCache.hx", lineNumber : 18, className : "ui.BookpageCache", methodName : "getBookpageView"});
-			return this.currentBookpage.view();
+	}
+	,clearCacheKey: function(key) {
+		var _this = this.cache;
+		if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+			this.cache.remove(key);
 		}
-		haxe_Log.trace("create new bookpage ",{ fileName : "src/ui/BookpageCache.hx", lineNumber : 21, className : "ui.BookpageCache", methodName : "getBookpageView"});
-		this.currentBookpage = new ui_Bookpage();
-		this.currentPath = book.path;
-		return this.currentBookpage.view();
 	}
-	,__class__: ui_BookpageCache
-};
-var ui_ClientUI = function() {
-};
-$hxClasses["ui.ClientUI"] = ui_ClientUI;
-ui_ClientUI.__name__ = ["ui","ClientUI"];
-ui_ClientUI.__interfaces__ = [mithril_Mithril];
-ui_ClientUI.prototype = {
-	init: function() {
-		var element = ($_=window.document,$bind($_,$_.querySelector));
-		m.mount(element("header"),new ui_UIHeader());
-		m.mount(element("main"),new ui_UIContent());
-		m.mount(element("footer"),new ui_UIFooter());
-	}
-	,__class__: ui_ClientUI
-};
-var ui_UIFooter = function() {
-};
-$hxClasses["ui.UIFooter"] = ui_UIFooter;
-ui_UIFooter.__name__ = ["ui","UIFooter"];
-ui_UIFooter.__interfaces__ = [mithril_Mithril];
-ui_UIFooter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var values_0_0 = "aaa";
-		var values_0_1 = "Alt A";
-		var values_1_0 = "ccc";
-		var values_1_1 = "Alt B";
-		var tmp = m.m("button",{ onclick : function(e) {
-			return data_PagesModel.instance.set_pageIdx(0);
-		}},"Page 0");
-		var tmp1 = m.m("button",{ onclick : function(e1) {
-			return data_PagesModel.instance.set_pageIdx(1);
-		}},"Page 1");
-		var tmp2 = m.m("button",{ onclick : function(e2) {
-			return data_PagesModel.instance.set_pageIdx(2);
-		}},"Page 2");
-		var tmp3 = m.m("button",{ onclick : function(e3) {
-			return data_PagesModel.instance.set_pageIdx(3);
-		}},"Page 3");
-		var tmp4 = m.m("button",{ onclick : function(e4) {
-			return data_PagesModel.instance.set_pageWidth("100%");
-		}},"Width 100%");
-		var tmp5 = m.m("button",{ onclick : function(e5) {
-			return data_PagesModel.instance.set_pageWidth("50%");
-		}},"Width 50%");
-		var tmp6 = m.m("button",{ onclick : function(e6) {
-			return data_PagesModel.instance.set_pageWidth("25%");
-		}},"Width 25%");
-		var tmp7 = m.m("button",{ onclick : function(e7) {
-			return data_ContentLoader.instance.loadContent();
-		}},"Content load");
-		var tmp8 = m.m("button",{ onclick : function(e8) {
-			haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 66, className : "ui.UIFooter", methodName : "view"});
-			return;
-		}},"Trace content");
-		var tmp9 = data_ContentModel.instance.content.rooms.map(function(room) {
-			return m.m("option",{ value : room.id, key : room.id},room.title);
-		});
-		return [tmp,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,m.m("select",{ onchange : function(e9) {
-			haxe_Log.trace(e9.target.selectedIndex,{ fileName : "src/ui/ClientUI.hx", lineNumber : 70, className : "ui.UIFooter", methodName : "view"});
-			var roomIdx = e9.target.selectedIndex;
-			var roomId = data_ContentModel.instance.content.rooms[roomIdx].id;
-			data_FilterModel.instance.setFilterContent({ roomId : roomId, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
-			return;
-		}},tmp9),m.m("button",{ onclick : function(e10) {
-			return data_ApiCalls.getRequest("/api/content-tree").then(function(result) {
-				var content = result.data;
-				haxe_Log.trace(content.rooms,{ fileName : "src/ui/ClientUI.hx", lineNumber : 83, className : "ui.UIFooter", methodName : "view"});
-				var c = dataclass_JsonConverter.fromJson(data_Content,content);
-				haxe_Log.trace("---------------------",{ fileName : "src/ui/ClientUI.hx", lineNumber : 114, className : "ui.UIFooter", methodName : "view"});
-				haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(c)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 116, className : "ui.UIFooter", methodName : "view"});
-				return;
-			})["catch"](function(e11) {
-				haxe_Log.trace(e11,{ fileName : "src/ui/ClientUI.hx", lineNumber : 119, className : "ui.UIFooter", methodName : "view"});
-				return;
-			});
-		}},"ClickMe"),m.m("button",{ onclick : function(e12) {
-			haxe_Log.trace(JSON.stringify(dataclass_TypedJsonConverter.toTypedJson(data_ContentModel.instance.content)),{ fileName : "src/ui/ClientUI.hx", lineNumber : 124, className : "ui.UIFooter", methodName : "view"});
-			return;
-		}},"Tree to json")];
-	}
-	,__class__: ui_UIFooter
-};
-var ui_UIContent = function() {
-};
-$hxClasses["ui.UIContent"] = ui_UIContent;
-ui_UIContent.__name__ = ["ui","UIContent"];
-ui_UIContent.__interfaces__ = [mithril_Mithril];
-ui_UIContent.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return new ui_Pages([new ui_Homepage().view(),new ui_Shelvespage().view(),ui_BookpageCache.instance.getBookpageView(),[new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_UIFilters().view()]],data_PagesModel.instance.pageIdx,null,null,data_PagesModel.instance.pageWidth).view();
-	}
-	,__class__: ui_UIContent
-};
-var ui_Shelvespage = function() {
-};
-$hxClasses["ui.Shelvespage"] = ui_Shelvespage;
-ui_Shelvespage.__name__ = ["ui","Shelvespage"];
-ui_Shelvespage.__interfaces__ = [mithril_Mithril];
-ui_Shelvespage.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var shelves = data_FilterModel.instance.getShelves().map(function(shelf) {
-			var books = shelf.books.map(function(book) {
-				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
-				return m.m("nav" + selected,m.m("a",{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/books/" + book.id + ".jpg"}),m.m("div",book.title)]));
-			});
-			return m.m("section",[m.m("header",m.m("h1",shelf.title)),books]);
-		});
-		var view;
-		try {
-			view = m.m("div.shelves",[m.m("section",m.m("header",[m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"<<"),m.m("a.btn",{ href : "/content" + data_FilterModel.instance.getRoom().path + "/shelves", oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")])),shelves]);
-		} catch( e ) {
-			view = m.m("div","error " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e));
+	,getTypeView: function(chapter) {
+		var path = chapter.path;
+		var _this = this.cache;
+		if(__map_reserved[path] != null ? _this.existsReserved(path) : _this.h.hasOwnProperty(path)) {
+			console.log("src/ui/ChapterTypeViewCache.hx:34:","get " + path + " from cache");
+			var _this1 = this.cache;
+			if(__map_reserved[path] != null) {
+				return _this1.getReserved(path);
+			} else {
+				return _this1.h[path];
+			}
+		}
+		var view = null;
+		if(chapter == null || chapter.type == null) {
+			view = null;
+		} else {
+			var o = chapter.type;
+			switch(o == null ? null : js_Boot.getClass(o)) {
+			case data_PdfChaptertype:
+				view = ui_ViewMapper.instance.getNew("ui.PdfChapter",[chapter.type]).view();
+				break;
+			case data_PitchChaptertype:
+				view = ui_ViewMapper.instance.getNew("ui.PitchChapter",[chapter.type]).view();
+				break;
+			case data_RosettaChaptertype:
+				view = ui_ViewMapper.instance.getNew("ui.RosettaChapter",[chapter.type]).view();
+				break;
+			case data_ScorxmixerChaptertype:
+				view = ui_ViewMapper.instance.getNew("ui.ScorxmixerChapter",[chapter.type]).view();
+				break;
+			case data_VideoChaptertype:
+				view = ui_ViewMapper.instance.getNew("ui.VideoChapter",[chapter.type]).view();
+				break;
+			default:
+				return m.m("div","Undefined special chapter: " + Std.string(chapter.type));
+			}
+			var _this2 = this.cache;
+			var value = view;
+			if(__map_reserved[path] != null) {
+				_this2.setReserved(path,value);
+			} else {
+				_this2.h[path] = value;
+			}
 		}
 		return view;
 	}
-	,__class__: ui_Shelvespage
-};
-var ui_Pages = function(views,shift,pageTop,pageBottom,pageWidth) {
-	if(pageWidth == null) {
-		pageWidth = "30%";
-	}
-	if(pageBottom == null) {
-		pageBottom = "100px";
-	}
-	if(pageTop == null) {
-		pageTop = "60px";
-	}
-	if(shift == null) {
-		shift = 0;
-	}
-	this.views = views;
-	this.shift = shift;
-	this.pageTop = pageTop;
-	this.pageBottom = pageBottom;
-	this.pageWidth = pageWidth;
-};
-$hxClasses["ui.Pages"] = ui_Pages;
-ui_Pages.__name__ = ["ui","Pages"];
-ui_Pages.__interfaces__ = [mithril_Mithril];
-ui_Pages.prototype = {
-	view: function() {
-		var _gthis = this;
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div",Lambda.array(Lambda.mapi(this.views,function(i,v) {
-			var pos = i + -_gthis.shift;
-			var style = "\r\n                    position:absolute; \r\n                    width: " + _gthis.pageWidth + ";\r\n                    top: " + _gthis.pageTop + ";\r\n                    bottom:  " + _gthis.pageBottom + ";\r\n                    border: 0px solid gray;\r\n                    transition-duration: 200ms;        \r\n                    transform: translate3d(" + pos * 100 + "%, 0, 1px);\r\n                    overflow-y:scroll;\r\n                    \r\n                ";
-			return m.m("div#page" + i,{ style : style},v);
-		})));
-	}
-	,__class__: ui_Pages
-};
-var ui_Testpage = function(msg) {
-	this.msg = msg;
-};
-$hxClasses["ui.Testpage"] = ui_Testpage;
-ui_Testpage.__name__ = ["ui","Testpage"];
-ui_Testpage.__interfaces__ = [mithril_Mithril];
-ui_Testpage.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("h1",this.msg)];
-	}
-	,__class__: ui_Testpage
-};
-var ui_UIContentSearch = function() {
-};
-$hxClasses["ui.UIContentSearch"] = ui_UIContentSearch;
-ui_UIContentSearch.__name__ = ["ui","UIContentSearch"];
-ui_UIContentSearch.__interfaces__ = [mithril_Mithril];
-ui_UIContentSearch.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return new ui_UIFilters().view();
-	}
-	,__class__: ui_UIContentSearch
-};
-var ui_UIFilters = function() {
-};
-$hxClasses["ui.UIFilters"] = ui_UIFilters;
-ui_UIFilters.__name__ = ["ui","UIFilters"];
-ui_UIFilters.__interfaces__ = [mithril_Mithril];
-ui_UIFilters.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var f = data_FilterModel.instance.filterContent;
-		var s = f != null ? "" + f.roomId + "/" + f.shelfId + "/" + f.bookId + "/" + f.chapterId + "/" + f.subchapterId : "null";
-		var filterContentView = m.m("div","filter2: " + s);
-		return m.m(".border",[m.m("h3","Filters:"),filterContentView]);
-	}
-	,__class__: ui_UIFilters
-};
-var ui_UIDevelop = function() {
-};
-$hxClasses["ui.UIDevelop"] = ui_UIDevelop;
-ui_UIDevelop.__name__ = ["ui","UIDevelop"];
-ui_UIDevelop.__interfaces__ = [mithril_Mithril];
-ui_UIDevelop.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [new ui_content_ContentTreeView(data_ContentModel.instance.content).view(),new ui_content_ContentTreeView(data_ContentFilters.sort(data_ContentModel.instance.content)).view(),new ui_UIFilters().view()];
-	}
-	,__class__: ui_UIDevelop
-};
-var ui_Homepage = function() {
-};
-$hxClasses["ui.Homepage"] = ui_Homepage;
-ui_Homepage.__name__ = ["ui","Homepage"];
-ui_Homepage.__interfaces__ = [mithril_Mithril];
-ui_Homepage.prototype = {
-	shelvesView: function() {
-		try {
-			return [m.m("div.home.shelves",m.m("section.shelves",[m.m("header",m.m("h1","Innehåll")),data_FilterModel.instance.getRoom().shelves.map(function(shelf) {
-				return m.m("nav" + (shelf == data_FilterModel.instance.getShelf() ? ".selected" : ""),m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},[m.m("img",{ src : "/assets/shelves/" + shelf.id + ".jpg"}),m.m("div",[m.m("h2",shelf.title),m.m("p",shelf.info)])]));
-			})]))];
-		} catch( e ) {
-			(e instanceof js__$Boot_HaxeError);
-			return m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
-		}
-	}
-	,cellsView: function(s) {
-		try {
-			var header = s.title > "" ? m.m("header",m.m("h1",s.title)) : null;
-			var copy = s.cells.slice();
-			copy.sort(function(a,b) {
-				return a.sort - b.sort;
-			});
-			return m.m("div.home.cells",m.m("section.cells",[header,copy.map(function(c) {
-				if((c == null ? null : js_Boot.getClass(c)) == data_VideoCell) {
-					var c1 = c;
-					var styles = { };
-					if(c1.gridColumn > "") {
-						styles["gridColumn"] = c1.gridColumn;
-					}
-					if(c1.gridRow > "") {
-						styles["gridRow"] = c1.gridRow;
-					}
-					var tmp = m.m("video",{ src : c1.video, controls : true, style : { width : "100%", height : "100%", backgroundColor : "black"}});
-					return m.m("article.cell",{ style : styles},tmp);
-				} else {
-					var c2 = c;
-					var styles1 = { };
-					var aTag = c2.url > "" ? "a" : "div";
-					var aHref = c2.url > "" ? { href : c2.url, oncreate : mithril__$M_M_$Impl_$.routeLink} : null;
-					var image = c2.image > "" ? m.m("img",{ src : c2.image}) : null;
-					if(c2.color > "") {
-						styles1["color"] = c2.color;
-					}
-					if(c2.bgcolor > "") {
-						styles1["backgroundColor"] = c2.bgcolor;
-					}
-					if(c2.bgimage > "") {
-						styles1["backgroundImage"] = "url(\"" + c2.bgimage + "\")";
-					}
-					if(c2.gridColumn > "") {
-						styles1["gridColumn"] = c2.gridColumn;
-					}
-					if(c2.gridRow > "") {
-						styles1["gridRow"] = c2.gridRow;
-					}
-					var tmp1 = m.m(aTag,aHref,[image,markdown_MithrilTools.markdownToView(c2.text)]);
-					return m.m("article.cell",{ style : styles1},tmp1);
-				}
-			})]));
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			haxe_Log.trace("error: " + Std.string(e1),{ fileName : "src/ui/Homepage.hx", lineNumber : 80, className : "ui.Homepage", methodName : "cellsView"});
-			return m.m("div.error","Error:" + Std.string(e1));
-		}
-	}
-	,homeView: function() {
-		var _gthis = this;
-		try {
-			var home = data_FilterModel.instance.getRoom().home;
-			if(home == null) {
-				return this.shelvesView();
-			}
-			var copy = home.sections.slice();
-			copy.sort(function(a,b) {
-				return a.sort - b.sort;
-			});
-			return [copy.map(function(s) {
-				switch(s == null ? null : js_Boot.getClass(s)) {
-				case data_SectionCells:
-					return _gthis.cellsView(s);
-				case data_SectionShelves:
-					return _gthis.shelvesView();
-				default:
-					return m.m("div","unknown shelf");
-				}
-			})];
-		} catch( e ) {
-			return m.m("section",m.m("div","Homeview error: " + Std.string((e instanceof js__$Boot_HaxeError) ? e.val : e)));
-		}
-	}
-	,view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [this.homeView()];
-	}
-	,__class__: ui_Homepage
-};
-var ui_LazyView = function() {
-};
-$hxClasses["ui.LazyView"] = ui_LazyView;
-ui_LazyView.__name__ = ["ui","LazyView"];
-ui_LazyView.__interfaces__ = [mithril_Mithril];
-ui_LazyView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("h1","Lazy View " + data_TestModel.instance.counter)];
-	}
-	,__class__: ui_LazyView
-};
-var ui_PdfChapter = function(t) {
-	this.cht = t;
-};
-$hxClasses["ui.PdfChapter"] = ui_PdfChapter;
-ui_PdfChapter.__name__ = ["ui","PdfChapter"];
-ui_PdfChapter.__interfaces__ = [mithril_Mithril];
-ui_PdfChapter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var canvases = data_PdfModel.instance.getPages("/assets/pdf/test.pdf");
-		return [m.m("div.specialchapter.pdf",m.m("h1","PdfChapter " + Std.string(this.cht))),m.m("div","canvases count " + canvases.length),m.m("div.pdfbackground",canvases.map(function(c) {
-			return m.m("img.pdfpage",{ src : c.toDataURL()});
-		}))];
-	}
-	,__class__: ui_PdfChapter
-};
-var ui_PitchChapter = function(c) {
-	this.c = c;
-};
-$hxClasses["ui.PitchChapter"] = ui_PitchChapter;
-ui_PitchChapter.__name__ = ["ui","PitchChapter"];
-ui_PitchChapter.__interfaces__ = [mithril_Mithril];
-ui_PitchChapter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.pitch",m.m("h1","Pitch"))];
-	}
-	,__class__: ui_PitchChapter
-};
-var ui_RosettaChapter = function(t) {
-	this.cht = t;
-};
-$hxClasses["ui.RosettaChapter"] = ui_RosettaChapter;
-ui_RosettaChapter.__name__ = ["ui","RosettaChapter"];
-ui_RosettaChapter.__interfaces__ = [mithril_Mithril];
-ui_RosettaChapter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.rosetta",m.m("h1","Rosetta " + Std.string(this.cht)))];
-	}
-	,__class__: ui_RosettaChapter
-};
-var ui_ScorxmixerChapter = function(c) {
-	this.c = c;
-	audio_scorx_MixerModel.instance.loadFiles("test",["/assets/mp3/test/100.mp3","/assets/mp3/test/110.mp3","/assets/mp3/test/120.mp3","/assets/mp3/test/130.mp3","/assets/mp3/test/200.mp3"]);
-};
-$hxClasses["ui.ScorxmixerChapter"] = ui_ScorxmixerChapter;
-ui_ScorxmixerChapter.__name__ = ["ui","ScorxmixerChapter"];
-ui_ScorxmixerChapter.__interfaces__ = [mithril_Mithril];
-ui_ScorxmixerChapter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.scorx ",m.m("h1","ScorX " + data_TestModel.instance.counter)),new audio_scorx_ui_PlayerView().view()];
-	}
-	,__class__: ui_ScorxmixerChapter
+	,__class__: ui_ChapterTypeViewCache
 };
 var ui_render_IStringRenderer = function() { };
 $hxClasses["ui.render.IStringRenderer"] = ui_render_IStringRenderer;
@@ -10781,98 +14656,6 @@ ui_StringRendererMapper.prototype = {
 	}
 	,__class__: ui_StringRendererMapper
 };
-var ui_UIHeader = function() {
-	this.pass = "";
-	this.email = "";
-	this.email = "";
-	this.pass = "";
-};
-$hxClasses["ui.UIHeader"] = ui_UIHeader;
-ui_UIHeader.__name__ = ["ui","UIHeader"];
-ui_UIHeader.__interfaces__ = [mithril_Mithril];
-ui_UIHeader.prototype = {
-	loginView: function() {
-		var _gthis = this;
-		try {
-			return m.m("form",[m.m("input[type=input][placeholder='Email']",{ oninput : function(e) {
-				return _gthis.email = e.target.value;
-			}, value : this.email}),m.m("input[type=password][placeholder='Password']",{ oninput : function(e1) {
-				return _gthis.pass = e1.target.value;
-			}, value : this.pass}),m.m("button[type=button]",{ onclick : function(e2) {
-				data_UserLoader.instance.signIn(_gthis.email,_gthis.pass);
-				return;
-			}},"Logga in")]);
-		} catch( e3 ) {
-			var e4 = (e3 instanceof js__$Boot_HaxeError) ? e3.val : e3;
-			haxe_Log.trace("error " + Std.string(e4),{ fileName : "src/ui/UIHeader.hx", lineNumber : 39, className : "ui.UIHeader", methodName : "loginView"});
-			return m.m("div.error",e4);
-		}
-	}
-	,loggedinView: function() {
-		try {
-			var selectvalues = data_ContentModel.instance.content.rooms.map(function(room) {
-				return [room.id,"Gå till " + room.title];
-			});
-			selectvalues.push(["logout","Logga ut"]);
-			selectvalues.unshift(["user",data_UserModel.instance.get_user().firstname + " " + data_UserModel.instance.get_user().lastname]);
-			var tmp = selectvalues.map(function(kv) {
-				return m.m("option",{ value : kv[0], key : kv[1]},kv[1]);
-			});
-			return m.m("div",[m.m("select.loggedin",{ onchange : function(e) {
-				haxe_Log.trace(e.target.selectedIndex,{ fileName : "src/ui/UIHeader.hx", lineNumber : 58, className : "ui.UIHeader", methodName : "loggedinView"});
-				haxe_Log.trace(e.target.value,{ fileName : "src/ui/UIHeader.hx", lineNumber : 59, className : "ui.UIHeader", methodName : "loggedinView"});
-				switch(e.target.value) {
-				case "logout":
-					data_UserLoader.instance.signOut();
-					break;
-				case "user":
-					break;
-				default:
-					data_FilterModel.instance.setFilterContent({ roomId : e.target.value, bookId : null, shelfId : null, chapterId : null, subchapterId : null});
-				}
-				return e.target.selectedIndex = 0;
-			}},tmp)]);
-		} catch( e1 ) {
-			var e2 = (e1 instanceof js__$Boot_HaxeError) ? e1.val : e1;
-			haxe_Log.trace("error " + Std.string(e2),{ fileName : "src/ui/UIHeader.hx", lineNumber : 80, className : "ui.UIHeader", methodName : "loggedinView"});
-			return m.m("div.error",e2);
-		}
-	}
-	,userView: function() {
-		try {
-			switch(data_UserModel.instance.userState._hx_index) {
-			case 0:
-				return m.m("div",[this.loginView()]);
-			case 1:
-				return m.m("div","Loading...");
-			case 2:
-				return m.m("div",[this.loggedinView()]);
-			}
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			haxe_Log.trace("error " + Std.string(e1),{ fileName : "src/ui/UIHeader.hx", lineNumber : 95, className : "ui.UIHeader", methodName : "userView"});
-			return m.m("div.error",e1);
-		}
-	}
-	,view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("h2","" + (data_FilterModel.instance.getRoom() != null ? data_FilterModel.instance.getRoom().title : "No room loaded!")),this.userView()];
-	}
-	,__class__: ui_UIHeader
-};
-var ui_VideoChapter = function(c) {
-	this.c = c;
-};
-$hxClasses["ui.VideoChapter"] = ui_VideoChapter;
-ui_VideoChapter.__name__ = ["ui","VideoChapter"];
-ui_VideoChapter.__interfaces__ = [mithril_Mithril];
-ui_VideoChapter.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return [m.m("div.specialchapter.video",m.m("h1","Video")),m.m("video",{ src : this.c.url, controls : true, style : { width : "100%", objectFit : "contain", backgroundColor : "black"}})];
-	}
-	,__class__: ui_VideoChapter
-};
 var ui_DefaultView = function(msg) {
 	if(msg == null) {
 		msg = "message";
@@ -10906,143 +14689,6 @@ ui_ViewMapper.prototype = {
 		this.map.set(name,cls);
 	}
 	,__class__: ui_ViewMapper
-};
-var ui_content_HomeView = function() {
-};
-$hxClasses["ui.content.HomeView"] = ui_content_HomeView;
-ui_content_HomeView.__name__ = ["ui","content","HomeView"];
-ui_content_HomeView.__interfaces__ = [mithril_Mithril];
-ui_content_HomeView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var room = data_FilterModel.instance.getRoom();
-		var othershelvesView;
-		try {
-			othershelvesView = m.m("nav",data_FilterModel.instance.getShelves().map(function(shelf) {
-				var selected = shelf == data_FilterModel.instance.getShelf() ? ".selected" : "";
-				return m.m("a" + selected,{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
-			}));
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			othershelvesView = m.m("h3.error","404 - can not show other shelves for room  " + Std.string(data_FilterModel.instance.filterContent));
-		}
-		var homeView;
-		try {
-			homeView = [m.m("a.border",{ href : "/content" + room.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Room: " + data_FilterModel.instance.getRoom().title),m.m("div","Homeshelf:"),m.m("div","Other shelves:"),othershelvesView];
-		} catch( e2 ) {
-			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
-			homeView = m.m("h1.error","404 - can not show room " + Std.string(data_FilterModel.instance.filterContent));
-		}
-		return m.m("div.border",[m.m("h1","homepage"),homeView]);
-	}
-	,__class__: ui_content_HomeView
-};
-var ui_content_ShelvesView = function() {
-};
-$hxClasses["ui.content.ShelvesView"] = ui_content_ShelvesView;
-ui_content_ShelvesView.__name__ = ["ui","content","ShelvesView"];
-ui_content_ShelvesView.__interfaces__ = [mithril_Mithril];
-ui_content_ShelvesView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.border",[m.m("h1","shelves"),m.m("p",[m.m("a",{ href : "/content" + data_FilterModel.instance.getRoom().path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Visa alla")]),m.m("div",data_FilterModel.instance.getShelves().map(function(shelf) {
-			var a = m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + shelf.title);
-			return m.m("div.border",[a,m.m("nav",[shelf.books.map(function(book) {
-				var selected = book == data_FilterModel.instance.getBook() ? ".selected" : "";
-				return m.m("a" + selected,{ href : "/content" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + book.title);
-			})])]);
-		}))]);
-	}
-	,__class__: ui_content_ShelvesView
-};
-var ui_content_BookView = function() {
-};
-$hxClasses["ui.content.BookView"] = ui_content_BookView;
-ui_content_BookView.__name__ = ["ui","content","BookView"];
-ui_content_BookView.__interfaces__ = [mithril_Mithril];
-ui_content_BookView.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		var book = data_FilterModel.instance.getBook();
-		var bookView;
-		try {
-			bookView = book == null ? m.m("div","No book selected") : [m.m("h1","" + book.title),m.m("p","" + book.info),m.m("div","Nr of chapters:" + book.chapters.length)];
-		} catch( e ) {
-			var e1 = (e instanceof js__$Boot_HaxeError) ? e.val : e;
-			bookView = m.m(".error","404 - Can not show book: " + Std.string(book));
-		}
-		var chapter = data_FilterModel.instance.getChapter();
-		var chapterView;
-		try {
-			chapterView = chapter == null ? m.m("div","No chapter selected") : [m.m("h3","" + chapter.title),m.m("p","" + HxOverrides.substr(chapter.text,0,50) + "...")];
-		} catch( e2 ) {
-			var e3 = (e2 instanceof js__$Boot_HaxeError) ? e2.val : e2;
-			chapterView = m.m("div","Chapter does not exist");
-		}
-		var chapters = data_FilterModel.instance.getChapters();
-		var chaptersView;
-		try {
-			chaptersView = [m.m("div.border","Chapters length:" + chapters.length),m.m("nav",chapters.map(function(chap) {
-				var selected = chap == data_FilterModel.instance.getChapter() ? ".selected" : "";
-				return m.m("a" + selected,{ href : "/content" + chap.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + chap.title);
-			}))];
-		} catch( e4 ) {
-			var e5 = (e4 instanceof js__$Boot_HaxeError) ? e4.val : e4;
-			chaptersView = m.m("div.border","No chapters");
-		}
-		var subchapter = data_FilterModel.instance.getSubchapter();
-		var subchapterView;
-		try {
-			subchapterView = subchapter == null ? m.m("div","No subchapter selected") : [m.m("h3","" + subchapter.title),m.m("p","" + HxOverrides.substr(subchapter.text,0,50) + "...")];
-		} catch( e6 ) {
-			var e7 = (e6 instanceof js__$Boot_HaxeError) ? e6.val : e6;
-			subchapterView = m.m("div","Subchapter does not exist");
-		}
-		var subchapters = data_FilterModel.instance.getSubchapters();
-		var subchaptersView;
-		try {
-			subchaptersView = [m.m("div.border","Subchapters length:" + subchapters.length),m.m("nav",subchapters.map(function(sub) {
-				var selected1 = sub == data_FilterModel.instance.getSubchapter() ? ".selected" : "";
-				return m.m("a" + selected1,{ href : "/content" + sub.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"" + sub.title);
-			}))];
-		} catch( e8 ) {
-			var e9 = (e8 instanceof js__$Boot_HaxeError) ? e8.val : e8;
-			subchaptersView = m.m("div.border","No subchapters");
-		}
-		return m.m("div.border",[bookView,chaptersView,chapterView,subchaptersView,subchapterView]);
-	}
-	,__class__: ui_content_BookView
-};
-var ui_content_UIShelvesList = function(shelves) {
-	this.shelves = shelves;
-};
-$hxClasses["ui.content.UIShelvesList"] = ui_content_UIShelvesList;
-ui_content_UIShelvesList.__name__ = ["ui","content","UIShelvesList"];
-ui_content_UIShelvesList.__interfaces__ = [mithril_Mithril];
-ui_content_UIShelvesList.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.grid1",this.shelves.map(function(shelf) {
-			var a = m.m("a",{ href : "/content" + shelf.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Shelf: " + shelf.path);
-			return m.m("div.border",[a]);
-		}));
-	}
-	,__class__: ui_content_UIShelvesList
-};
-var ui_content_UIBooksList = function(books) {
-	this.books = books;
-};
-$hxClasses["ui.content.UIBooksList"] = ui_content_UIBooksList;
-ui_content_UIBooksList.__name__ = ["ui","content","UIBooksList"];
-ui_content_UIBooksList.__interfaces__ = [mithril_Mithril];
-ui_content_UIBooksList.prototype = {
-	view: function() {
-		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
-		return m.m("div.grid4",this.books.map(function(book) {
-			return m.m("a",{ href : "/book" + book.path, oncreate : mithril__$M_M_$Impl_$.routeLink},"Book: " + book.path);
-		}));
-	}
-	,__class__: ui_content_UIBooksList
 };
 var ui_content_ContentTreeView = function(content) {
 	this.content = content;
@@ -11153,6 +14799,126 @@ ui_content_UISubchapter.prototype = {
 	}
 	,__class__: ui_content_UISubchapter
 };
+var ui_media_StorageItem = function(src) {
+	this.src = src;
+};
+$hxClasses["ui.media.StorageItem"] = ui_media_StorageItem;
+ui_media_StorageItem.__name__ = ["ui","media","StorageItem"];
+ui_media_StorageItem.__interfaces__ = [mithril_Mithril];
+ui_media_StorageItem.prototype = {
+	view: function() {
+		if(arguments.length > 0 && arguments[0].tag != this) return arguments[0].tag.view.apply(arguments[0].tag, arguments);
+		var storageUrl = data_StorageMap.instance.get(this.src);
+		console.log("src/ui/media/StorageItem.hx:18:","storageUrl:" + storageUrl);
+		var itemView = null;
+		if(storageUrl == data_StorageMap.instance.getDefault(this.src)) {
+			itemView = this.getUploadView(this.src);
+		} else if(storageUrl == data_StorageMap.NONEXISTING) {
+			itemView = this.getUploadView(this.src);
+		} else {
+			itemView = this.getItemView(data_StorageMap.instance.get(this.src));
+		}
+		return itemView;
+	}
+	,getLoadingView: function(src) {
+	}
+	,getItemView: function(src) {
+		return [m.m("img",{ src : data_StorageMap.instance.get(src)})];
+	}
+	,getUploadView: function(src) {
+		var tmp = m.m("span","Upload file: " + src);
+		var tmp1 = m.m("input",{ type : "file", id : "file", onchange : function(e) {
+			ui_media_StorageItem.file = e.target.files[0];
+			console.log("src/ui/media/StorageItem.hx:58:",ui_media_StorageItem.file);
+			return;
+		}});
+		var tmp2 = m.m("button",{ onclick : function(e1) {
+			console.log("src/ui/media/StorageItem.hx:63:","upload");
+			console.log("src/ui/media/StorageItem.hx:64:",ui_media_StorageItem.file);
+			if(ui_media_StorageItem.file == null) {
+				return;
+			}
+			var fileref = src;
+			var storageRef = firebase.storage().ref(fileref);
+			console.log("src/ui/media/StorageItem.hx:70:",storageRef);
+			storageRef.put(ui_media_StorageItem.file).on("state_changed",function(snap) {
+				console.log("src/ui/media/StorageItem.hx:74:","uploading " + src + "...");
+				return null;
+			},function(error) {
+				console.log("src/ui/media/StorageItem.hx:77:","error2 " + e1);
+				return;
+			},function() {
+				console.log("src/ui/media/StorageItem.hx:80:","hehe");
+				m.redraw();
+				return;
+			});
+			return;
+		}},"Upload");
+		var tmp3 = m.m("span",Std.string(ui_media_StorageItem.file) + "");
+		return m.m("div",{ style : { border : "2px solid green", padding : "1em"}},[tmp,tmp1,tmp2,tmp3]);
+	}
+	,__class__: ui_media_StorageItem
+};
+var ui_media_StorageAudio = function(src) {
+	ui_media_StorageItem.call(this,src);
+};
+$hxClasses["ui.media.StorageAudio"] = ui_media_StorageAudio;
+ui_media_StorageAudio.__name__ = ["ui","media","StorageAudio"];
+ui_media_StorageAudio.__super__ = ui_media_StorageItem;
+ui_media_StorageAudio.prototype = $extend(ui_media_StorageItem.prototype,{
+	getItemView: function(src) {
+		var tmp = m.m("source",{ src : src});
+		return m.m("audio",{ controls : true},tmp);
+	}
+	,__class__: ui_media_StorageAudio
+});
+var ui_media_StorageImage = function(src) {
+	ui_media_StorageItem.call(this,src);
+};
+$hxClasses["ui.media.StorageImage"] = ui_media_StorageImage;
+ui_media_StorageImage.__name__ = ["ui","media","StorageImage"];
+ui_media_StorageImage.__super__ = ui_media_StorageItem;
+ui_media_StorageImage.prototype = $extend(ui_media_StorageItem.prototype,{
+	getItemView: function(src) {
+		return [m.m("img",{ src : src})];
+	}
+	,__class__: ui_media_StorageImage
+});
+var ui_media_StorageMedia = function(src) {
+	this.src = src;
+	var tmp;
+	switch(haxe_io_Path.extension(src)) {
+	case "mp3":
+		tmp = new ui_media_StorageAudio(src);
+		break;
+	case "mp4":
+		tmp = new ui_media_StorageVideo(src);
+		break;
+	default:
+		tmp = new ui_media_StorageImage(src);
+	}
+	this.item = tmp;
+};
+$hxClasses["ui.media.StorageMedia"] = ui_media_StorageMedia;
+ui_media_StorageMedia.__name__ = ["ui","media","StorageMedia"];
+ui_media_StorageMedia.prototype = {
+	view: function() {
+		return this.item.view();
+	}
+	,__class__: ui_media_StorageMedia
+};
+var ui_media_StorageVideo = function(src) {
+	ui_media_StorageItem.call(this,src);
+};
+$hxClasses["ui.media.StorageVideo"] = ui_media_StorageVideo;
+ui_media_StorageVideo.__name__ = ["ui","media","StorageVideo"];
+ui_media_StorageVideo.__super__ = ui_media_StorageItem;
+ui_media_StorageVideo.prototype = $extend(ui_media_StorageItem.prototype,{
+	getItemView: function(src) {
+		return m.m("video",{ src : src, controls : true, style : { width : "100%", objectFit : "contain", backgroundColor : "black"}});
+	}
+	,__class__: ui_media_StorageVideo
+});
 var ui_render_QSyntaxRenderer = function() {
 };
 $hxClasses["ui.render.QSyntaxRenderer"] = ui_render_QSyntaxRenderer;
@@ -11172,6 +14938,33 @@ $hxClasses["utils._UserEmail.UserEmail_Impl_"] = utils__$UserEmail_UserEmail_$Im
 utils__$UserEmail_UserEmail_$Impl_$.__name__ = ["utils","_UserEmail","UserEmail_Impl_"];
 utils__$UserEmail_UserEmail_$Impl_$.isValid = function(address) {
 	return utils__$UserEmail_UserEmail_$Impl_$.ereg.match(address);
+};
+utils__$UserEmail_UserEmail_$Impl_$._new = function(address) {
+	if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
+		throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
+	}
+	return address.toLowerCase();
+};
+utils__$UserEmail_UserEmail_$Impl_$.fromString = function(address) {
+	if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(address)) {
+		throw new js__$Boot_HaxeError("EmailAddress \"" + address + "\" is invalid");
+	}
+	return address.toLowerCase();
+};
+utils__$UserEmail_UserEmail_$Impl_$.makePiped = function(email) {
+	return StringTools.replace(StringTools.replace(email,"@","||"),".","|");
+};
+utils__$UserEmail_UserEmail_$Impl_$.toPiped = function(this1) {
+	return utils__$UserEmail_UserEmail_$Impl_$.makePiped(this1);
+};
+utils__$UserEmail_UserEmail_$Impl_$.fromPiped = function(pipedEmail) {
+	var pa = pipedEmail;
+	pa = StringTools.replace(pipedEmail,"||","@");
+	pa = StringTools.replace(pa,"|",".");
+	if(!utils__$UserEmail_UserEmail_$Impl_$.isValid(pa)) {
+		throw new js__$Boot_HaxeError("EmailAddress \"" + pa + "\" is invalid");
+	}
+	return pa.toLowerCase();
 };
 var utils__$UserPassword_UserPassword_$Impl_$ = {};
 $hxClasses["utils._UserPassword.UserPassword_Impl_"] = utils__$UserPassword_UserPassword_$Impl_$;
@@ -11243,6 +15036,7 @@ DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July
 Require.jsPath = "./";
 Require.jsExt = ".js";
 Require.loaded = new haxe_ds_StringMap();
+Require.handlers = new haxe_ds_StringMap();
 Xml.Element = 0;
 Xml.PCData = 1;
 Xml.CData = 2;
@@ -11252,8 +15046,51 @@ Xml.ProcessingInstruction = 5;
 Xml.Document = 6;
 audio_Audio.instance = new audio_Audio();
 audio_scorx_MixerModel.instance = new audio_scorx_MixerModel();
+client2_ContentManager.instance = new client2_ContentManager();
+client2_FilterManager.instance = new client2_FilterManager();
+client2_Footer.instance = new client2_Footer();
+client2_Header.instance = new client2_Header();
+client2_PageBook.instance = new client2_PageBook();
+client2_ChapterTypeModel.instance = new client2_ChapterTypeModel();
+client2_SubchapterTypeModel.instance = new client2_SubchapterTypeModel();
+client2_PageContent.instance = new client2_PageContent();
+client2_PageHome.instance = new client2_PageHome();
+client2_PageSearch.instance = new client2_PageSearch();
+client2_PageShelves.instance = new client2_PageShelves();
+client2_RoutesManager.instance = new client2_RoutesManager();
+client2_SidewaysManager.instance = new client2_SidewaysManager();
+client2_UserManager.instance = new client2_UserManager();
 cx_GUID.CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+cx_Lorem.loremIdx = 0;
+cx_Lorem.headlineIdx = 0;
+cx_Lorem.lorem = ["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim eu turpis egestas pretium aenean pharetra magna ac placerat. Diam donec adipiscing tristique risus nec feugiat in fermentum. Et netus et malesuada fames ac turpis egestas maecenas. Neque aliquam vestibulum morbi blandit cursus risus at ultrices mi. Cursus euismod quis viverra nibh. Sit amet justo donec enim diam vulputate. Sapien faucibus et molestie ac feugiat. Tempus iaculis urna id volutpat lacus laoreet non. Tortor posuere ac ut consequat. Proin fermentum leo vel orci porta non. Nisl nisi scelerisque eu ultrices vitae auctor eu augue ut. Ac ut consequat semper viverra nam libero. Orci nulla pellentesque dignissim enim sit amet venenatis urna cursus. Nisi lacus sed viverra tellus in hac habitasse platea dictumst.","/@score a b c @/ Malesuada fames ac turpis egestas integer eget aliquet nibh praesent. Consequat nisl vel pretium lectus quam id. Convallis convallis tellus id interdum velit laoreet id donec ultrices. Accumsan in nisl nisi scelerisque. Id porta nibh venenatis cras sed felis eget velit aliquet. Ipsum nunc aliquet bibendum enim facilisis. Sagittis orci a scelerisque purus semper. Vel eros donec ac odio tempor orci. Pharetra pharetra massa massa ultricies. Diam vel quam elementum pulvinar etiam non quam. Id faucibus nisl tincidunt eget nullam non nisi est sit. Ullamcorper eget nulla facilisi etiam dignissim diam. Vulputate sapien nec sagittis aliquam malesuada bibendum arcu vitae. Proin nibh nisl condimentum id venenatis a condimentum vitae. Sit amet massa vitae tortor. Non diam phasellus vestibulum lorem. Feugiat in ante metus dictum at tempor commodo. Duis at consectetur lorem donec massa sapien faucibus et. Quis risus sed vulputate odio ut enim blandit.","Nisi scelerisque eu ultrices vitae auctor. /@score g f8 e d c a4 @/ Viverra orci sagittis eu volutpat odio. Lorem dolor sed viverra ipsum nunc aliquet. Fames ac turpis egestas maecenas pharetra convallis posuere. Netus et malesuada fames ac turpis. Mattis enim ut tellus elementum sagittis vitae et. Nulla porttitor massa id neque. Sed faucibus turpis in eu. Eget aliquet nibh praesent tristique magna sit. Arcu ac tortor dignissim convallis aenean et tortor. Lacus viverra vitae congue eu consequat ac. Purus gravida quis blandit turpis cursus in hac habitasse. Morbi tristique senectus et netus et malesuada fames ac.","Sed sed risus pretium quam. Felis eget velit aliquet sagittis id consectetur purus ut faucibus. Sed ullamcorper morbi tincidunt ornare massa eget egestas purus viverra. Risus sed vulputate odio ut enim blandit volutpat. Pellentesque nec nam aliquam sem et tortor. Cursus sit amet dictum sit amet justo donec. Massa id neque aliquam vestibulum morbi blandit cursus risus at. Ac felis donec et odio pellentesque diam volutpat commodo. Habitasse platea dictumst quisque sagittis. Et odio pellentesque diam volutpat commodo sed egestas egestas fringilla. Egestas congue quisque egestas diam in arcu cursus. Consectetur purus ut faucibus pulvinar elementum integer. Nulla pellentesque dignissim enim sit amet. Nec tincidunt praesent semper feugiat nibh sed pulvinar proin gravida. Nibh cras pulvinar mattis nunc sed blandit libero volutpat sed.","Mattis pellentesque id nibh tortor id aliquet lectus proin nibh. Massa massa ultricies mi quis. Sed blandit libero volutpat sed. Imperdiet massa tincidunt nunc pulvinar sapien et. Nec ultrices dui sapien eget mi proin. Ultrices tincidunt arcu non sodales neque sodales ut etiam. Iaculis nunc sed augue lacus viverra. Tristique senectus et netus et. Imperdiet massa tincidunt nunc pulvinar sapien et ligula ullamcorper malesuada. Viverra accumsan in nisl nisi. Dictum non consectetur a erat nam at lectus urna duis. Quis ipsum suspendisse ultrices gravida dictum fusce ut placerat orci. Diam maecenas ultricies mi eget mauris. Pulvinar etiam non quam lacus suspendisse.","Accumsan in nisl nisi scelerisque eu ultrices. Sit amet volutpat consequat mauris. Pretium quam vulputate dignissim suspendisse in. Aliquet eget sit amet tellus. Sagittis vitae et leo duis ut diam. Sit amet tellus cras adipiscing enim. Pellentesque diam volutpat commodo sed egestas egestas fringilla phasellus. Eget nunc scelerisque viverra mauris in aliquam. Mollis nunc sed id semper risus in. In fermentum posuere urna nec tincidunt. Nunc mi ipsum faucibus vitae aliquet nec ullamcorper. Morbi leo urna molestie at elementum eu facilisis sed odio. Ligula ullamcorper malesuada proin libero. Enim ut tellus elementum sagittis vitae et leo duis. Suspendisse in est ante in nibh mauris cursus mattis molestie. Nisl pretium fusce id velit ut tortor. Mauris nunc congue nisi vitae suscipit tellus mauris a diam.","Phasellus egestas tellus rutrum tellus pellentesque eu tincidunt tortor. /@score g2 c b8 a g e @/ Id ornare arcu odio ut sem nulla pharetra diam. Elit eget gravida cum sociis natoque penatibus et magnis dis. Tincidunt lobortis feugiat vivamus at augue eget arcu dictum. Mauris commodo quis imperdiet massa tincidunt nunc pulvinar. Dictum fusce ut placerat orci nulla pellentesque dignissim enim. Risus quis varius quam quisque id diam vel. Ullamcorper malesuada proin libero nunc consequat interdum. Est velit egestas dui id ornare arcu. Porta non pulvinar neque laoreet suspendisse interdum consectetur libero. Amet cursus sit amet dictum. Ultricies leo integer malesuada nunc vel risus commodo. Facilisis magna etiam tempor orci eu lobortis. Ultricies integer quis auctor elit sed vulputate mi sit. Tellus orci ac auctor augue. Cras ornare arcu dui vivamus arcu. Magna fermentum iaculis eu non diam phasellus. Urna nec tincidunt praesent semper feugiat. Interdum velit euismod in pellentesque massa placerat duis.","Ullamcorper a lacus vestibulum sed. Est sit amet facilisis magna etiam. Velit laoreet id donec ultrices tincidunt arcu non sodales. Sit amet mauris commodo quis. Sagittis nisl rhoncus mattis rhoncus urna neque viverra justo. Metus vulputate eu scelerisque felis imperdiet proin. Enim sed faucibus turpis in eu mi. Augue eget arcu dictum varius duis at consectetur. Feugiat vivamus at augue eget arcu dictum varius. Faucibus a pellentesque sit amet porttitor. Viverra tellus in hac habitasse platea dictumst vestibulum rhoncus. Dignissim diam quis enim lobortis scelerisque fermentum. Suscipit tellus mauris a diam maecenas sed enim ut. Rhoncus est pellentesque elit ullamcorper dignissim cras tincidunt lobortis.","Viverra tellus in hac habitasse. Leo integer malesuada nunc vel risus. Enim praesent elementum facilisis leo vel fringilla est ullamcorper eget. Non enim praesent elementum facilisis leo vel fringilla est ullamcorper. Gravida neque convallis a cras. Nisl rhoncus mattis rhoncus urna neque viverra justo nec. Ut venenatis tellus in metus vulputate eu. Nec nam aliquam sem et tortor consequat. Lobortis mattis aliquam faucibus purus in. Lacus vestibulum sed arcu non odio. Nisi quis eleifend quam adipiscing.","Est velit egestas dui id ornare arcu. Velit euismod in pellentesque massa placerat duis ultricies lacus. Ut morbi tincidunt augue interdum velit euismod. Neque sodales ut etiam sit amet nisl. Ac tincidunt vitae semper quis lectus. Fermentum iaculis eu non diam phasellus vestibulum lorem sed risus. Euismod elementum nisi quis eleifend quam adipiscing vitae proin sagittis. Ornare arcu odio ut sem nulla pharetra diam. At erat pellentesque adipiscing commodo elit at imperdiet. Ridiculus mus mauris vitae ultricies leo integer malesuada nunc. Eget mi proin sed libero enim sed faucibus turpis in. Libero enim sed faucibus turpis in eu mi bibendum. Ultrices vitae auctor eu augue ut lectus arcu bibendum. Est velit egestas dui id ornare arcu odio. Sapien et ligula ullamcorper malesuada proin libero nunc consequat. Enim praesent elementum facilisis leo. Aliquam malesuada bibendum arcu vitae. Felis eget velit aliquet sagittis. Tempus imperdiet nulla malesuada pellentesque elit eget gravida. Placerat vestibulum lectus mauris ultrices eros in cursus."];
+cx_Lorem.headlines = ["Lorem ipsum beginning","The story continues","Behind the lorem ipsum scenes","A quite long headline - with all normal standards","Breaf history of Lorem Ipsum","And on it goes","Will this go on forever?","Yes, it will!","And so it does","The final is here - finally"];
+cx_MathTools.EPSILON = 0.0000000000009;
+cx_MathTools.PI2Over360 = 2 * Math.PI / 360;
+cx_StrTools.SUPERSCRIPT_ZERO = String.fromCharCode(8304);
+cx_StrTools.SUPERSCRIPT_ONE = String.fromCharCode(185);
+cx_StrTools.SUPERSCRIPT_TWO = String.fromCharCode(178);
+cx_StrTools.SUPERSCRIPT_THREE = String.fromCharCode(8307);
+cx_StrTools.SUPERSCRIPT_FOUR = String.fromCharCode(8308);
+cx_StrTools.SUPERSCRIPT_FIVE = String.fromCharCode(8309);
+cx_StrTools.SUPERSCRIPT_SIX = String.fromCharCode(8310);
+cx_StrTools.SUPERSCRIPT_SEVEN = String.fromCharCode(8311);
+cx_StrTools.SUPERSCRIPT_EIGHT = String.fromCharCode(8312);
+cx_StrTools.SUPERSCRIPT_NINE = String.fromCharCode(8313);
+cx_StrTools.SUBSCRIPT_ZERO = String.fromCharCode(8320);
+cx_StrTools.SUBSCRIPT_ONE = String.fromCharCode(8321);
+cx_StrTools.SUBSCRIPT_TWO = String.fromCharCode(8322);
+cx_StrTools.SUBSCRIPT_THREE = String.fromCharCode(8323);
+cx_StrTools.SUBSCRIPT_FOUR = String.fromCharCode(8324);
+cx_StrTools.SUBSCRIPT_FIVE = String.fromCharCode(8325);
+cx_StrTools.SUBSCRIPT_SIX = String.fromCharCode(8326);
+cx_StrTools.SUBSCRIPT_SEVEN = String.fromCharCode(8327);
+cx_StrTools.SUBSCRIPT_EIGHT = String.fromCharCode(8328);
+cx_StrTools.SUBSCRIPT_NINE = String.fromCharCode(8329);
+data_ClassMap.instance = new data_ClassMap();
 data_UserData.__meta__ = { obj : { dataClassRtti : [{ firstname : "String", lastname : "String", email : "String", domains : "Array<String>", access : "Int"}]}};
+data_UserConfig.__meta__ = { obj : { dataClassRtti : [{ domain : "String"}]}};
+data_UserResponse.__meta__ = { obj : { dataClassRtti : [{ userData : "DataClass<data.UserData>", errors : "Array<String>"}]}};
 data_Content.__meta__ = { obj : { dataClassRtti : [{ id : "String", rooms : "Array<DataClass<data.Room>>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Room.__meta__ = { obj : { dataClassRtti : [{ id : "String", shelves : "Array<DataClass<data.Shelf>>", title : "String", sort : "Int", home : "DataClass<data.Home>"}]}, fields : { path : { exclude : null}, dbpath : { exclude : null}}};
 data_Home.__meta__ = { obj : { dataClassRtti : [{ title : "String", sections : "Array<Interface<data.IHomeSection>>"}]}};
@@ -11269,24 +15106,25 @@ data_VideoChaptertype.__meta__ = { obj : { dataClassRtti : [{ url : "String"}]}}
 data_RosettaChaptertype.__meta__ = { obj : { dataClassRtti : [{ data : "String"}]}};
 data_PdfChaptertype.__meta__ = { obj : { dataClassRtti : [{ filename : "String"}]}};
 data_PitchChaptertype.__meta__ = { obj : { dataClassRtti : [{ }]}};
-data_ScorxmixerChaptertype.__meta__ = { obj : { dataClassRtti : [{ }]}};
-data_ContentLoader.instance = new data_ContentLoader();
+data_ScorxmixerChaptertype.__meta__ = { obj : { dataClassRtti : [{ paths : "Array<String>"}]}};
+data_ContentUtils.typeCounter = 0;
 data_ContentModel.instance = new data_ContentModel();
+data_ErrorsAndLogs.element = ($_=window.document,$bind($_,$_.querySelector));
 data_ErrorsAndLogs.logs = [];
 data_ErrorsAndLogs.errors = [];
 data_FilterModel.instance = new data_FilterModel();
 data_FirebaseModel.instance = new data_FirebaseModel();
 data_PagesModel.instance = new data_PagesModel();
-data_PdfModel.instance = new data_PdfModel();
-data_Routes.instance = new data_Routes();
-data_TestModel.instance = new data_TestModel();
-data_UserLoader.instance = new data_UserLoader();
-data_UserModel.instance = new data_UserModel();
+data_StorageMap.DEFAULT_IMG = "/assets/default.jpg";
+data_StorageMap.DEFAULT_MP3 = "/assets/default.mp3";
+data_StorageMap.NONEXISTING = "NONEXISTING";
+data_StorageMap.instance = new data_StorageMap();
 dataclass_Converter.typedClassFieldName = "classtype";
 dataclass_Converter.directConversions = ["Int","Bool","Float","String"];
 dataclass_Converter.enumCache = new haxe_ds_StringMap();
 dataclass_Converter.classCache = new haxe_ds_StringMap();
 dataclass_JsonConverter.current = new dataclass_JsonConverter();
+dataclass_StringJsonConverter.current = new dataclass_StringJsonConverter();
 dataclass_TypedJsonConverter.current = new dataclass_TypedJsonConverter();
 haxe_xml_Parser.escapes = (function($this) {
 	var $r;
@@ -11333,23 +15171,116 @@ markdown_BlockSyntax.RE_UL = new EReg("^[ ]{0,3}[*+-][ \\t]+(.*)$","");
 markdown_BlockSyntax.RE_OL = new EReg("^[ ]{0,3}\\d+\\.[ \\t]+(.*)$","");
 markdown_TableSyntax.TABLE_PATTERN = new EReg("^(.+? +:?\\|:? +)+(.+)$","");
 markdown_TableSyntax.CELL_PATTERN = new EReg("(\\|)?([^\\|]+)(\\|)?","g");
+markdown_HtmlRenderer.BLOCK_TAGS = new EReg("blockquote|h1|h2|h3|h4|h5|h6|hr|p|pre","");
+markdown_HtmlRenderer.attributeOrder = ["src","alt"];
 markdown_LinkSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
 markdown_ImgSyntax.linkPattern = "\\](?:(" + "\\s?\\[([^\\]]*)\\]" + "|" + "\\s?\\(([^ )]+)(?:[ ]*\"([^\"]+)\"|)\\)" + ")|)";
 markdown_InlineParser.defaultSyntaxes = [new markdown_AutolinkSyntaxWithoutBrackets(),new markdown_TextSyntax(" {2,}\n","<br />\n"),new markdown_TextSyntax("\\s*[A-Za-z0-9]+"),new markdown_AutolinkSyntax(),new markdown_LinkSyntax(),new markdown_ImgSyntax(),new markdown_TextSyntax(" \\* "),new markdown_TextSyntax(" _ "),new markdown_TextSyntax("&[#a-zA-Z0-9]*;"),new markdown_TextSyntax("&","&amp;"),new markdown_TextSyntax("</?\\w+.*?>"),new markdown_TextSyntax("<","&lt;"),new markdown_TagSyntax("\\*\\*","strong"),new markdown_TagSyntax("__","strong"),new markdown_TagSyntax("\\*","em"),new markdown_TagSyntax("\\b_","em","_\\b"),new markdown_CodeSyntax("``\\s?((?:.|\\n)*?)\\s?``"),new markdown_CodeSyntax("`([^`]*)`")];
+markdown_MithrilRenderer.instance = new markdown_MithrilRenderer();
+markdown_MithrilRendererCache.instance = new markdown_MithrilRendererCache();
 markdown_MithrilTools.cache = new cx_Cache(5);
+markdown_inlineRenderer_QInlineSyntaxRenderer.REGEX = "/@score ([0-9a-zA-Z ]*)@/";
+markdown_syntax_TestcodeSyntax.REGEX = "/@test ([0-9a-zA-Z ]*)@/";
+nx3_Constants.BASE_NOTE_VALUE = 3024;
+nx3_Constants.STAVE_LENGTH = 6.8;
+nx3_Constants.STAVE_BASIC_LENGTH = 7;
+nx3_Constants.SIGN_TO_NOTE_DISTANCE = 0.8;
+nx3_Constants.COMPLEX_COLLISION_OVERLAP_XTRA = 0.6;
+nx3_Constants.SIGN_NORMAL_WIDTH = 2.6;
+nx3_Constants.SIGN_PARENTHESIS_WIDTH = 4.4;
+nx3_Constants.HEAD_ADJUST_X = 0;
+nx3_Constants.COMPLEX_COLLISION_ADJUST_SAMELINE = 3.0;
+nx3_Constants.COMPLEX_COLLISION_ADJUST_NEXTLINE = 2.2;
+nx3_Constants.COMPLEX_COLLISION_ADJUST_SAMELINE_WHOLE = 4.3;
+nx3_Constants.COMPLEX_COLLISION_ADJUST_NEXTLINE_WHOLE = 4;
+nx3_Constants.NOTE_STEM_X_NORMAL = 1.6;
+nx3_Constants.HEAD_WIDTH_NORMAL = 3.2;
+nx3_Constants.HEAD_HALFWIDTH_NORMAL = 1.6;
+nx3_Constants.HEAD_HALFWIDTH_WIDE = 2.2;
+nx3_Constants.COMPLEX_COLLISION_CHORD_INTERSECTION = 0.8;
+nx3_Constants.COMPLEX_COLLISION_NEXTLINEDELTA = 0.7;
+nx3_Constants.COMPLEX_COLLISION_NEXTLINEDELTA_H1 = 0.9;
+nx3_Constants.DOT_WIDTH = 2.0;
+nx3_Constants.DDOT_WIDTH = 3.0;
+nx3_Constants.FLAG_HEIGHT = 4.8;
+nx3_Constants.FLAG_WIDTH = 2.6;
+nx3_Constants.FLOAT_QUASI_ZERO = 0.0000001;
 nx3_Constants.FONT_TEXT_DEFAULTFORMAT = { name : "Georgia", size : 20, bold : false, italic : false};
+nx3_Constants.JS_CANVAS_TEXT_MEASUREMENT = "CanvasTextMeasurement";
+nx3_Constants.FONT_TEXT_X_ADJUST_SVG = 4;
+nx3_Constants.FONT_TEXT_Y_ADJUST_SVG = -3;
+nx3_Constants.FONT_TEXT_Y_ADJUST_FLASH = -1.2;
+nx3_Constants.FONT_TEXT_X_ADJUST_FLASH = -.3;
+nx3_Constants.FONT_TEXT_X_ADJUST_SYS = 0;
+nx3_Constants.FONT_TEXT_Y_ADJUST_SYS = -6;
+nx3_Constants.BEAM_HEIGHT = 0.95;
+nx3_Constants.TIE_WIDTH_CHORD = 3.2;
+nx3_Constants.TIE_WIDTH_SINGLE = 3;
+nx3_Constants.TIE_HEIGHT = 1.6;
+nx3_Constants.LEGER_MARGIN = 0.6;
+nx3_Constants.OBJECT_XMARGIN = 0.6;
+nx3_Constants.ATTRIBUTE_SIGN_WIDTH = 2.4;
+nx3_Constants.SCORE_DEFAULT_COUNTIN = 0;
+nx3_Constants.SCORE_DEFAULT_TEMPO = 80;
+nx3_Constants.BAR_SPACING_DEFAULT = 8;
+nx3_ENoteValTools.DOT = 1.5;
+nx3_ENoteValTools.DOTDOT = 1.75;
+nx3_ENoteValTools.TRI = 0.66666666;
+nx3_ENoteValTools.N1 = 4;
+nx3_ENoteValTools.N2 = 2;
+nx3_ENoteValTools.N4 = 1;
+nx3_ENoteValTools.N8 = .5;
+nx3_ENoteValTools.N16 = .25;
+nx3_ENoteValTools.N32 = .125;
+nx3_ENoteValTools.valNv1 = 12096;
+nx3_ENoteValTools.valNv1dot = 18144;
+nx3_ENoteValTools.valNv1ddot = 21168;
+nx3_ENoteValTools.valNv1tri = 8063;
+nx3_ENoteValTools.valNv2 = 6048;
+nx3_ENoteValTools.valNv2dot = 9072;
+nx3_ENoteValTools.valNv2ddot = 10584;
+nx3_ENoteValTools.valNv2tri = 4031;
+nx3_ENoteValTools.valNv4 = 3024;
+nx3_ENoteValTools.valNv4dot = 4536;
+nx3_ENoteValTools.valNv4ddot = 5292;
+nx3_ENoteValTools.valNv4tri = 2015;
+nx3_ENoteValTools.valNv8 = 1512;
+nx3_ENoteValTools.valNv8dot = 2268;
+nx3_ENoteValTools.valNv8ddot = 2646;
+nx3_ENoteValTools.valNv8tri = 1007;
+nx3_ENoteValTools.valNv16 = 756;
+nx3_ENoteValTools.valNv16dot = 1134;
+nx3_ENoteValTools.valNv16ddot = 1323;
+nx3_ENoteValTools.valNv16tri = 503;
+nx3_ENoteValTools.valNv32 = 378;
+nx3_ENoteValTools.valNv32dot = 567;
+nx3_ENoteValTools.valNv32ddot = 661;
+nx3_ENoteValTools.valNv32tri = 251;
+nx3_PBaseRectCalculator.BASERECT_HEIGHT = 3;
+nx3_PBaseRectCalculator.BASERECT_HEIGHT_X_2 = 6.;
+nx3_PBaseRectCalculator.BASERECT_MARGIN = 0.6;
+nx3_PBaseRectCalculator.BASERECT_MARGIN_X_2 = 1.2;
+nx3_PColumnsAllotmentCalculator.delta = 0.5;
 nx3_PSystemBarsGenerator.defaultClef = nx3_EClef.ClefF;
 nx3_PSystemBarsGenerator.defaultKey = nx3_EKey.Flat2;
 nx3_qs_QSParserTools.relaceSlash = "---";
 nx3_render_TargetSvgXml.SVG_EXTRA_HEIGHT = 5;
+nx3_render_scaling_Scaling.MID = { linesWidth : 1.25, space : 12.0, unitY : 6.0, noteWidth : 10, unitX : 5, quarterNoteWidth : 2.5, signPosWidth : 14.0, svgScale : .27, svgX : 0, svgY : -55.0, fontScaling : 1.5};
 nx3_render_scaling_Scaling.NORMAL = { linesWidth : .75, space : 8.0, unitY : 4.0, noteWidth : 7.0, unitX : 3.5, quarterNoteWidth : 1.75, signPosWidth : 9.5, svgScale : .175, svgX : 0, svgY : -36.0, fontScaling : 1.0};
+nx3_render_scaling_Scaling.SMALL = { linesWidth : .5, space : 6.0, unitY : 3.0, noteWidth : 5.0, unitX : 2.5, quarterNoteWidth : 1.25, signPosWidth : 7.0, svgScale : .14, svgX : 0, svgY : -28.5, fontScaling : 0.75};
+nx3_render_scaling_Scaling.MINI = { linesWidth : .5, space : 4.0, unitY : 2.0, noteWidth : 3.3333333333333335, unitX : 1.6666666666666667, quarterNoteWidth : 0.83333333333333337, signPosWidth : 4.666666666666667, svgScale : 0.093333333333333338, svgX : 0, svgY : -19., fontScaling : 0.5};
+nx3_render_scaling_Scaling.BIG = { linesWidth : 1.5, space : 16.0, unitY : 8.0, noteWidth : 14.0, unitX : 7.0, quarterNoteWidth : 5.5, signPosWidth : 19.0, svgScale : .36, svgX : -0.0, svgY : -74.0, fontScaling : 2.0};
+nx3_render_scaling_Scaling.PRINT1 = { linesWidth : 3, space : 32.0, unitY : 16.0, noteWidth : 28.0, unitX : 14.0, quarterNoteWidth : 11.0, signPosWidth : 38.0, svgScale : .72, svgX : -0.0, svgY : -148.0, fontScaling : 4.0};
 nx3_render_svg_SvgElements.pauseNv2 = "<svg><g><rect height=\"23\" width=\"50\" x=\"8\" y=\"210\" /></g></svg>";
 nx3_render_svg_SvgElements.pauseNv1 = "<svg><g><rect height=\"26\" width=\"50\" x=\"8\" y=\"234\" /></g></svg>";
 nx3_render_svg_SvgElements.clefG = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td=\"m 95.72971,266.7949 c -5.57504,2.79274 -12.48498,4.1891 -20.72511,4.1891 -9.69981,0 -18.99938,-1.66998 -27.91049,-5.00757 -8.90876,-3.33996 -16.75807,-7.86163 -23.54558,-13.56975 -6.78751,-5.70339 -12.24248,-12.38094 -16.36254,-20.03029 -4.12007,-7.64934 -6.1801,-15.78458 -6.1801,-24.40572 0,-29.26234 20.72746,-61.31506 62.18472,-96.1605 -1.3349,-5.34251 -2.33313,-10.74399 -2.99941,-16.209153 -0.66627,-5.460449 -1.00058,-11.107236 -1.00058,-16.938007 0,-8.010226 0.66392,-15.871864 1.99646,-23.582532 1.3302,-7.710668 3.23955,-14.935434 5.72336,-21.674325 2.48617,-6.738864 5.54208,-12.869193 9.17715,-18.393316 3.63272,-5.5265031 7.814,-10.1708424 12.53677,-13.9306366 16.47555,22.8253826 24.71097,44.6247216 24.71097,65.3862176 0,13.480109 -3.18069,26.321 -9.54442,38.522682 -6.36138,12.20404 -16.32959,24.07079 -29.90225,35.60967 l 7.99763,38.42834 c 4.36256,-0.35616 6.78751,-0.53307 7.2725,-0.53307 6.05767,0 11.72453,1.09209 16.99586,3.27863 5.27368,2.18418 9.88109,5.18919 13.82693,9.01269 3.94349,3.82349 7.07003,8.34517 9.37727,13.56502 2.30488,5.21986 3.4585,10.86193 3.46085,16.93329 -0.002,4.36836 -0.78869,8.68011 -2.36374,12.92581 -1.57504,4.25042 -3.814,8.28856 -6.72159,12.10969 -2.90994,3.82586 -6.36373,7.34272 -10.36137,10.55766 -3.99764,3.21965 -8.42141,5.98172 -13.26896,8.28856 0,-0.24294 0.18129,0.45523 0.54385,2.09218 0.36492,1.63932 0.8193,3.79048 1.36315,6.46291 0.5462,2.67008 1.18187,5.64443 1.90935,8.92306 0.72749,3.27626 1.36316,6.43224 1.90936,9.46556 0.5462,3.03568 1.02884,5.73878 1.45497,8.10222 0.42378,2.37052 0.63567,3.97681 0.63567,4.82595 0,5.70576 -1.21248,10.92561 -3.63508,15.65957 -2.42495,4.73396 -5.69746,8.80041 -9.81988,12.19933 -4.12006,3.39656 -8.90875,6.03833 -14.36136,7.9206 -5.45497,1.88226 -11.21364,2.82339 -17.27602,2.82339 -4.60506,0 -8.90641,-0.72885 -12.90875,-2.18654 -4,-1.45769 -7.515,-3.52157 -10.54502,-6.18929 -3.02765,-2.67244 -5.422,-5.91568 -7.18068,-9.73918 -1.75632,-3.82113 -2.63449,-8.03853 -2.63449,-12.64984 0,-3.27862 0.54621,-6.37563 1.63626,-9.2863 1.09005,-2.91066 2.60623,-5.39912 4.54384,-7.463 1.93996,-2.06389 4.3037,-3.7032 7.09122,-4.91323 2.78987,-1.21474 5.81989,-1.82329 9.09004,-1.82329 2.90994,0 5.63625,0.66988 8.18127,2.00492 2.54502,1.33503 4.72748,3.06634 6.54502,5.18919 1.81754,2.12521 3.27251,4.5547 4.36491,7.2861 1.09005,2.72905 1.63626,5.49111 1.63626,8.28384 0,6.31431 -2.33314,11.4752 -7.00176,15.48267 -4.66627,4.00512 -10.51205,6.37328 -17.54441,7.09976 5.57504,2.79509 11.329,4.19146 17.2666,4.1891 4.8452,0.002 9.57268,-0.87745 14.17773,-2.64177 4.6027,-1.75961 8.62859,-4.12777 12.08474,-7.10212 3.45379,-2.97436 6.24131,-6.43932 8.3602,-10.38547 2.11889,-3.94614 3.18069,-8.16354 3.18069,-12.65692 0,-1.70299 -0.18365,-3.58526 -0.54385,-5.64914 L 95.72971,266.7949 z M 95.18821,27.488123 c -1.21483,-0.243068 -2.30724,-0.365597 -3.27486,-0.365597 -3.75986,0 -7.24661,1.912917 -10.46026,5.738777 -3.21365,3.823478 -6.00352,8.80275 -8.36726,14.933079 -2.36374,6.132684 -4.21188,13.022518 -5.54914,20.671856 -1.33254,7.649365 -2.00117,15.298698 -2.00117,22.948042 0,3.158334 0.12478,6.194011 0.36492,9.10704 0.24485,2.91538 0.67333,5.70811 1.2831,8.37819 24.73216,-21.976242 37.09942,-41.768292 37.09942,-59.373819 0,-8.378205 -3.03237,-15.723276 -9.09475,-22.037568 z m 3.814,231.850857 c 5.94467,-4.37072 10.46026,-9.16837 13.55619,-14.39058 3.09123,-5.21986 4.63802,-10.86429 4.63802,-16.93801 0,-3.76216 -0.63802,-7.4347 -1.91171,-11.01996 -1.27134,-3.57818 -3.08887,-6.76718 -5.45497,-9.56227 -2.36609,-2.78801 -5.18657,-5.03588 -8.46143,-6.7318 -3.27486,-1.69828 -6.85108,-2.54506 -10.72865,-2.54506 -0.24249,0 -0.72749,0.0307 -1.45497,0.0873 -0.72513,0.0613 -1.75633,0.15097 -3.08887,0.2689 l 12.90639,60.83151 z M 81.56374,199.26225 c -3.75749,0.48354 -7.2725,1.42468 -10.545,2.82104 -3.27251,1.39637 -6.08828,3.12767 -8.45202,5.19155 -2.36374,2.06389 -4.24249,4.43205 -5.63625,7.10212 -1.39376,2.67244 -2.09064,5.58546 -2.09064,8.7438 0,9.34762 4.96527,17.11962 14.88874,23.31127 -8.24013,-1.33503 -14.84636,-4.52167 -19.81634,-9.56227 -4.96997,-5.03823 -7.45378,-11.38084 -7.45378,-19.03255 0,-4.49101 0.93937,-8.83106 2.81812,-13.02016 1.87875,-4.18909 4.39317,-7.95598 7.54325,-11.30065 3.15479,-3.34703 6.85108,-6.23647 11.09121,-8.66595 4.24249,-2.43421 8.72748,-4.13721 13.45261,-5.10664 l -7.63507,-36.42579 c -17.08768,12.86684 -30.02468,25.49546 -38.81101,37.88112 -8.78633,12.38567 -13.1795,24.64868 -13.1795,36.79139 0,6.67755 1.48322,12.99421 4.45438,18.94292 2.97115,5.95106 6.9735,11.14026 12.00469,15.5723 5.03119,4.4344 10.85107,7.92531 17.45966,10.47274 6.60623,2.55214 13.60563,3.82821 20.9982,3.82821 4.24249,0 8.18127,-0.39627 11.81634,-1.18408 3.63743,-0.79017 7.03001,-2.03558 10.1801,-3.73386 L 81.56374,199.26225 z\" />\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.clefC = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td=\"M 90,276 C 86,276 81,275 77,274 73,273 70,271 67,268 64,266 61,263 60,260 58,256 57,253 57,249 57,247 57,245 58,243 59,241 60,239 61,238 63,236 64,235 66,234 68,233 70,232 72,232 74,232 76,233 77,233 79,234 81,236 82,237 84,238 85,240 86,242 87,244 87,246 87,248 87,250 86,252 85,253 84,255 82,256 80,258 79,259 77,260 76,261 75,262 74,262 74,263 74,267 79,269 88,269 92,269 96,268 98,267 101,266 103,264 105,261 107,258 108,255 109,250 110,245 110,239 110,232 110,228 110,224 109,220 108,216 107,212 105,210 104,207 102,204 100,203 98,201 96,200 93,200 84,200 76,207 67,222 66,217 65,213 64,209 63,205 62,201 60,199 59,196 57,193 55,192 53,190 52,189 49,189 48,189 47,189 46,190 L 46,275 39,275 39,93 46,93 46,179 C 46,179 47,179 47,179 48,180 48,180 49,180 51,180 53,179 55,177 57,175 59,173 60,170 62,167 63,163 64,159 65,155 66,151 67,147 77,160 86,166 92,166 94,166 97,165 99,164 101,162 103,160 104,157 106,155 107,151 108,148 109,144 109,140 109,135 109,128 109,122 108,117 107,113 106,109 104,107 102,104 99,102 96,101 93,100 89,100 84,100 75,100 71,102 71,105 71,106 73,107 75,108 80,110 83,112 85,114 86,116 87,118 87,121 87,123 87,124 86,126 85,128 84,130 83,131 81,133 80,134 78,135 76,136 74,137 72,137 68,137 64,135 61,132 58,129 56,125 56,120 56,114 58,108 62,102 66,98 70,95 74,94 79,93 83,92 88,92 95,92 101,93 106,95 112,96 116,99 120,102 124,105 127,110 129,114 131,119 132,125 132,131 132,136 131,142 129,147 128,152 125,157 122,161 119,165 116,168 112,170 108,173 103,174 98,174 89,174 81,172 76,169 L 76,169 C 74,169 72,170 71,173 70,175 69,178 69,182 69,184 69,186 69,188 70,191 70,193 71,194 72,196 72,197 73,198 74,199 75,200 76,200 79,197 82,194 86,193 89,191 93,190 97,190 102,190 107,191 111,194 116,196 120,200 123,204 126,209 129,214 130,219 132,225 133,231 133,237 133,250 129,259 122,266 114,273 104,276 90,276 Z M 27,93 L 27,275 4,275 4,93 27,93 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.clefF = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td=\"M 8,240 C 21,236 32,230 39,224 45,218 51,211 57,204 62,197 67,190 70,183 74,176 77,168 79,161 81,153 82,146 82,139 82,133 81,127 80,122 78,118 76,113 73,110 70,106 66,103 62,101 58,99 53,98 48,98 44,98 41,99 37,100 33,101 30,103 27,106 24,108 22,111 20,114 18,117 17,120 17,123 17,125 17,126 18,126 18,126 18,126 19,125 20,125 20,124 22,123 23,123 24,122 26,122 27,121 29,121 31,121 33,121 35,121 36,122 38,123 40,124 41,126 42,127 43,129 44,131 45,133 45,135 45,137 45,143 43,147 40,151 36,155 32,157 26,157 23,157 20,156 18,155 16,154 14,152 12,149 10,147 9,144 8,141 7,138 7,134 7,131 7,126 8,121 11,116 13,111 16,107 21,104 25,101 29,98 35,96 40,94 46,93 52,93 62,93 71,95 78,98 85,101 91,105 95,111 99,116 102,122 104,128 105,134 106,140 106,147 106,150 106,154 105,157 105,161 104,164 102,168 101,172 99,176 97,180 94,185 91,190 88,195 84,202 78,209 71,215 64,221 57,226 50,230 43,235 36,238 29,240 23,243 18,244 14,244 10,244 8,243 8,240 Z M 121,116 C 121,113 122,111 124,110 125,108 127,107 130,107 133,107 135,108 136,110 138,111 139,113 139,116 139,119 138,121 136,122 135,124 133,125 130,125 127,125 125,124 124,122 122,121 121,119 121,116 Z M 121,162 C 121,159 122,157 124,156 125,154 127,153 130,153 133,153 135,154 136,156 138,157 139,159 139,162 139,165 138,167 136,168 135,170 133,171 130,171 127,171 125,170 124,168 122,167 121,165 121,162 Z\"/>\r\n\t\t</g></svg>";
+nx3_render_svg_SvgElements.HVT4 = nx3_render_svg_SvgElements.noteBlack;
 nx3_render_svg_SvgElements.noteBlack = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td = \"m 20.557649,250.57631 c -5.81753,-0.002 -10.6650905,-1.36806 -14.5450105,-4.0971 -3.87756,-2.73612 -5.81516995,-6.6516 -5.81516995,-11.74881 0,-4.12777 1.30193995,-8.10458 3.90816995,-11.92807 2.60387,-3.82585 5.9069905,-7.19411 9.9070005,-10.1095 3.99998,-2.91302 8.452014,-5.24816 13.360774,-7.01013 4.90876,-1.7596 9.66448,-2.63941 14.2719,-2.63941 6.1801,0 11.17834,1.42467 14.99703,4.27637 3.81636,2.85406 5.72572,6.70821 5.72572,11.56483 0,4.00747 -1.30195,7.92295 -3.90817,11.7488 -2.60623,3.8235 -5.93761,7.19412 -9.99882,10.10714 -4.05885,2.91303 -8.54382,5.27883 -13.45258,7.10448 -4.90878,1.81858 -9.72573,2.72905 -14.450844,2.7314 z\" />\r\n\t\t</g></svg>";
+nx3_render_svg_SvgElements.HVT2 = nx3_render_svg_SvgElements.noteWhite;
 nx3_render_svg_SvgElements.noteWhite = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td=\"m -0.01820308,235.29885 c 0,-4.12777 1.15125988,-8.19421 3.45376988,-12.20168 2.30253,-4.00747 5.3325496,-7.55735 9.0900592,-10.65436 3.7575,-3.09701 7.96936,-5.58546 12.63565,-7.46772 4.66627,-1.88227 9.30428,-2.8234 13.90934,-2.8234 7.63741,0 13.69743,1.60865 18.18243,4.82831 4.48262,3.2173 6.72393,7.73898 6.72863,13.56739 -0.005,4.25042 -1.21482,8.25553 -3.63977,12.02006 -2.4226,3.76452 -5.57504,7.04315 -9.4526,9.83588 -3.87756,2.79037 -8.30134,5.00522 -13.27367,6.64689 -4.96763,1.63695 -10.06001,2.45779 -15.27249,2.46015 -6.18245,-0.002 -11.45615,-1.42939 -15.8186992,-4.28109 -4.36254,-2.85641 -6.54264988,-6.83322 -6.54264988,-11.93043 z M 49.439026,207.62158 c -1.93759,0 -4.39551,0.48589 -7.3643,1.45769 -2.97117,0.96944 -6.15186,2.2455 -9.54915,3.82113 -3.39257,1.57799 -6.75924,3.39893 -10.09297,5.46517 -3.33606,2.06388 -6.36843,4.18438 -9.09475,6.37091 -2.731,2.18182 -4.9417295,4.39902 -6.6391792,6.64453 -1.69512,2.24787 -2.54502,4.28109 -2.54738,6.10202 0.002,5.7034 3.4561299,8.55746 10.3684392,8.55746 3.27486,0 7.45849,-1.06143 12.55087,-3.18664 5.09241,-2.12285 10.0624,-4.73396 14.91464,-7.82861 4.84756,-3.097 9.03119,-6.34497 12.54619,-9.74153 3.51735,-3.40128 5.27603,-6.4346 5.27603,-9.10468 0,-5.7034 -3.45377,-8.55745 -10.36844,-8.55745 z\" />\r\n\t\t</g></svg>";
+nx3_render_svg_SvgElements.HVT1 = nx3_render_svg_SvgElements.noteWhole;
 nx3_render_svg_SvgElements.noteWhole = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\"\r\n\t\t\td=\"m 0.14197458,226.9183 c 0,-3.64187 1.21011002,-6.97946 3.63271012,-10.01514 2.4226,-3.03568 5.66217,-5.64679 9.7233503,-7.83569 4.0565,-2.18182 8.692204,-3.85179 13.899944,-5.00757 5.21012,-1.15106 10.54031,-1.72894 15.99057,-1.7313 5.09006,0.002 10.08827,0.64157 14.99232,1.91292 4.9064,1.27843 9.32782,3.00738 13.26661,5.19156 3.93643,2.18653 7.11712,4.76698 9.54208,7.74133 2.42025,2.97671 3.63271,6.22468 3.63271,9.74389 0,3.88718 -1.0312,7.34743 -3.08885,10.38311 -2.06004,3.03568 -4.99825,5.58546 -8.81461,7.64935 -3.81636,2.06388 -8.38843,3.67253 -13.71862,4.8283 -5.33019,1.15106 -11.26544,1.72895 -17.8081,1.73131 -5.81517,-0.002 -11.23482,-0.58025 -16.26603,-1.73131 -5.026479,-1.15577 -9.389044,-2.79508 -13.082984,-4.9203 -3.6962903,-2.12521 -6.6015203,-4.70565 -8.7204103,-7.73897 -2.1212401,-3.03568 -3.18069012,-6.43696 -3.18069012,-10.20149 z m 65.06407442,9.28158 c 0,-4.00511 -1.39376,-8.80276 -4.18363,-14.38822 -1.33254,-2.67007 -2.75691,-5.00757 -4.27074,-7.01248 -1.51618,-2.00256 -3.18305,-3.61121 -5.00057,-4.82595 -1.81754,-1.21239 -3.90817,-2.12522 -6.27193,-2.73141 -2.36373,-0.60619 -5.06179,-0.91047 -8.09181,-0.91047 -11.63506,0 -17.452602,4.675 -17.452602,14.02498 0,3.51922 0.696896,6.88984 2.090662,10.10714 1.39376,3.2173 3.24189,6.10202 5.54443,8.6518 2.30253,2.54978 4.84756,4.583 7.63508,6.09966 2.78751,1.51902 5.63859,2.27853 8.54853,2.27853 2.6651,0 5.17951,-0.12266 7.54324,-0.3656 2.36376,-0.24296 4.485,-0.72885 6.36375,-1.45769 1.8811,-0.72649 3.48674,-1.8516 4.81694,-3.36826 1.33489,-1.51666 2.24367,-3.55224 2.72865,-6.10203 z\" />\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.signNatural = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;display:inline\"\r\n\t\t\td=\"m 27.763524,289.1105 0,-36.43051 -27.82574358,9.65191 0,-97.8116 4.52499988,0 0.0183,36.60977 27.8092637,-9.83589 0,97.81632 -4.52736,0 z m -23.3007437,-42.80378 23.3007437,-8.38055 -0.0157,-30.60209 -23.2842537,8.55981 0,30.42283 z\" />\t\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.signSharp = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;display:inline\"\r\n\t\t\td=\"m 31.526296,208.23455 -17.48556,5.8284 0.0157,31.51021 17.46908,-5.82841 0,-31.5102 z m 4.52736,-43.89588 0.0131,26.0474 9.44083,-3.09464 0,16.5724 -9.4526,3.097 0,31.50785 9.4526,-3.09701 0,16.57476 -9.4526,3.09701 0,28.59482 -4.52736,0 0,-27.32111 -17.48556,5.82841 0,27.31875 -4.52736,0 0,-26.04268 -9.4526,3.09464 0,-16.57239 9.4526,-3.09701 -0.0131,-31.50785 -9.43847,3.09465 0,-16.5724 9.4526,-3.09701 0,-28.59482 4.52736,0 0.0157,27.32111 17.46908,-5.82841 0,-27.32347 4.52736,0 z\" />\t\r\n\t\t</g></svg>";
@@ -11373,6 +15304,8 @@ nx3_render_svg_SvgElements.time8 = "<svg><g><path style=\"fill:#000000;fill-opac
 nx3_render_svg_SvgElements.time9 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 4,212 C 4,202 7,195 13,190 20,185 28,183 39,183 50,183 58,187 64,195 70,203 73,213 73,227 73,233 72,238 70,244 68,249 66,253 63,257 59,261 55,264 51,267 46,269 41,270 36,270 32,270 29,270 25,269 22,268 19,267 16,265 14,263 11,262 10,259 8,257 7,255 7,252 7,249 8,246 11,244 13,241 15,240 19,240 23,240 26,241 28,244 30,246 31,249 31,253 31,254 31,255 30,257 30,259 29,260 29,261 29,264 31,265 35,265 45,265 50,254 50,232 L 50,229 C 42,233 35,235 29,235 21,235 15,233 11,229 6,225 4,219 4,212 Z M 38,189 C 34,189 30,191 28,195 25,198 24,203 24,209 24,214 25,218 27,222 29,225 32,227 36,227 45,227 50,221 50,209 50,203 49,199 47,195 45,191 42,189 38,189 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.timeCommon = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 78,247 C 77,250 76,253 74,255 72,258 70,261 67,263 64,265 61,267 58,268 55,269 52,270 49,270 43,270 37,269 32,267 27,264 23,261 19,257 16,253 13,248 11,243 9,238 8,232 8,226 8,220 9,214 11,209 13,204 15,199 19,196 22,192 26,189 31,187 36,185 42,184 48,184 51,184 55,184 59,185 62,186 66,187 68,189 71,190 73,192 75,194 76,197 77,199 77,202 77,205 76,208 73,210 71,212 68,213 65,213 62,213 59,212 56,210 53,208 52,205 52,202 52,198 54,193 59,189 56,189 54,189 52,189 48,189 45,190 42,192 39,193 36,196 34,199 32,202 31,205 30,210 29,214 28,218 28,224 28,229 29,234 30,239 31,244 33,248 35,252 37,256 39,259 42,261 45,264 48,265 52,265 60,265 69,259 78,247 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.timeAllabreve = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 39,191 C 30,197 26,207 26,223 26,227 26,230 27,234 28,238 29,241 30,245 31,248 32,251 34,254 35,257 37,259 39,261 L 39,191 Z M 74,247 C 73,250 72,253 70,256 68,259 66,261 63,263 61,265 58,267 55,268 52,270 49,270 46,270 L 45,270 45,284 39,284 39,270 C 34,269 29,267 25,264 21,262 18,259 15,255 12,251 10,246 8,241 7,236 6,231 6,225 6,220 7,215 8,210 10,205 12,201 15,198 18,194 21,191 25,188 29,186 34,185 39,184 L 39,171 45,171 45,184 C 49,184 52,184 56,185 59,186 63,187 65,189 68,191 70,192 72,195 73,197 74,199 74,202 74,205 73,207 70,210 68,212 65,213 62,213 59,213 56,212 53,210 50,208 49,205 49,202 49,198 51,193 56,189 55,189 54,189 52,189 51,188 50,188 49,188 48,188 48,188 47,188 46,188 46,188 45,189 L 45,265 C 46,265 48,265 49,265 57,265 66,259 74,247 Z\"/>\r\n\t\t</g></svg>";
+nx3_render_svg_SvgElements.tplTestCircle = "\r\n\t<svg ><circle style=\"fill:none;stroke:#ff00ff;stroke-width:16.41697121;stroke-miterlimit:4;stroke-dasharray:none\" id=\"path3384\" cx=\"92.372879\" cy=\"174.15253\" r=\"76.117874\" /> </svg>\r\n\t";
+nx3_render_svg_SvgElements.tplCircle = "\r\n\t\t<svg ><g visibility=\"visible\" id=\"page1\"><desc>Slide</desc><g><desc>Drawing</desc><g><g style=\"stroke:none;fill:#FFFFFFF\"><path d=\"M 93,253 C 78,253 66,250 53,242 41,235 32,226 25,214 17,201 14,189 14,175 14,160 17,148 25,135 32,123 41,114 53,107 66,99 78,96 92,96 107,96 119,99 132,107 144,114 153,123 160,135 168,148 171,160 171,174 171,189 168,201 160,214 153,226 144,235 132,242 119,250 107,253 93,253 L 93,253 Z\"/></g><g style=\"stroke:#000000;fill:none\"><path style=\"fill:none\" d=\"M 93,253 C 78,253 66,250 53,242 41,235 32,226 25,214 17,201 14,189 14,175 14,160 17,148 25,135 32,123 41,114 53,107 66,99 78,96 92,96 107,96 119,99 132,107 144,114 153,123 160,135 168,148 171,160 171,174 171,189 168,201 160,214 153,226 144,235 132,242 119,250 107,253 93,253\"/></g><g/></g></g><g><desc>Drawing</desc><g><g style=\"stroke:none;fill:#000000\"><path d=\"M 71,256 C 64,254 57,252 50,248 44,244 38,239 33,234 28,229 23,223 19,217 15,210 13,203 11,196 9,189 8,182 8,175 8,167 9,160 11,153 13,146 15,139 19,132 23,126 28,120 33,115 38,110 44,105 50,101 57,97 64,95 71,93 78,91 85,90 92,90 100,90 107,91 114,93 121,95 128,97 135,101 141,105 147,110 152,115 157,120 162,126 166,132 170,139 172,146 174,153 176,160 177,167 177,174 177,182 176,189 174,196 172,203 170,210 166,217 162,223 157,229 152,234 147,239 141,244 135,248 128,252 121,254 114,256 107,258 100,259 93,259 85,259 78,258 71,256 Z M 130,239 C 136,236 141,232 145,227 150,223 154,218 157,212 160,206 163,200 165,194 166,188 167,181 167,174 167,168 166,161 165,155 163,149 160,143 157,137 154,131 150,126 145,122 141,117 136,113 130,110 124,107 118,104 112,102 106,101 99,100 92,100 86,100 79,101 73,102 67,104 61,107 55,110 49,113 44,117 40,122 35,126 31,131 28,137 25,143 22,149 20,155 19,161 18,168 18,175 18,181 19,188 20,194 22,200 25,206 28,212 31,218 35,223 40,227 44,232 49,236 55,239 61,242 67,245 73,247 79,248 86,249 93,249 99,249 106,248 112,247 118,245 124,242 130,239 Z\"/></g><g style=\"stroke:none;fill:none\"><rect x=\"8\" y=\"89\" width=\"170\" height=\"171\"/></g><g/></g></g><g><desc>Drawing</desc><g><g style=\"stroke:none;fill:none\"><rect x=\"0\" y=\"464\" width=\"854\" height=\"964\"/></g><g/></g></g></g></svg>";
 nx3_render_svg_SvgElements.tplArrowDown = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t d=\"m 93.219081,334.7112 26.789959,-45.28185 -16.80224,0 0,-27.26555 -19.974144,0 0,27.26555 -16.80224,0 26.788665,45.28185 z\"   />\r\n\t</g></svg>";
 nx3_render_svg_SvgElements.tplArrowUp = "<svg><g>< path style = \"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\td=\"m 93.220375,22.163798 -26.789959,45.281851 16.802241,0 0,27.265551 19.974143,0 0,-27.265551 16.80224,0 -26.788665,-45.281851 z\" />\r\n\t</g></svg>";
 nx3_render_svg_SvgElements.tpl1 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\t d=\"M 106,225 L 93,225 93,146 C 90,149 86,152 82,155 77,158 73,160 69,161 L 69,149 C 76,146 82,142 87,137 92,133 96,128 98,124 L 106,124 106,225 Z\"/>\t\t\r\n\t\t</g></svg>";
@@ -11380,14 +15313,72 @@ nx3_render_svg_SvgElements.tpl2 = "<svg><g><path style=\"fill:#000000;fill-opaci
 nx3_render_svg_SvgElements.tpl3 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 60,198 L 73,196 C 74,202 77,207 80,210 83,213 87,214 92,214 99,214 104,212 107,208 111,204 113,200 113,194 113,189 111,184 108,181 104,177 99,176 94,176 91,176 88,176 85,177 L 86,165 C 87,165 88,165 88,165 93,165 98,164 102,161 106,159 108,155 108,150 108,146 106,143 103,140 100,137 97,136 92,136 87,136 83,137 80,140 77,143 75,147 74,152 L 61,150 C 63,142 66,135 71,131 77,126 83,124 91,124 97,124 102,125 107,127 111,130 115,133 117,137 120,141 121,145 121,150 121,154 120,158 117,161 115,165 112,167 107,169 113,171 118,174 121,178 124,182 126,188 126,194 126,203 123,211 116,217 110,223 102,226 92,226 83,226 76,223 70,218 64,213 61,206 60,198 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.tpl4 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 101,225 L 101,201 56,201 56,188 104,125 114,125 114,188 126,188 126,201 114,201 114,225 101,225 Z M 101,188 L 101,145 69,188 101,188 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.tpl5 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 60,198 L 73,197 C 74,203 76,207 79,210 83,213 87,214 92,214 98,214 103,212 107,208 111,204 113,198 113,191 113,185 111,179 108,176 104,172 99,170 93,170 88,170 85,171 82,173 79,174 77,176 75,179 L 62,177 72,125 121,125 121,138 83,138 78,165 C 84,160 90,158 96,158 104,158 112,161 117,167 123,173 126,181 126,190 126,199 123,207 118,214 112,222 103,226 92,226 83,226 76,223 70,218 64,213 61,206 60,198 Z\"/>\r\n\t\t</g></svg>";
+nx3_render_svg_SvgElements.tpl6x = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 124,150 L 111,151 C 110,146 108,143 106,141 103,138 99,136 94,136 90,136 86,137 83,139 80,142 77,145 74,150 72,155 71,162 71,172 74,168 78,165 82,162 86,160 91,159 96,159 104,159 111,162 117,168 123,174 126,182 126,192 126,198 125,204 122,209 119,215 115,219 110,222 105,225 100,226 94,226 83,226 75,222 68,215 61,207 58,195 58,178 58,158 62,144 69,135 75,128 84,124 95,124 103,124 110,126 115,131 120,136 123,142 124,150 Z M 71,191 C 71,195 72,199 74,203 76,206 78,209 82,211 85,213 89,214 93,214 99,214 103,212 107,208 111,204 113,199 113,192 113,186 111,180 107,177 104,173 99,171 92,171 86,171 81,173 77,177 73,180 71,185 71,191 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.tpl6 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 124,150 L 111,151 C 110,146 108,143 106,141 103,138 99,136 94,136 90,136 86,137 83,139 80,142 77,145 74,150 72,155 71,162 71,172 74,168 78,165 82,162 86,160 91,159 96,159 104,159 111,162 117,168 123,174 126,182 126,192 126,198 125,204 122,209 119,215 115,219 110,222 105,225 100,226 94,226 83,226 75,222 68,215 61,207 58,195 58,178 58,158 62,144 69,135 75,128 84,124 95,124 103,124 110,126 115,131 120,136 123,142 124,150 Z M 71,191 C 71,195 72,199 74,203 76,206 78,209 82,211 85,213 89,214 93,214 99,214 103,212 107,208 111,204 113,199 113,192 113,186 111,180 107,177 104,173 99,171 92,171 86,171 81,173 77,177 73,180 71,185 71,191 Z\"/>\r\n\t\t</g></svg>";
 nx3_render_svg_SvgElements.tpl7 = "<svg><g><path style=\"fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none\" \r\n\t\t\td=\"M 61,138 L 61,125 126,125 126,136 C 120,142 114,152 108,163 102,174 97,186 94,197 91,206 90,215 89,225 L 76,225 C 76,217 78,208 81,196 83,185 87,175 93,164 98,154 104,145 110,138 L 61,138 Z\"/>\r\n\t\t</g></svg>";
+nx3_xml_BarXML.XBAR = "bar";
+nx3_xml_BarXML.XBAR_TYPE = "type";
+nx3_xml_BarXML.XBAR_TIME = "time";
+nx3_xml_BarXML.XBAR_TIMEDISPLAY = "timedisplay";
+nx3_xml_HeadXML.XHEAD = "headx";
+nx3_xml_HeadXML.XHEAD_TYPE = "type";
+nx3_xml_HeadXML.XHEAD_LEVEL = "level";
+nx3_xml_HeadXML.XHEAD_SIGN = "sign";
+nx3_xml_HeadXML.XHEAD_TIE = "tie";
+nx3_xml_HeadXML.XHEAD_TIETO = "tieto";
+nx3_xml_HeadXML.XHEAD_TIE_DIRECTION = "tiedirection";
+nx3_xml_HeadXML.XHEAD_TIE_LEVEL = "tielevel";
+nx3_xml_NoteXML.XNOTE = "note";
+nx3_xml_NoteXML.XPAUSE = "pause";
+nx3_xml_NoteXML.XPAUSE_LEVEL = "level";
+nx3_xml_NoteXML.XLYRIC = "lyric";
+nx3_xml_NoteXML.XLYRIC_TEXT = "text";
+nx3_xml_NoteXML.XUNDEFINED = "undefined";
+nx3_xml_NoteXML.XPITCH = "pitch";
+nx3_xml_NoteXML.XPITCH_LEVEL = "level";
+nx3_xml_NoteXML.XPITCH_MIDINOTE = "midinote";
+nx3_xml_NoteXML.XTPL = "tpl";
+nx3_xml_NoteXML.XTPL_LEVEL = "level";
+nx3_xml_NoteXML.XTPL_SIGN = "sign";
+nx3_xml_NoteXML.XNOTE_TYPE = "type";
+nx3_xml_NoteXML.XNOTE_TYPE_NOTE = "note";
+nx3_xml_NoteXML.XNOTE_TYPE_NOTATION_VARIANT = "variant";
+nx3_xml_NoteXML.XNOTE_VALUE = "value";
+nx3_xml_NoteXML.XNOTE_VAL = "val";
+nx3_xml_NoteXML.XNOTE_DIRECTION = "direction";
+nx3_xml_NoteXML.XNOTE_TYPE_PAUSE = "pause";
+nx3_xml_NoteXML.XNOTE_TYPE_NOTE_ARTICULATIONS = "articulations";
+nx3_xml_NoteXML.LIST_DELIMITER = ";";
+nx3_xml_NoteXML.XNOTE_TYPE_NOTE_ATTRIBUTES = "attributes";
+nx3_xml_NoteXML.XOFFSET = "offset";
+nx3_xml_NoteXML.XLYRIC_CONTINUATION = "continuation";
+nx3_xml_NoteXML.XLYRIC_FORMAT = "format";
+nx3_xml_NoteXML.XTPL_PAUSE = "pause";
+nx3_xml_PartXML.XPART = "part";
+nx3_xml_PartXML.XPART_TYPE = "type";
+nx3_xml_PartXML.XPART_LEVELOFFSET = "leveloffset";
+nx3_xml_PartXML.XPART_CLEF = "clef";
+nx3_xml_PartXML.XPART_CLEFDISPLAY = "clefdisplay";
+nx3_xml_PartXML.XPART_KEY = "key";
+nx3_xml_PartXML.XPART_KEYDISPLAY = "keydisplay";
+nx3_xml_PartXML.XPART_PITCHCHAIN = "pitchchain";
+nx3_xml_PartXML.XPART_TYPE_TPLCHAIN = "tplchain";
+nx3_xml_PartXML.XPART_TYPE_TPLROW = "tplrow";
+nx3_xml_PartXML.XPART_MODUS = "modus";
+nx3_xml_PartXML.XPART_OCTAVE = "octave";
+nx3_xml_ScoreXML.XSCORE = "score";
+nx3_xml_ScoreXML.XCONFIG = "config";
+nx3_xml_VoiceXML.XVOICE = "voice";
+nx3_xml_VoiceXML.XVOICE_TYPE = "type";
+nx3_xml_VoiceXML.XVOICE_BARPAUSE = "barpause";
+nx3_xml_VoiceXML.XVOICE_DIRECTION = "direction";
+storage_StorageSource.instance = new storage_StorageSource();
 ui_QSyntax.REGEX = "/@score ([0-9a-zA-Z ]*)@/";
-ui_Bookpage.bpcount = 0;
-ui_BookpageCache.instance = new ui_BookpageCache();
-ui_ClientUI.instance = new ui_ClientUI();
+ui_MediaSyntax.REGEX = "/@media ([/.0-9a-zA-Z ]*)@/";
+ui_Bookpage.BP_RENDER_COUNT = 0;
+ui_ChapterTypeViewCache.instance = new ui_ChapterTypeViewCache();
 ui_StringRendererMapper.instance = new ui_StringRendererMapper();
 ui_ViewMapper.instance = new ui_ViewMapper();
 utils__$UserEmail_UserEmail_$Impl_$.ereg = new EReg("^[\\w-\\.]{2,}@[\\w-\\.]{2,}\\.[a-z]{2,6}$","i");
-Client.main();
+client2_Client2.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

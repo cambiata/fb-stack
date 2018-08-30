@@ -1,6 +1,5 @@
 package data;
 
-import haxe.io.BytesData;
 import data.Content;
 
 class ContentUtils {
@@ -139,7 +138,7 @@ Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna ba
 										new Chapter({
 											id: 'chapter0',
 											title: 'Kapitel 1',
-											text: '/@score a b c @/',
+											text: '/@score a b c @/ hej /@media /test/abc.png@/',
 											access: 1,
 											subchapters: [
 												new Chapter({id: 'sub0', title: 'Sub', access: 0}),
@@ -147,7 +146,7 @@ Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna ba
 													id: 'vidc1',
 													title: 'Video',
 													access: 0,
-													type: new VideoChaptertype({url: '/assets/video/tada.mp4'})
+													type: new VideoChaptertype({url: '/test/Stamtoner.mp4'})
 												}),
 												new Chapter({
 													id: 'pdf1',
@@ -167,14 +166,25 @@ Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna ba
 													access: 0,
 													type: new PitchChaptertype()
 												}),
+												new Chapter({
+													id: 'scorx0',
+													title: 'Scorx',
+													access: 0,
+													type: new ScorxmixerChaptertype({paths: ['/scorx/_test/200.mp3', '/scorx/_test/100.mp3',]})
+												}),
+
 											]
 										}),
 
-										new Chapter({id: 'vidc1', title: 'Videokapitel 1', type: new VideoChaptertype({url: '/assets/video/tada.mp4'})}),
+										new Chapter({id: 'vidc1', title: 'Videokapitel 1', type: new VideoChaptertype()}),
 										new Chapter({id: 'pdf1', title: 'Pdfkapitel 1', type: new PdfChaptertype()}),
 										new Chapter({id: 'rosetta1', title: 'Rosetta 1', type: new RosettaChaptertype()}),
 										new Chapter({id: 'pitch1', title: 'Pitch 1', type: new PitchChaptertype()}),
-										new Chapter({id: 'scorx1', title: 'Scorxmixer 1', type: new ScorxmixerChaptertype()}),
+										new Chapter({
+											id: 'scorx1',
+											title: 'Scorxmixer 1',
+											type: new ScorxmixerChaptertype({paths: ['/scorx/_test/200.mp3', '/scorx/_test/100.mp3',]})
+										}),
 
 									]
 								}),
@@ -247,5 +257,82 @@ Hundratals sånger finns inspelade i ScorX bibliotek. Men vilka är rösterna ba
 				// ]}),
 			]
 		});
+	}
+
+	static public function randomRooms(count:Int = 2) {}
+
+	static public function randomBooks(count:Int = 2):Array<Book> {
+		var a = [for (i in 0...count) i];
+		var books = a.map(i -> {
+			var book = new Book({title: 'Book' + i, id: 'book' + i});
+			book.chapters = randomChapters(book.id, 7);
+			return book;
+		});
+		return books;
+	}
+
+	static var typeCounter = 0;
+
+	static public function randomChapters(bookId:String, count:Int = 4):Array<Chapter> {
+		var a = [for (i in 0...count) i];
+		var chapters = a.map(i -> {
+			// var text = 'Text of CHAPTER ' + i;
+			var text = cx.Lorem.getNextChapter();
+
+			var type:IChaptertype = switch typeCounter++ % 8 {
+				case 2:
+					new VideoChaptertype({url: '/assets/video/tada.mp4'});
+
+				case 3:
+					new ScorxmixerChaptertype({paths: ['/scorx/_test/200.mp3', '/scorx/_test/100.mp3',]});
+
+				case _:
+					new StandardChaptertype();
+			}
+
+			var chapter = new Chapter({
+				title: 'Chapter' + i,
+				id: '$bookId/chap' + i,
+				text: text,
+				type: type
+			});
+			chapter.subchapters = randomSubchapters(chapter.id, 8);
+			return chapter;
+		});
+		return chapters;
+	}
+
+	static public function randomSubchapters(chapterId:String, count:Int = 2):Array<Chapter> {
+		var a = [for (i in 0...count) i];
+		var chapters = a.map(i -> {
+			var text = 'Text of SUBCHAPTER ' + i;
+			var text = cx.Lorem.getNextChapter();
+
+			var type:IChaptertype = switch typeCounter++ % 8 {
+				case 2:
+					new VideoChaptertype({url: '/assets/video/tada.mp4'});
+				case 3:
+					new ScorxmixerChaptertype({
+						paths: [
+							'/scorx/_test2/200.mp3',
+							'/scorx/_test2/100.mp3',
+							'/scorx/_test2/110.mp3',
+							'/scorx/_test2/120.mp3',
+							'/scorx/_test2/130.mp3',
+						]
+					});
+				case _:
+					new StandardChaptertype();
+			}
+
+			var subchapter = new Chapter({
+				title: 'Subchapter' + i,
+				id: '$chapterId/sub' + i,
+				text: text,
+				type: type
+			});
+			return subchapter;
+		});
+		return chapters;
 	}
 }

@@ -1,6 +1,6 @@
 (function ($hx_exports, $global) { "use-strict";
 var $s = $global.$hx_scope, $_;
-var $hxClasses = $s.a, haxe_Log = $s.f, mithril_Mithril = $s.b, data_TestModel = $s.c;
+var $hxClasses = $s.a, haxe_Log = $s.e, ui_ChapterTypeViewCache = $s.f, mithril_Mithril = $s.b;
 var audio_Audio = function() {
 	this.context = new AudioContext();
 };
@@ -123,26 +123,30 @@ audio_scorx_MixerModel.__interfaces__ = [audio_IPlayback];
 audio_scorx_MixerModel.prototype = {
 	loadFiles: function(id,files) {
 		var _gthis = this;
-		if(this.loadId == id) {
-			return;
-		}
-		this.loadId = id;
-		this.mixer = null;
-		this.files = files;
-		this.volumes = this.files.map(function(f) {
-			return 0.7;
-		});
-		m.redraw();
-		Promise.all(files.map(function(f1) {
-			return audio_scorx_Loader.load(f1);
-		})).then(function(buffers) {
-			return Promise.resolve(buffers.map(function(b) {
-				return new audio_scorx_Channel(b.url,b.buffer);
-			}));
-		}).then(function(channels) {
-			haxe_Log.trace("all channels loaded!",{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 40, className : "audio.scorx.MixerModel", methodName : "loadFiles"});
-			_gthis.mixer = new audio_scorx_Mixer(channels);
+		return new Promise(function(res,rej) {
+			if(_gthis.loadId == id) {
+				res(true);
+				return;
+			}
+			_gthis.loadId = id;
+			_gthis.mixer = null;
+			_gthis.files = files;
+			_gthis.volumes = _gthis.files.map(function(f) {
+				return 0.7;
+			});
 			m.redraw();
+			Promise.all(files.map(function(f1) {
+				return audio_scorx_Loader.load(f1);
+			})).then(function(buffers) {
+				return Promise.resolve(buffers.map(function(b) {
+					return new audio_scorx_Channel(b.url,b.buffer);
+				}));
+			}).then(function(channels) {
+				haxe_Log.trace("all channels loaded!",{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 42, className : "audio.scorx.MixerModel", methodName : "loadFiles"});
+				_gthis.mixer = new audio_scorx_Mixer(channels);
+				res(true);
+				return;
+			});
 			return;
 		});
 	}
@@ -151,7 +155,7 @@ audio_scorx_MixerModel.prototype = {
 			startTime = 0;
 		}
 		this.deltaTime = audio_Audio.instance.context.currentTime;
-		haxe_Log.trace("Delta:" + this.deltaTime,{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 48, className : "audio.scorx.MixerModel", methodName : "play"});
+		haxe_Log.trace("Delta:" + this.deltaTime,{ fileName : "src/audio/scorx/MixerModel.hx", lineNumber : 66, className : "audio.scorx.MixerModel", methodName : "play"});
 		if(this.mixer != null) {
 			this.mixer.stop();
 			this.mixer.play(startTime);
@@ -235,9 +239,24 @@ audio_scorx_ui_PlayerView.prototype = {
 	}
 	,__class__: audio_scorx_ui_PlayerView
 };
+var data_TestModel = function() {
+	this.counter = 0;
+};
+$hxClasses["data.TestModel"] = data_TestModel;
+data_TestModel.__name__ = ["data","TestModel"];
+data_TestModel.prototype = {
+	__class__: data_TestModel
+};
 var ui_ScorxmixerChapter = function(c) {
 	this.c = c;
-	audio_scorx_MixerModel.instance.loadFiles("test",["/assets/mp3/test/100.mp3","/assets/mp3/test/110.mp3","/assets/mp3/test/120.mp3","/assets/mp3/test/130.mp3","/assets/mp3/test/200.mp3"]);
+	if(audio_scorx_MixerModel.instance.mixer == null) {
+		audio_scorx_MixerModel.instance.loadFiles("test",["/assets/mp3/test/100.mp3","/assets/mp3/test/110.mp3","/assets/mp3/test/120.mp3","/assets/mp3/test/130.mp3","/assets/mp3/test/200.mp3"]).then(function(_) {
+			haxe_Log.trace("SCORX LOADED",{ fileName : "src/ui/ScorxmixerChapter.hx", lineNumber : 22, className : "ui.ScorxmixerChapter", methodName : "new"});
+			ui_ChapterTypeViewCache.instance.clearCache();
+			m.redraw();
+			return;
+		});
+	}
 };
 $hxClasses["ui.ScorxmixerChapter"] = ui_ScorxmixerChapter;
 ui_ScorxmixerChapter.__name__ = ["ui","ScorxmixerChapter"];
@@ -285,5 +304,6 @@ var __varName1 = GLOBAL.m;
 } catch(_) {}
 audio_Audio.instance = new audio_Audio();
 audio_scorx_MixerModel.instance = new audio_scorx_MixerModel();
+data_TestModel.instance = new data_TestModel();
 $s.ui_ScorxmixerChapter = ui_ScorxmixerChapter; 
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

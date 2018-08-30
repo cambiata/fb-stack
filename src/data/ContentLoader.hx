@@ -9,44 +9,42 @@ import data.ContentModel;
 using dataclass.TypedJsonConverter;
 
 class ContentLoader {
-    public static var instance(default, null):ContentLoader = new ContentLoader();
-    
-    private function new () {}  // private constructor
+	public static var instance(default, null):ContentLoader = new ContentLoader();
 
-    /*
-    public function load() {
-        ApiCalls.getRequest(/api/content-tree)
-        .then(item->{
-            var itemm:Dynamic = item;
-            ErrorsAndLogs.addErrors(itemm.errors);
-            ContentModel.instance.content = Content.fromJson(itemm.data);
-            ErrorsAndLogs.addLog(Content-tree loaded ); // + Profile.instance.msString());
-            return null;
-        })
-        .catchError(error->{
-            ErrorsAndLogs.addError(Content-tree error: $error);
-        });
-    }
-    */
+	private function new() {} // private constructor
 
-    public function loadRealtimeUpdate() {
-        Firebase.database().ref('content-tree').on(EventType.Value, (snap, str)->{
-            try {
-                trace('Realtime content loaded!'); // + Profile.instance.msString());
-                var val:Dynamic = snap.val();
-                ContentModel.instance.content = Content.fromTypedJson(val);
-            } catch (e:Dynamic) {
-                trace('Could not insantiate content from loaded Realtime data $e');
+	/*
+		public function load() {
+			ApiCalls.getRequest(/api/content-tree)
+			.then(item->{
+				var itemm:Dynamic = item;
+				ErrorsAndLogs.addErrors(itemm.errors);
+				ContentModel.instance.content = Content.fromJson(itemm.data);
+				ErrorsAndLogs.addLog(Content-tree loaded ); // + Profile.instance.msString());
+				return null;
+			})
+			.catchError(error->{
+				ErrorsAndLogs.addError(Content-tree error: $error);
+			});
+		}
+	 */
+	public function loadRealtimeUpdate() {
+		Firebase.database().ref('content-tree').on(EventType.Value, (snap, str) -> {
+			try {
+				trace('Realtime content loaded!'); // + Profile.instance.msString());
+				var val:Dynamic = snap.val();
+				ContentModel.instance.content = Content.fromTypedJson(val);
+			} catch (e:Dynamic) {
+				trace('Could not insantiate content from loaded Realtime data $e');
 
-                return null;
-            }
-        });
-    }
+				return null;
+			}
+		});
+	}
 
-
-    #if local_content
-    public function loadContent() {  
-        var json = '
+	#if local_content
+	public function loadContent() {
+		var json = '
 {
   "id": "tree0",
   "rooms": [
@@ -364,28 +362,23 @@ class ContentLoader {
 
         ';
 
-        var obj = Json.parse(json);
-        return new js.Promise<Bool>((res, rej)->{
-            haxe.Timer.delay(()->{
-                ContentModel.instance.content = Content.fromTypedJson(obj); 
-                res(true);
-            },1000);
-        });
-
-    }
-    #else
-    public function loadContent() {        
-        return ApiCalls.getRequest('/api/content-tree')
-        .then(item->{
-            var itemm:Dynamic = item;           
-            ContentModel.instance.content = Content.fromTypedJson(itemm.data);            
-            return Promise.resolve(true);
-        });
-    }
-    #end
-
-
-
-
+		var obj = Json.parse(json);
+		return new js.Promise<Bool>((res, rej) -> {
+			haxe.Timer.delay(() -> {
+				ContentModel.instance.content = Content.fromTypedJson(obj);
+				res(true);
+			}, 1000);
+		});
+	}
+	#else
+	public function loadContent() {
+		return ApiCalls.getRequest('/api/content-tree').then(item -> {
+			var itemm:Dynamic = item;
+			ContentModel.instance.content = Content.fromTypedJson(itemm.data);
+			return Promise.resolve(true);
+		}).catchError(e -> {
+			trace('ContentLoader loadContent error: ' + e);
+		});
+	}
+	#end
 }
-

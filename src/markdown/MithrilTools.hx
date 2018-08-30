@@ -82,6 +82,16 @@ class MithrilTools {
 
 					parent.children.push(child);
 
+				case MediaNode:
+					var node:MediaNode = cast mdNode;
+
+					var child = cast {tag: 'h3', attrs: {}, children: [{tag: 'span', text: 'media-node: ' + node.data}]};
+
+					parent.children.push(child);
+
+					var child = new ui.media.StorageMedia(node.data).view();
+					parent.children.push(child);
+
 				case ErrorNode:
 					var node:ErrorNode = cast mdNode;
 					var child:Dynamic = cast {tag: 'span', attrs: {className: 'error'}, children: ['Error: ' + node.msg]};

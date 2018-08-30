@@ -5,32 +5,332 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
     <title>Document</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/section.css" />
-    <link rel="stylesheet" href="css/style2.css" />
-    <link rel="stylesheet" href="css/home.css" />
-    <link rel="stylesheet" href="css/content.css" />
-    <link rel="stylesheet" href="css/markdown.css" />
+    <style id="base">
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Roboto", sans-serif;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1em auto;
+            grid-template-rows: 3.6em auto 3em;
+        }
+
+        header {
+            /* background-color: rgb(172, 200, 255); */
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+            display: grid;
+            grid-template-columns: auto auto auto;
+            padding: 1em;
+        }
+
+        #userinfo {
+            /* background-color: gray; */
+            grid-column: -1/-2;
+
+        }
+
+        #userinfo form {
+            float: right;
+        }
+
+        #userinfo form * {
+            margin-left: 1em;
+        }
+
+        #logo {
+            /* background-color: gray; */
+            grid-column: 1/2;
+        }
+
+        aside {
+            background-color: #333;
+            grid-column: 1 / 2;
+            grid-row: 2 / 2;
+        }
+
+        footer {
+            background-color: rgb(57, 68, 92);
+            grid-column: 1 / -1;
+            grid-row: -2 / -1;
+            color: white;
+            display: grid;
+            grid-template-columns: 8em 8em 8em 8em 8em 8em;
+            grid-gap: 1em;
+            padding: 1em;
+        }
+
+        details {
+            padding-left: 1em;
+            background-color: white;
+            border: 1px solid #ccc
+        }
+
+        .sideways {
+            grid-column: 2 / -1;
+            grid-row: 2 / -2;
+            border-color: 1px solid gray;
+        }
+
+        .page {
+            overflow: auto;
+        }
+
+        .page-home {
+            background-color: rgb(172, 172, 243);
+        }
+
+        .page-shelves {
+            background-color: rgb(238, 172, 172);
+        }
+
+        .page-book {
+            background-color: rgb(178, 243, 178);
+        }
+
+        .page-search {
+            background-color: rgb(233, 233, 167);
+        }
+
+        .vsection {
+            width: 100%;
+            border: 1px solid blue;
+        }
+
+        .center {
+            /* border: 1px solid red; */
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+
+
+        .linkbutton {
+            margin: .2em;
+            padding: .2em .4em;
+
+            background-color: #eee;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            border: 1px solid gray;
+            border-radius: 3px;
+        }
+
+        .linkbutton:hover {
+            background-color: white;
+        }
+
+        .linkbutton.selected {
+            background-color: white;
+        }
+
+        .selected {
+            /* border: 2px solid rgb(82, 118, 218); */
+        }
+
+        a {           
+            text-decoration: none;
+        }
+
+        .light {
+            background-color: #ddd;
+        }
+
+        .dark {
+            background-color: #333;
+        }
+
+        .dark a {
+            color: white;
+        }
+
+    </style>
+
+    <style id="text">
+        h1, h2, h3 {
+            font-weight: normal;
+            margin-top: 0;
+        }
+
+        header  h1, h2, h3 {
+            margin-bottom: 0;
+        }
+    </style>
+
+    <style id="home">
+        .homecells {
+            display:grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            grid-gap: 1em;
+        }
+        
+        .homecell {
+            padding: 1em;
+        }
+
+        .homecell .markdown {
+            padding: 0;
+        }
+
+        .homeshelves {
+            display:grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto;            
+            grid-gap: 1em;
+            padding-bottom: 1em;
+            background-color:inherit;
+        }
+
+        .homeshelves header {
+            background-color: inherit;
+            padding: 1em 0;
+            max-height: 3em;
+        }
+
+        .homeshelves img {
+            width: 100%;
+            height: 10em;
+            object-fit: cover;            
+        }
+
+        .homeshelfitem {
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .homeshelfitemtext {
+            padding: 1em;
+        }
+    
+    </style>
+
+    <style id="book">
+        #book {
+            display: grid;
+            grid-template-columns: 14em auto;
+            grid-template-rows: 4em auto;
+        }
+
+        #bookheader {
+            background-color: #eee;
+            grid-column: 2 / -1;
+            grid-row: 1 / 2;
+        }
+
+        #bookleft {
+            grid-column: 1 / 2;
+            grid-row: 1 / -1;
+        }
+
+        #booktoc,
+        #chaptertoc {
+            background-color: #ddd;
+            display: block;
+            padding: .5em;
+        }
+
+        #bookcontent {
+            background-color: skyblue;
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+        }
+
+        #chaptercontent,
+        #subchaptercontent {
+            background-color: white;
+            border: 1px solid gray;
+        }
+
+        .markdown {
+            padding: 0 1em;
+            border: 1px dashed gray;
+        }
+
+
+    </style>
 </head>
 
 <body>
-    <header></header>
-    <!-- <div id="buttons" class="paddingOneEm">div#buttons</div> -->
-    <main></main>
 
-    <!-- <aside>Aside</aside> -->
+    <header><span id="logo">Logo</span>
+        <div id="userinfo">UserInfo</div>
+    </header>
+
+    <aside></aside>
+    <main class="sideways">
+        <div class="pages">
+
+            <!-- Home -->
+
+            <section id="page-home" class="page blue">
+                <div class="vsection">
+                    <div class="center">
+                        <button class="page-right">>></button>
+                    </div>
+                </div>
+                <div class="vsection">
+                    <div class="center">
+                        Another vsectionxs
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shelves -->
+
+            <section id="page-shelves" class="page red">
+                <div class="center">
+                    <button class="page-left"><<</button>
+                            <button class="page-right">>></button>
+                </div>
+            </section>
+
+            <!-- Book -->
+
+            <section id="page-book" class="page yellow">
+                <div id="book" class="center">
+                    <div id="bookheader">Bookheader</div>
+                    <div id="bookleft">Bookleft</div>
+                    <div id="bookcontent">
+                        <div id="chaptercontent">
+                            Chaptercontent
+                        </div>
+                        <div id="chaptertype">Chaptertype</div>
+                        <div id="subchaptercontent">
+                            Subchaptercontent
+                        </div>
+                        <div id="subchaptertype">Subchaptertype</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search -->
+
+            <section class="page green">
+                <div id="page-content">page-content</div>
+                <div id="page-search">page-search</div>
+            </section>
+        </div>
+    </main>
+
     <footer>
-        <div id="routes">Routes</div>
-        <div id="develop">main#develop</div>
-        <div id="buttons">buttons</div>
+        <div id="buttons"></div>
+        <div id="routes"></div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="sideways.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
-    <script src="client.js"></script>
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/1.1.6/mithril.min.js"></script>
+    <script src="client2.js"></script>
+
 </body>
 
 </html>
